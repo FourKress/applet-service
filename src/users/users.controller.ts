@@ -1,26 +1,28 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from '../schemas/user.schema';
+import { User } from './user.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('create')
-  async create(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
-    await this.usersService.create(createUserDto);
+  async create(@Body() createUser: User) {
+    await this.usersService.create(createUser);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
-  @Get('findOne')
-  async findOne(@Param() _id: string): Promise<User> {
-    console.log(_id);
-    return this.usersService.findOne('60c2123b5386db39a4b4cdb6');
+  @UseGuards(AuthGuard('jwt'))
+  @Post('findOne')
+  async findOne(@Body() userInfo: any): Promise<User> {
+    console.log(userInfo, '查询');
+    return this.usersService.findOne(userInfo.username, userInfo.password);
   }
 }

@@ -18,6 +18,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       // 如果用户名密码不匹配，清理session
       // req.logout();
+      // return {
+      //   msg: '密码错误',
+      //   code: 300,
+      //   data: user,
+      //   status: 'error',
+      // };
       throw new UnauthorizedException();
     }
     // 用户名密码匹配，设置session

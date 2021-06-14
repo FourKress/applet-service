@@ -2,8 +2,8 @@
   "type": "mongodb",
   "host": "localhost",
   "port": 27017,
-  "username": "root",
-  "password": "root",
+  "username": "",
+  "password": "",
   "database": "test",
   "entities": ["dist/**/*.entity{.ts,.js}"],
   "synchronize": true
