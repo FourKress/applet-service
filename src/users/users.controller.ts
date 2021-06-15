@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { AuthGuard } from '@nestjs/passport';
@@ -23,6 +30,12 @@ export class UsersController {
   @Post('findOne')
   async findOne(@Body() userInfo: any): Promise<User> {
     console.log(userInfo, '查询');
-    return this.usersService.findOne(userInfo.username, userInfo.password);
+    return this.usersService.findOne(userInfo.openId);
+  }
+
+  @Post('modify')
+  @HttpCode(200)
+  async modify(@Body() modifyUser: User) {
+    await this.usersService.modify(modifyUser);
   }
 }

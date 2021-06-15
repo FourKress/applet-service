@@ -9,11 +9,13 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 
 import { WxModule } from './wx/wx.module';
+import { StadiumService } from './stadium/stadium.service';
+import { StadiumModule } from './stadium/stadium.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(), UsersModule, AuthModule, WxModule],
+  imports: [TypeOrmModule.forRoot(), UsersModule, AuthModule, WxModule, StadiumModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, StadiumService],
 })
 export class AppModule {
   constructor(private readonly connection: Connection) {}

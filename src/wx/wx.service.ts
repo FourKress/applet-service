@@ -7,11 +7,14 @@ export class WxService {
 
   async code2Session(code) {
     const params = `appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`;
-    console.log(code, params);
     const res = await this.httpService
       .get(`https://api.weixin.qq.com/sns/jscode2session?${params}`)
       .toPromise();
     console.log(res.data);
-    return res.data;
+    return {
+      msg: '',
+      code: 10000,
+      data: res.data,
+    };
   }
 }

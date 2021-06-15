@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 
 import { JwtService } from '@nestjs/jwt';
-import { TokenEntity } from './token.entity';
 
 import { User } from '../users/user.entity';
 
@@ -13,19 +12,40 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne(username, password);
-    console.log(username, password, user, 333);
-    if (user && user.password === password) {
+  async validateUser(openId: string): Promise<any> {
+    const user = await this.usersService.findOne(openId);
+    if (user && user.openId === openId) {
       return user;
     }
     return null;
   }
 
-  async login(user: User): Promise<TokenEntity> {
-    const { id, username } = user;
-    return {
-      token: this.jwtService.sign({ username, sub: id }),
-    };
+  async login(user: any): Promise<any> {
+    const { openId } = user;
+
+    const targetUser = await this.validateUser(openId);
+
+    if (targetUser) {
+      console.log(99, targetUser);
+      return {
+        msg: '',
+        code: 10000,
+        data: {
+          token: this.jwtService.sign({ openId, sub: targetUser.id }),
+          userInfo: targetUser,
+        },
+      };
+    } else {
+      const userInfo = await this.usersService.create(user);
+      console.log(88, userInfo);
+      return {
+        msg: '',
+        code: 10000,
+        data: {
+          token: this.jwtService.sign({ openId, sub: userInfo.id }),
+          userInfo,
+        },
+      };
+    }
   }
 }

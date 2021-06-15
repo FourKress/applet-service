@@ -5,20 +5,39 @@ export class User {
   @ObjectIdColumn()
   id: ObjectID;
 
+  // 微信openId
   @Column()
-  username: string;
+  openId: string;
 
-  @Column({
-    type: 'string',
-    length: 150,
-    select: false,
-    unique: true,
-  })
-  password: string;
-
-  @Column({ select: false })
-  age: number;
-
+  // 微信昵称
   @Column()
-  breed: string;
+  nickName: string;
+
+  // 区
+  @Column()
+  city: string;
+
+  // 国家
+  @Column()
+  country: string;
+
+  // 语言
+  @Column()
+  language: string;
+
+  // 省
+  @Column()
+  province: string;
+
+  // 性别 1:男 2:女 0:未知
+  @Column()
+  gender: number;
+
+  // 头像
+  @Column()
+  avatarUrl: string;
+
+  // 组队次数
+  @Column()
+  teamUpCount: string;
 }
