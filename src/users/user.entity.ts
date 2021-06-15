@@ -9,6 +9,10 @@ export class User {
   @Column()
   openId: string;
 
+  // 联系电话
+  @Column()
+  phoneNum: string;
+
   // 微信昵称
   @Column()
   nickName: string;
