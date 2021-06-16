@@ -13,7 +13,12 @@ export class StadiumService {
     private readonly stadiumRepository: Repository<Stadium>,
   ) {}
 
-  async findById(id: any): Promise<any> {
+  async findAll(): Promise<any> {
+    const stadium = await this.stadiumRepository.find();
+    return stadium;
+  }
+
+  async findById(id: string): Promise<any> {
     if (!id) {
       return null;
     }

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class UserRelationStadium {
   @ObjectIdColumn()
   id: string;
 

@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 
 import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
+import { UserRelationStadiumModule } from './user-relation-stadium/user-relation-stadium.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { StadiumModule } from './stadium/stadium.module';
     AuthModule,
     WxModule,
     StadiumModule,
+    UserRelationStadiumModule,
   ],
   controllers: [AppController],
   providers: [AppService],
