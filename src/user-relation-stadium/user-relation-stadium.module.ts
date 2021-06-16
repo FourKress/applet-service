@@ -9,5 +9,6 @@ import { UserRelationStadium } from './user-relation-stadium.entity';
   imports: [TypeOrmModule.forFeature([UserRelationStadium])],
   providers: [UserRelationStadiumService],
   controllers: [UserRelationStadiumController],
+  exports: [UserRelationStadiumService],
 })
 export class UserRelationStadiumModule {}
