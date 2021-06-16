@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Body,
+  Query,
   UseGuards,
   HttpCode,
 } from '@nestjs/common';
@@ -15,27 +16,77 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('create')
-  async create(@Body() createUser: User) {
-    await this.usersService.create(createUser);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
-  async findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async findAll(): Promise<any> {
+    const users = await this.usersService.findAll();
+    if (!users) {
+      return {
+        msg: '获取用户信息失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: users,
+      code: 10000,
+    };
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('findOne')
-  async findOne(@Body() userInfo: any): Promise<User> {
+  @Get('findOneByOpenId')
+  async findOneByOpenId(@Query() userInfo: any): Promise<any> {
     console.log(userInfo, '查询');
-    return this.usersService.findOne(userInfo.openId);
+    const user = await this.usersService.findOneByOpenId(userInfo.openId);
+    if (!user) {
+      return {
+        msg: '获取用户信息失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: user,
+      code: 10000,
+    };
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('findOneById')
+  async findOneById(@Query() userInfo: any): Promise<any> {
+    console.log(userInfo, '查询');
+    const user = await this.usersService.findOneById(userInfo.openId);
+    if (!user) {
+      return {
+        msg: '获取用户信息失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: user,
+      code: 10000,
+    };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('modify')
   @HttpCode(200)
   async modify(@Body() modifyUser: User) {
-    await this.usersService.modify(modifyUser);
+    const user = await this.usersService.modify(modifyUser);
+    if (!user) {
+      return {
+        msg: '用户信息修改失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: user,
+      code: 10000,
+    };
   }
 }

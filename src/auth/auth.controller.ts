@@ -17,7 +17,18 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   async login(@Body() req) {
-    console.log(req, 123);
-    return this.authService.login(req);
+    const loginInfo = await this.authService.login(req);
+    if (!loginInfo) {
+      return {
+        msg: '微信快捷登录失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: loginInfo,
+      code: 10000,
+    };
   }
 }

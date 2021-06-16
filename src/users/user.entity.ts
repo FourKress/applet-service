@@ -1,4 +1,11 @@
-import { Entity, Column, ObjectIdColumn, ObjectID } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ObjectIdColumn,
+  ObjectID,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -44,4 +51,20 @@ export class User {
   // 组队次数
   @Column()
   teamUpCount: string;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    nullable: false,
+    name: 'created_at', // mysql数据库规范是使用下划线命名的,不使用驼峰
+    comment: '创建时间',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    nullable: false,
+    name: 'updated_at',
+    comment: '更新时间',
+  })
+  updateAt: Date;
 }

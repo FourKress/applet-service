@@ -7,6 +7,19 @@ export class WxController {
 
   @Get('code2Session')
   async code2Session(@Query() params: any) {
-    return this.wxService.code2Session(params.code);
+    const wxInfo = await this.wxService.code2Session(params.code);
+    console.log(wxInfo, 4);
+    if (!wxInfo) {
+      return {
+        msg: '获取openId失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: wxInfo,
+      code: 10000,
+    };
   }
 }

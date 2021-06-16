@@ -12,11 +12,16 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findOne(openId: string): Promise<any> {
-    const data = await this.usersRepository.findOne({
+  async findOneByOpenId(openId: string): Promise<any> {
+    const user = await this.usersRepository.findOne({
       openId,
     });
-    return data;
+    return user;
+  }
+
+  async findOneById(id: any): Promise<any> {
+    const user = await this.usersRepository.findOne(id);
+    return user;
   }
 
   async findAll(): Promise<User[]> {
@@ -24,19 +29,14 @@ export class UsersService {
   }
 
   async create(createUser: User): Promise<any> {
-    return this.usersRepository.save(createUser).then((user) => {
-      return user;
-    });
+    const user = await this.usersRepository.save(createUser);
+    return user;
   }
 
   async modify(modifyUser: User): Promise<any> {
     const { id, ...userInfo } = modifyUser;
-    return this.usersRepository.update(id, userInfo).then((user) => {
-      return {
-        msg: '',
-        data: user,
-        code: 10000,
-      };
-    });
+    await this.usersRepository.update(id, userInfo);
+    const user = await this.findOneById(id);
+    return user;
   }
 }

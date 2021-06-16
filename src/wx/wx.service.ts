@@ -11,10 +11,6 @@ export class WxService {
       .get(`https://api.weixin.qq.com/sns/jscode2session?${params}`)
       .toPromise();
     console.log(res.data);
-    return {
-      msg: '',
-      code: 10000,
-      data: res.data,
-    };
+    return res.data;
   }
 }
