@@ -5,6 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Moment = require('moment');
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -13,6 +16,9 @@ export class UsersService {
   ) {}
 
   async findOneByOpenId(openId: string): Promise<any> {
+    if (!openId) {
+      return null;
+    }
     const user = await this.usersRepository.findOne({
       openId,
     });
@@ -20,6 +26,9 @@ export class UsersService {
   }
 
   async findOneById(id: any): Promise<any> {
+    if (!id) {
+      return null;
+    }
     const user = await this.usersRepository.findOne(id);
     return user;
   }
@@ -35,6 +44,10 @@ export class UsersService {
 
   async modify(modifyUser: User): Promise<any> {
     const { id, ...userInfo } = modifyUser;
+    if (!id) {
+      return null;
+    }
+    userInfo.updateAt = Moment().format();
     await this.usersRepository.update(id, userInfo);
     const user = await this.findOneById(id);
     return user;

@@ -2,16 +2,17 @@ import {
   Entity,
   Column,
   ObjectIdColumn,
-  ObjectID,
   OneToMany,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
 @Entity()
 export class Stadium {
   @ObjectIdColumn()
-  id: ObjectID;
+  id: string;
 
   // 球场名称
   @Column()
@@ -49,9 +50,15 @@ export class Stadium {
   @Column('text')
   description: string;
 
-  @OneToMany((type) => User, (user) => user.id, {
-    eager: true,
-  })
-  @JoinColumn()
-  questions: User[];
+  // @OneToMany((type) => User, (user) => user.id, {
+  //   eager: true,
+  // })
+  // @JoinColumn()
+  // questions: User[];
+
+  @CreateDateColumn()
+  createdAt: string;
+
+  @UpdateDateColumn()
+  updateAt: string;
 }

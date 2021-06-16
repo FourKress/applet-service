@@ -2,7 +2,6 @@ import {
   Entity,
   Column,
   ObjectIdColumn,
-  ObjectID,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -10,7 +9,7 @@ import {
 @Entity()
 export class User {
   @ObjectIdColumn()
-  id: ObjectID;
+  id: string;
 
   // 微信openId
   @Column()
@@ -52,19 +51,9 @@ export class User {
   @Column()
   teamUpCount: string;
 
-  @CreateDateColumn({
-    type: 'timestamp',
-    nullable: false,
-    name: 'created_at', // mysql数据库规范是使用下划线命名的,不使用驼峰
-    comment: '创建时间',
-  })
-  createdAt: Date;
+  @CreateDateColumn()
+  createdAt: string;
 
-  @UpdateDateColumn({
-    type: 'timestamp',
-    nullable: false,
-    name: 'updated_at',
-    comment: '更新时间',
-  })
-  updateAt: Date;
+  @UpdateDateColumn()
+  updateAt: string;
 }
