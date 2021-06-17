@@ -12,6 +12,8 @@ import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
 import { UserRelationStadiumModule } from './user-relation-stadium/user-relation-stadium.module';
 import { OrderModule } from './order/order.module';
+import { MonthlyCardModule } from './monthly-card/monthly-card.module';
+import { SpaceModule } from './space/space.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { OrderModule } from './order/order.module';
     StadiumModule,
     UserRelationStadiumModule,
     OrderModule,
+    MonthlyCardModule,
+    SpaceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

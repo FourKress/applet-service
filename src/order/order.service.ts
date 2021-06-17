@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from './order.entity';
 import { Repository } from 'typeorm';
-import { Stadium } from '../stadium/stadium.entity';
+import { Order } from './order.entity';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -28,7 +27,14 @@ export class OrderService {
   }
 
   async addOrder(addOrder: Order): Promise<any> {
-    const order = this.orderRepository.save(addOrder);
+    const order = await this.orderRepository.save(addOrder);
+    return order;
+  }
+
+  async modifyOrder(userId: string): Promise<any> {
+    const targetOrder = await this.findOrderById(userId);
+    await this.orderRepository.update(userId, targetOrder);
+    const order = await this.findOrderById(userId);
     return order;
   }
 }

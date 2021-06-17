@@ -51,6 +51,14 @@ export class User {
   @Column()
   teamUpCount: string;
 
+  // 是否场主
+  @Column()
+  isBoss: boolean;
+
+  // 是否月卡
+  @Column()
+  isMonthlyCard: boolean;
+
   @CreateDateColumn()
   createdAt: string;
 
