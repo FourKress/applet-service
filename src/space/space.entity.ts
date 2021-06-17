@@ -15,6 +15,10 @@ export class Space {
   @Column()
   stadiumId: string;
 
+  // 用户Id
+  @Column()
+  userId: string;
+
   // 时长
   @Column()
   duration: number;

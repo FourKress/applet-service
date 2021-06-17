@@ -13,7 +13,7 @@ export class MonthlyCardService {
     private readonly monthlyCardRepository: Repository<MonthlyCard>,
   ) {}
 
-  async setMonthlyCard(info: MonthlyCard): Promise<any> {
+  async addMonthlyCard(info: MonthlyCard): Promise<any> {
     const monthlyCard = await this.monthlyCardRepository.save(info);
     return monthlyCard;
   }

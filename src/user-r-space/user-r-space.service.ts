@@ -13,7 +13,7 @@ export class UserRSpaceService {
     private readonly userRSpaceRepository: Repository<UserRSpace>,
   ) {}
 
-  async watchListByUserId(userId: any): Promise<any> {
+  async relationByUserId(userId: any): Promise<any> {
     console.log(userId);
     if (!userId) {
       return null;
