@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class StadiumFormat {
+export class Space {
   @ObjectIdColumn()
   id: string;
 

@@ -14,6 +14,7 @@ import { UserRelationStadiumModule } from './user-relation-stadium/user-relation
 import { OrderModule } from './order/order.module';
 import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 import { SpaceModule } from './space/space.module';
+import { UserRSpaceModule } from './user-r-space/user-r-space.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SpaceModule } from './space/space.module';
     OrderModule,
     MonthlyCardModule,
     SpaceModule,
+    UserRSpaceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

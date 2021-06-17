@@ -47,9 +47,14 @@ export class UsersService {
     if (!id) {
       return null;
     }
-    userInfo.updateAt = Moment().format();
-    await this.usersRepository.update(id, userInfo);
-    const user = await this.findOneById(id);
+    // await this.usersRepository.update(id, userInfo);
+    const target = await this.findOneById(id);
+    const data = {
+      ...target,
+      ...userInfo,
+      updateAt: Moment().format(),
+    };
+    const user = await this.usersRepository.save(data);
     return user;
   }
 }

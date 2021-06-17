@@ -33,11 +33,14 @@ export class MonthlyCardService {
     return monthlyCard;
   }
 
-  async modifyByIds(info: MonthlyCard): Promise<any> {
-    const { userId, stadiumId, ...data } = info;
+  async modifyByIds(modifyInfo: MonthlyCard): Promise<any> {
+    const { userId, stadiumId, ...data } = modifyInfo;
     const target = await this.findByIds(userId, stadiumId);
-    await this.monthlyCardRepository.update(target.id, data);
-    const monthlyCard = await this.findByIds(userId, stadiumId);
+    const info = {
+      ...target,
+      ...data,
+    };
+    const monthlyCard = await this.monthlyCardRepository.save(info);
     return monthlyCard;
   }
 }
