@@ -31,10 +31,6 @@ export class User {
   @Column()
   country: string;
 
-  // 语言
-  @Column()
-  language: string;
-
   // 省
   @Column()
   province: string;
@@ -48,16 +44,16 @@ export class User {
   avatarUrl: string;
 
   // 组队次数
-  @Column()
+  @Column({ default: 0 })
   teamUpCount: string;
 
   // 是否场主
-  @Column()
+  @Column({ default: false })
   isBoss: boolean;
 
-  // 是否月卡
-  @Column()
-  isMonthlyCard: boolean;
+  // 月卡数量
+  @Column({ default: 0 })
+  monthlyCardCount: boolean;
 
   @CreateDateColumn()
   createdAt: string;

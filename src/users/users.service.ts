@@ -47,7 +47,6 @@ export class UsersService {
     if (!id) {
       return null;
     }
-    // await this.usersRepository.update(id, userInfo);
     const target = await this.findOneById(id);
     const data = {
       ...target,

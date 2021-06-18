@@ -24,4 +24,22 @@ export class MonthlyCardController {
       code: 10000,
     };
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('list')
+  async findById(@Body() info: MonthlyCard) {
+    const card = await this.monthlyCardService.findById(info.userId);
+    if (!card) {
+      return {
+        msg: '获取月卡列表失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: card,
+      code: 10000,
+    };
+  }
 }

@@ -4,11 +4,7 @@ import {
   ObjectIdColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinColumn,
-  OneToOne,
 } from 'typeorm';
-
-import { User } from '../users/user.entity';
 
 @Entity()
 export class UserRSpace {
@@ -26,10 +22,6 @@ export class UserRSpace {
   // 是否选中
   @Column()
   isSelect: boolean;
-
-  @OneToOne(() => User)
-  @JoinColumn()
-  user: User;
 
   @CreateDateColumn()
   createdAt: string;

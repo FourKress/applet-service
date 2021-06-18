@@ -25,17 +25,19 @@ export class MonthlyCardService {
     return monthlyCard;
   }
 
-  async findByIds(userId: string, stadiumId: string): Promise<any> {
+  async findById(userId: string): Promise<MonthlyCard[]> {
     const monthlyCard = await this.monthlyCardRepository.find({
       userId,
-      stadiumId,
     });
     return monthlyCard;
   }
 
   async modifyByIds(modifyInfo: MonthlyCard): Promise<any> {
     const { userId, stadiumId, ...data } = modifyInfo;
-    const target = await this.findByIds(userId, stadiumId);
+    const target = await this.monthlyCardRepository.findOne({
+      userId,
+      stadiumId,
+    });
     const info = {
       ...target,
       ...data,

@@ -13,6 +13,10 @@ export class UserRSpaceService {
     private readonly userRSpaceRepository: Repository<UserRSpace>,
   ) {}
 
+  async findAll(): Promise<any> {
+    return this.userRSpaceRepository.find();
+  }
+
   async relationByUserId(userId: any): Promise<any> {
     console.log(userId);
     if (!userId) {
@@ -24,8 +28,9 @@ export class UserRSpaceService {
     return relation;
   }
 
-  async watch(watchStadium: UserRSpace): Promise<any> {
-    const { userId, spaceId } = watchStadium;
+  async watch(watchSpace: UserRSpace): Promise<any> {
+    console.log(watchSpace);
+    const { userId, spaceId } = watchSpace;
     if (!userId || !spaceId) {
       return null;
     }
@@ -35,10 +40,10 @@ export class UserRSpaceService {
     });
     console.log(relation, 1);
     if (relation) {
-      await this.userRSpaceRepository.update(relation.id, watchStadium);
+      await this.userRSpaceRepository.update(relation.id, watchSpace);
     } else {
       await this.userRSpaceRepository.save({
-        ...watchStadium,
+        ...watchSpace,
         isSelect: true,
       });
     }

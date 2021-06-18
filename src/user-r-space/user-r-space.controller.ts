@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
 import { UserRSpaceService } from './user-r-space.service';
 import { UserRSpace } from './user-r-space.entity';
 
@@ -6,9 +6,14 @@ import { UserRSpace } from './user-r-space.entity';
 export class UserRSpaceController {
   constructor(private readonly userRSpaceService: UserRSpaceService) {}
 
-  @Get('add')
-  async addSpace(@Query() params: UserRSpace) {
+  @Post('add')
+  async addSpace(@Body() params: UserRSpace) {
     console.log(params);
-    return 'test';
+    return this.userRSpaceService.watch(params);
+  }
+
+  @Get('findAll')
+  async findAll() {
+    return this.userRSpaceService.findAll();
   }
 }
