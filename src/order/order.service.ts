@@ -31,10 +31,14 @@ export class OrderService {
     return order;
   }
 
-  async modifyOrder(userId: string): Promise<any> {
-    const targetOrder = await this.findOrderById(userId);
-    await this.orderRepository.update(userId, targetOrder);
-    const order = await this.findOrderById(userId);
+  async modifyOrder(modifyOrder: Order): Promise<any> {
+    const { id, ...info } = modifyOrder;
+    const targetOrder = await this.orderRepository.findOne(id);
+    const data = {
+      ...targetOrder,
+      ...info,
+    };
+    const order = await this.orderRepository.save(data);
     return order;
   }
 }

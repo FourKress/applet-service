@@ -51,7 +51,7 @@ export class OrderController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async add(@Body() addOrder: Order) {

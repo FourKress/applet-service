@@ -16,6 +16,8 @@ import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 import { SpaceModule } from './space/space.module';
 import { UserRSpaceModule } from './user-r-space/user-r-space.module';
 
+import { TasksModule } from './tasks/tasks.module';
+
 @Module({
   imports: [
     TypeOrmModule.forRoot(),
@@ -28,6 +30,7 @@ import { UserRSpaceModule } from './user-r-space/user-r-space.module';
     MonthlyCardModule,
     SpaceModule,
     UserRSpaceModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
