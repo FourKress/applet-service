@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Stadium } from './stadium.entity';
 import { Repository } from 'typeorm';
 
+import { UserRelationStadiumService } from '../user-relation-stadium/user-relation-stadium.service';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 
@@ -11,6 +13,7 @@ export class StadiumService {
   constructor(
     @InjectRepository(Stadium)
     private readonly stadiumRepository: Repository<Stadium>,
+    private readonly userRelationStadiumService: UserRelationStadiumService,
   ) {}
 
   async findAll(): Promise<any> {
@@ -18,12 +21,20 @@ export class StadiumService {
     return stadium;
   }
 
-  async findById(id: string): Promise<any> {
-    if (!id) {
+  async findById(data: any): Promise<any> {
+    if (!data.id) {
       return null;
     }
-    const stadium = await this.stadiumRepository.findOne(id);
-    return stadium;
+    const stadium = await this.stadiumRepository.findOne(data.id);
+    const relation = await this.userRelationStadiumService.watchFlag({
+      stadiumId: stadium.id,
+      userId: data.userId,
+    });
+    console.log(relation);
+    return {
+      ...stadium,
+      isWatch: relation.isWatch,
+    };
   }
 
   async add(addStadium: Stadium): Promise<any> {

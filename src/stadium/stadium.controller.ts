@@ -36,7 +36,7 @@ export class StadiumController {
   @UseGuards(AuthGuard('jwt'))
   @Get('info')
   async info(@Query() params: any) {
-    const stadium = await this.stadiumService.findById(params.id);
+    const stadium = await this.stadiumService.findById(params);
     if (!stadium) {
       return {
         msg: '球场信息获取失败!',

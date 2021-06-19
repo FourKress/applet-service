@@ -34,8 +34,26 @@ export class OrderController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('info')
-  async info(@Query() params: any) {
+  @Get('listCount')
+  async orderCount(@Query() params: any): Promise<any> {
+    const counts = await this.orderService.orderCount(params.userId);
+    if (!counts) {
+      return {
+        msg: '获取订单数量失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: counts,
+      code: 10000,
+    };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('info')
+  async info(@Body() params: any) {
     const orders = await this.orderService.findOrderById(params.userId);
     if (!orders) {
       return {
@@ -51,7 +69,26 @@ export class OrderController {
     };
   }
 
-  // @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Post('listByStatus')
+  async listByStatus(@Body() params: Order) {
+    const orders = await this.orderService.findOrderByStatus(params);
+    if (!orders) {
+      return {
+        msg: '订单列表获取失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: orders,
+      code: 10000,
+    };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async add(@Body() addOrder: Order) {

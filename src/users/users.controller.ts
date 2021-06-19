@@ -33,16 +33,15 @@ export class UsersController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('findOneByOpenId')
   async findOneByOpenId(@Query() userInfo: any): Promise<any> {
     console.log(userInfo, '查询');
     const user = await this.usersService.findOneByOpenId(userInfo.openId);
     if (!user) {
       return {
-        msg: '获取用户信息失败!',
+        msg: '',
         data: null,
-        code: 11000,
+        code: 10000,
       };
     }
     return {

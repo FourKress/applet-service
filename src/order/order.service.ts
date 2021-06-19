@@ -18,11 +18,36 @@ export class OrderService {
     return orders;
   }
 
+  async orderCount(userId: string): Promise<any> {
+    const payCount = await this.orderRepository.find({
+      status: 0,
+      userId,
+    });
+    const startCount = await this.orderRepository.find({
+      status: 1,
+      userId,
+    });
+    const allCount = await this.orderRepository.find({ userId });
+    return {
+      payCount: payCount.length,
+      startCount: startCount.length,
+      allCount: allCount.length,
+    };
+  }
+
   async findOrderById(userId: string): Promise<any> {
     if (!userId) {
       return null;
     }
     const orders = await this.orderRepository.find({ userId });
+    return orders;
+  }
+
+  async findOrderByStatus(params: Order): Promise<any> {
+    if (!params.userId) {
+      return null;
+    }
+    const orders = await this.orderRepository.find({ ...params });
     return orders;
   }
 

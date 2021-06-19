@@ -5,8 +5,10 @@ import { StadiumService } from './stadium.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Stadium } from './stadium.entity';
 
+import { UserRelationStadiumModule } from '../user-relation-stadium/user-relation-stadium.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Stadium])],
+  imports: [TypeOrmModule.forFeature([Stadium]), UserRelationStadiumModule],
   controllers: [StadiumController],
   providers: [StadiumService],
   exports: [StadiumService],

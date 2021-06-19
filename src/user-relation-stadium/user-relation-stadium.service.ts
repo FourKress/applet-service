@@ -24,8 +24,16 @@ export class UserRelationStadiumService {
     return relation;
   }
 
+  async watchFlag(data: any): Promise<UserRelationStadium> {
+    const { userId, stadiumId } = data;
+    console.log(userId, stadiumId);
+    const relation = await this.userRelationStadiumRepository.findOne({
+      userId,
+    });
+    return relation;
+  }
+
   async watch(watchStadium: UserRelationStadium): Promise<any> {
-    console.log(watchStadium);
     const { userId, stadiumId } = watchStadium;
     if (!userId || !stadiumId) {
       return null;
@@ -34,18 +42,19 @@ export class UserRelationStadiumService {
       userId,
       stadiumId,
     });
-    console.log(relation, 1);
+    console.log(relation, 1, watchStadium);
     if (relation) {
       await this.userRelationStadiumRepository.update(
         relation.id,
         watchStadium,
       );
+      return watchStadium.isWatch;
     } else {
       await this.userRelationStadiumRepository.save({
         ...watchStadium,
         isWatch: true,
       });
+      return true;
     }
-    return true;
   }
 }

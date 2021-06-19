@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './user.entity';
-
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Repository } from 'typeorm';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,7 +36,13 @@ export class UsersService {
   }
 
   async create(createUser: User): Promise<any> {
-    const user = await this.usersRepository.save(createUser);
+    const data: User = {
+      ...createUser,
+      teamUpCount: 0,
+      monthlyCardCount: 0,
+      isBoss: false,
+    };
+    const user = await this.usersRepository.save(data);
     return user;
   }
 

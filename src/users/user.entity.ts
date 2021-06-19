@@ -44,16 +44,16 @@ export class User {
   avatarUrl: string;
 
   // 组队次数
-  @Column({ default: 0 })
-  teamUpCount: string;
+  @Column()
+  teamUpCount: number;
 
   // 是否场主
-  @Column({ default: false })
+  @Column()
   isBoss: boolean;
 
   // 月卡数量
-  @Column({ default: 0 })
-  monthlyCardCount: boolean;
+  @Column()
+  monthlyCardCount: number;
 
   @CreateDateColumn()
   createdAt: string;

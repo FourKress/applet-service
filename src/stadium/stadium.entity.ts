@@ -2,12 +2,9 @@ import {
   Entity,
   Column,
   ObjectIdColumn,
-  OneToMany,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
 
 @Entity()
 export class Stadium {
@@ -32,7 +29,11 @@ export class Stadium {
 
   // 球场电话
   @Column()
-  phoneNum: string;
+  firstPhoneNum: string;
+
+  // 球场电话
+  @Column()
+  secondPhoneNum: string;
 
   // 球场地址
   @Column()
@@ -49,12 +50,6 @@ export class Stadium {
   // 富文本描述
   @Column('text')
   description: string;
-
-  // @OneToMany((type) => User, (user) => user.id, {
-  //   eager: true,
-  // })
-  // @JoinColumn()
-  // questions: User[];
 
   @CreateDateColumn()
   createdAt: string;
