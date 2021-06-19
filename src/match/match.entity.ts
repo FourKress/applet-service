@@ -11,17 +11,25 @@ export class Space {
   @ObjectIdColumn()
   id: string;
 
-  // 球场Id
+  // 场地Id
   @Column()
-  stadiumId: string;
+  spaceId: string;
 
-  // 场次名称
+  // 时长
   @Column()
-  name: string;
+  duration: number;
 
-  // 5V5
+  // 时间段
   @Column()
-  unit: string;
+  runAt: string;
+
+  // 总人数
+  @Column()
+  totalPeople: number;
+
+  // 已选人数
+  @Column()
+  selectPeople: number;
 
   // 折扣
   @Column()

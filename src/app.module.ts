@@ -14,9 +14,9 @@ import { UserRelationStadiumModule } from './user-relation-stadium/user-relation
 import { OrderModule } from './order/order.module';
 import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 import { SpaceModule } from './space/space.module';
-import { UserRSpaceModule } from './user-r-space/user-r-space.module';
 
 import { TasksModule } from './tasks/tasks.module';
+import { MatchModule } from './match/match.module';
 
 @Module({
   imports: [
@@ -29,8 +29,8 @@ import { TasksModule } from './tasks/tasks.module';
     OrderModule,
     MonthlyCardModule,
     SpaceModule,
-    UserRSpaceModule,
     TasksModule,
+    MatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

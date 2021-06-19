@@ -26,15 +26,7 @@ export class StadiumService {
       return null;
     }
     const stadium = await this.stadiumRepository.findOne(data.id);
-    const relation = await this.userRelationStadiumService.watchFlag({
-      stadiumId: stadium.id,
-      userId: data.userId,
-    });
-    console.log(relation);
-    return {
-      ...stadium,
-      isWatch: relation.isWatch,
-    };
+    return stadium;
   }
 
   async add(addStadium: Stadium): Promise<any> {

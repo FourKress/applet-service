@@ -13,7 +13,7 @@ export class SpaceService {
   ) {}
 
   async findByStadiumId(stadiumId: string): Promise<Space[]> {
-    const spaceList = this.spaceRepository.find({ stadiumId });
+    const spaceList = await this.spaceRepository.find({ stadiumId });
     return spaceList;
   }
 
