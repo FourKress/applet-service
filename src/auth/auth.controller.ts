@@ -13,11 +13,10 @@ import { AuthGuard } from '@nestjs/passport';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // @UseGuards(AuthGuard('local'))
   @Post('login')
   @HttpCode(200)
-  async login(@Body() req) {
-    const loginInfo = await this.authService.login(req);
+  async login(@Request() req, @Body() params) {
+    const loginInfo = await this.authService.login(params);
     if (!loginInfo) {
       return {
         msg: '微信快捷登录失败!',
