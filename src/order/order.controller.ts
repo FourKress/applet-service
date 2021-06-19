@@ -6,6 +6,7 @@ import {
   Query,
   UseGuards,
   HttpCode,
+  Request,
 } from '@nestjs/common';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
@@ -35,8 +36,11 @@ export class OrderController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('listCount')
-  async orderCount(@Query() params: any): Promise<any> {
-    const counts = await this.orderService.orderCount(params.userId);
+  async orderCount(@Request() req): Promise<any> {
+    const {
+      user: { userId },
+    } = req;
+    const counts = await this.orderService.orderCount(userId);
     if (!counts) {
       return {
         msg: '获取订单数量失败!',
@@ -72,8 +76,14 @@ export class OrderController {
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
   @Post('listByStatus')
-  async listByStatus(@Body() params: Order) {
-    const orders = await this.orderService.findOrderByStatus(params);
+  async listByStatus(@Request() req, @Body() params: Order) {
+    const {
+      user: { userId },
+    } = req;
+    const orders = await this.orderService.findOrderByStatus({
+      ...params,
+      userId,
+    });
     if (!orders) {
       return {
         msg: '订单列表获取失败!',

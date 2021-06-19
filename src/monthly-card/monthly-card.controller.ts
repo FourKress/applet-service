@@ -1,4 +1,13 @@
-import { Controller, Get, Query, Post, Body, UseGuards, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  Request,
+} from '@nestjs/common';
 import { MonthlyCardService } from './monthly-card.service';
 import { MonthlyCard } from './monthly-card.entity';
 import { AuthGuard } from '@nestjs/passport';
@@ -28,8 +37,11 @@ export class MonthlyCardController {
   @UseGuards(AuthGuard('jwt'))
   @Post('list')
   @HttpCode(200)
-  async findById(@Body() info: MonthlyCard) {
-    const card = await this.monthlyCardService.findById(info.userId);
+  async findById(@Request() req) {
+    const {
+      user: { userId },
+    } = req;
+    const card = await this.monthlyCardService.findById(userId);
     if (!card) {
       return {
         msg: '获取月卡列表失败!',

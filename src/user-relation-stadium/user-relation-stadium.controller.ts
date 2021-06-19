@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserRelationStadiumService } from './user-relation-stadium.service';
 import { UserRelationStadium } from './user-relation-stadium.entity';
@@ -19,9 +20,12 @@ export class UserRelationStadiumController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('watchList')
-  async watchList(@Query() params: UserRelationStadium) {
+  async watchList(@Request() req) {
+    const {
+      user: { userId },
+    } = req;
     const relation = await this.userRelationStadiumService.watchListByUserId(
-      params.userId,
+      userId,
     );
     if (!relation) {
       return {
@@ -40,8 +44,14 @@ export class UserRelationStadiumController {
   @UseGuards(AuthGuard('jwt'))
   @Post('watchFlag')
   @HttpCode(200)
-  async watchFlag(@Body() data: UserRelationStadium) {
-    const relation = await this.userRelationStadiumService.watchFlag(data);
+  async watchFlag(@Request() req, @Body() data: UserRelationStadium) {
+    const {
+      user: { userId },
+    } = req;
+    const relation = await this.userRelationStadiumService.watchFlag({
+      ...data,
+      userId,
+    });
     if (!relation) {
       return {
         msg: '获取球场关注失败!',
@@ -59,8 +69,14 @@ export class UserRelationStadiumController {
   @UseGuards(AuthGuard('jwt'))
   @Post('watch')
   @HttpCode(200)
-  async watch(@Body() watchRelation: UserRelationStadium) {
-    const relation = await this.userRelationStadiumService.watch(watchRelation);
+  async watch(@Request() req, @Body() watchRelation: UserRelationStadium) {
+    const {
+      user: { userId },
+    } = req;
+    const relation = await this.userRelationStadiumService.watch({
+      ...watchRelation,
+      userId,
+    });
     return {
       msg: '',
       data: relation,
