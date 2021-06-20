@@ -34,16 +34,10 @@ export class StadiumController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('info')
-  async info(@Request() req, @Query() params: any) {
-    const {
-      user: { userId },
-    } = req;
-    const stadium = await this.stadiumService.findById({
-      ...params,
-      userId,
-    });
+  async info(@Query() params: any) {
+    console.log(params);
+    const stadium = await this.stadiumService.findById(params.id);
     if (!stadium) {
       return {
         msg: '球场信息获取失败!',

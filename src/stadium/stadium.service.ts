@@ -21,19 +21,12 @@ export class StadiumService {
     return stadium;
   }
 
-  async findById(data: any): Promise<any> {
-    if (!data.id) {
+  async findById(id: string): Promise<any> {
+    if (!id) {
       return null;
     }
-    const stadium = await this.stadiumRepository.findOne(data.id);
-    const relation = await this.userRelationStadiumService.watchFlag({
-      userId: data.userId,
-      stadiumId: data.id,
-    });
-    return {
-      ...stadium,
-      isWatch: relation.isWatch,
-    };
+    const stadium = await this.stadiumRepository.findOne(id);
+    return stadium;
   }
 
   async add(addStadium: Stadium): Promise<any> {

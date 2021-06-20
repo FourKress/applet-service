@@ -33,10 +33,8 @@ export class SpaceController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
   async findByStadium(@Query() params: Space) {
-    console.log(params, 999);
     const spaces = await this.spaceService.findByStadiumId(params.stadiumId);
     if (!spaces) {
       return {
