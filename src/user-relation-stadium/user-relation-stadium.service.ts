@@ -29,6 +29,7 @@ export class UserRelationStadiumService {
     console.log(userId, stadiumId);
     const relation = await this.userRelationStadiumRepository.findOne({
       userId,
+      stadiumId,
     });
     return relation;
   }

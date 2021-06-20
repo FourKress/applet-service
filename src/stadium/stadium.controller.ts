@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { StadiumService } from './stadium.service';
 import { Stadium } from './stadium.entity';
@@ -35,8 +36,14 @@ export class StadiumController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('info')
-  async info(@Query() params: any) {
-    const stadium = await this.stadiumService.findById(params);
+  async info(@Request() req, @Query() params: any) {
+    const {
+      user: { userId },
+    } = req;
+    const stadium = await this.stadiumService.findById({
+      ...params,
+      userId,
+    });
     if (!stadium) {
       return {
         msg: '球场信息获取失败!',

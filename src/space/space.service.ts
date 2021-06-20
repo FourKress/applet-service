@@ -3,6 +3,8 @@ import { Space } from './space.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { MatchService } from '../match/match.service';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 
@@ -10,11 +12,29 @@ const Moment = require('moment');
 export class SpaceService {
   constructor(
     @InjectRepository(Space) public readonly spaceRepository: Repository<Space>,
+    private readonly matchService: MatchService,
   ) {}
 
-  async findByStadiumId(stadiumId: string): Promise<Space[]> {
+  async findByStadiumId(stadiumId: string): Promise<any[]> {
     const spaceList = await this.spaceRepository.find({ stadiumId });
-    return spaceList;
+    const coverSpaceList = Promise.all(
+      spaceList.map(async (space: Space) => {
+        const match = await this.matchService.findBySpaceId(
+          space.id.toString(),
+        );
+        const full = match.some((m) => m.selectPeople === m.totalPeople);
+        let rebate = null;
+        if (!full) {
+          rebate = match.some((m) => m.rebate);
+        }
+        return {
+          ...space,
+          full,
+          rebate,
+        };
+      }),
+    );
+    return coverSpaceList;
   }
 
   async findById(id: string): Promise<Space> {

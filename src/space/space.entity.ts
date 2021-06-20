@@ -23,10 +23,6 @@ export class Space {
   @Column()
   unit: string;
 
-  // 折扣
-  @Column()
-  rebate: number;
-
   @CreateDateColumn()
   createdAt: string;
 

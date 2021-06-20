@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Space {
+export class Match {
   @ObjectIdColumn()
   id: string;
 
