@@ -14,19 +14,17 @@ export class UserRelationStadiumService {
   ) {}
 
   async watchListByUserId(userId: any): Promise<any> {
-    console.log(userId);
     if (!userId) {
       return null;
     }
-    const relation = await this.userRelationStadiumRepository.find({
+    const watchList = await this.userRelationStadiumRepository.find({
       userId,
     });
-    return relation;
+    return watchList;
   }
 
   async watchFlag(data: any): Promise<UserRelationStadium> {
     const { userId, stadiumId } = data;
-    console.log(userId, stadiumId);
     const relation = await this.userRelationStadiumRepository.findOne({
       userId,
       stadiumId,
@@ -43,7 +41,6 @@ export class UserRelationStadiumService {
       userId,
       stadiumId,
     });
-    console.log(relation, 1, watchStadium);
     if (relation) {
       await this.userRelationStadiumRepository.update(
         relation.id,

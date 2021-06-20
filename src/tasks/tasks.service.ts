@@ -18,15 +18,6 @@ export class TasksService {
     console.log(list);
     list.forEach((item) => {
       const { createdAt } = item;
-      console.log(
-        Moment.now(),
-        Date.now(),
-        Moment(createdAt),
-        new Date(createdAt).getTime(),
-      );
-      console.log(Moment(Moment.now()).diff(Moment(createdAt), 'seconds'));
-      console.log(Moment(Moment.now()).diff(Moment(createdAt), 'minutes'));
-
       if (Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >= 30) {
         this.orderService.modifyOrder({
           ...item,
