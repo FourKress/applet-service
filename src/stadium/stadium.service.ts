@@ -32,7 +32,7 @@ export class StadiumService {
     });
     return {
       ...stadium,
-      isWatch: relation.isWatch,
+      isWatch: relation?.isWatch,
     };
   }
 

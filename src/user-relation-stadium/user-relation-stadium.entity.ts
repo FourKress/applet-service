@@ -19,6 +19,10 @@ export class UserRelationStadium {
   @Column()
   stadiumId: string;
 
+  // 球场名称
+  @Column()
+  stadiumName: string;
+
   // 是否关注
   @Column()
   isWatch: boolean;
