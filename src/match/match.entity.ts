@@ -31,9 +31,16 @@ export class Match {
   @Column()
   selectPeople: number;
 
+  @Column()
+  minPeople: number;
+
   // 折扣
   @Column()
   rebate: number;
+
+  // 单价
+  @Column()
+  price: number;
 
   @CreateDateColumn()
   createdAt: string;
