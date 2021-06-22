@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class UserRSpace {
+export class UserRMatch {
   @ObjectIdColumn()
   id: string;
 
@@ -15,13 +15,21 @@ export class UserRSpace {
   @Column()
   userId: string;
 
+  // 人数
+  @Column()
+  count: number;
+
+  // 比赛Id
+  @Column()
+  matchId: string;
+
   // 场次Id
   @Column()
   spaceId: string;
 
-  // 是否选中
+  // 球场Id
   @Column()
-  isSelect: boolean;
+  stadiumId: string;
 
   @CreateDateColumn()
   createdAt: string;

@@ -17,6 +17,7 @@ import { SpaceModule } from './space/space.module';
 
 import { TasksModule } from './tasks/tasks.module';
 import { MatchModule } from './match/match.module';
+import { UserRMatchModule } from './user-r-match/user-r-match.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MatchModule } from './match/match.module';
     SpaceModule,
     TasksModule,
     MatchModule,
+    UserRMatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { MatchService } from './match.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('match')
 export class MatchController {
@@ -22,6 +23,7 @@ export class MatchController {
     };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   async addMatch(@Body() params) {
     const match = await this.matchService.addMatch(params);
