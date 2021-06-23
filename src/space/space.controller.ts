@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class SpaceController {
   constructor(private readonly spaceService: SpaceService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async addSpace(@Body() params: Space) {

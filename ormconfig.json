@@ -1,6 +1,6 @@
 {
   "type": "mongodb",
-  "host": "localhost",
+  "host": "47.106.92.138",
   "port": 27017,
   "username": "",
   "password": "",
