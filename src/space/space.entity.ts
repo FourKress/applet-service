@@ -23,6 +23,10 @@ export class Space {
   @Column()
   unit: string;
 
+  // 日期
+  @Column()
+  validateDate: string;
+
   @CreateDateColumn()
   createdAt: string;
 

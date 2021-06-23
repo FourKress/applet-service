@@ -15,9 +15,9 @@ export class SpaceService {
     private readonly matchService: MatchService,
   ) {}
 
-  async findByStadiumId(stadiumId: string): Promise<any[]> {
-    const spaceList = await this.spaceRepository.find({ stadiumId });
-    const coverSpaceList = Promise.all(
+  async findByStadiumId(space: Space): Promise<any[]> {
+    const spaceList = await this.spaceRepository.find({ ...space });
+    const coverSpaceList = await Promise.all(
       spaceList.map(async (space: Space) => {
         const match = await this.matchService.findBySpaceId(
           space.id.toString(),

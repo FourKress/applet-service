@@ -33,9 +33,9 @@ export class SpaceController {
     };
   }
 
-  @Get('list')
-  async findByStadium(@Query() params: Space) {
-    const spaces = await this.spaceService.findByStadiumId(params.stadiumId);
+  @Post('list')
+  async findByStadium(@Body() params: Space) {
+    const spaces = await this.spaceService.findByStadiumId(params);
     if (!spaces) {
       return {
         msg: '获取球场场次失败!',
