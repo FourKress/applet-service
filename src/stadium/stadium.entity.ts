@@ -51,6 +51,10 @@ export class Stadium {
   @Column('text')
   description: string;
 
+  // 月卡价格
+  @Column()
+  monthlyCardPrice: string;
+
   @CreateDateColumn()
   createdAt: string;
 

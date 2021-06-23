@@ -56,9 +56,9 @@ export class OrderController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('info')
-  async info(@Body() params: any) {
-    const orders = await this.orderService.findOrderById(params.userId);
+  @Get('info')
+  async info(@Query() params) {
+    const orders = await this.orderService.findOrderById(params.id);
     if (!orders) {
       return {
         msg: '订单信息获取失败!',
@@ -103,12 +103,11 @@ export class OrderController {
   @HttpCode(200)
   async add(@Request() req, @Body() addOrder: Order) {
     const { userId } = req.user;
-    console.log(addOrder, userId);
-    const order = await this.orderService.addOrder({
+    const orderId = await this.orderService.addOrder({
       ...addOrder,
       userId,
     });
-    if (!order) {
+    if (!orderId) {
       return {
         msg: '订单添加失败!',
         data: null,
@@ -117,7 +116,7 @@ export class OrderController {
     }
     return {
       msg: '',
-      data: order,
+      data: orderId,
       code: 10000,
     };
   }
