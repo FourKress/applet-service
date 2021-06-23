@@ -65,6 +65,7 @@ export class OrderService {
       price: match.price,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
+      countdown: 1000 * 60 * 30 - (Moment() - Moment(order.createdAt)),
     };
     return {
       ...orderInfo,
