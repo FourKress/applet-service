@@ -19,6 +19,14 @@ export class Order {
   @Column()
   stadiumId: string;
 
+  // 场地ID
+  @Column()
+  spaceId: string;
+
+  // 场次ID
+  @Column()
+  matchId: string;
+
   // 支付金额
   @Column()
   payAmount: string;
@@ -27,20 +35,12 @@ export class Order {
   @Column()
   isMonthlyCard: boolean;
 
-  // 球场名称
-  @Column()
-  stadiumName: string;
-
   // 人数
   @Column()
   personCount: number;
 
   @Column()
   status: number;
-
-  // 场地信息
-  @Column()
-  remarks: string;
 
   @CreateDateColumn()
   createdAt: string;

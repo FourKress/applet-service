@@ -101,9 +101,13 @@ export class OrderController {
   @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
-  async add(@Body() addOrder: Order) {
-    console.log(addOrder);
-    const order = await this.orderService.addOrder(addOrder);
+  async add(@Request() req, @Body() addOrder: Order) {
+    const { userId } = req.user;
+    console.log(addOrder, userId);
+    const order = await this.orderService.addOrder({
+      ...addOrder,
+      userId,
+    });
     if (!order) {
       return {
         msg: '订单添加失败!',
