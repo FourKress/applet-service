@@ -34,6 +34,7 @@ export class SpaceController {
   }
 
   @Post('list')
+  @HttpCode(200)
   async findByStadium(@Body() params: Space) {
     const spaces = await this.spaceService.findByStadiumId(params);
     if (!spaces) {
