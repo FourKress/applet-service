@@ -10,6 +10,7 @@ import { UserRMatchService } from '../user-r-match/user-r-match.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
+import StatusMap from './statusMap';
 
 @Injectable()
 export class OrderService {
@@ -62,13 +63,14 @@ export class OrderService {
       spaceName: space.name,
       unit: space.unit,
       validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
-      runAt: match.runAt,
+      runAt: `${match.startAt} - ${match.endAt}`,
       duration: match.duration,
       price,
       totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
       countdown: 1000 * 60 * 30 - (Moment() - Moment(order.createdAt)),
+      statusName: StatusMap[order.status],
     };
     return {
       ...orderInfo,
@@ -79,11 +81,26 @@ export class OrderService {
     if (!params.userId) {
       return null;
     }
-    const orders = await this.orderRepository.find({ ...params });
-    return orders;
+    const orders = (await this.orderRepository.find({ ...params })).sort(
+      (a: any, b: any) => b.createdAt - a.createdAt,
+    );
+    const coverOrders = await Promise.all(
+      orders.map(async (order: Order) => {
+        const orderInfo = await this.findOrderById(order.id);
+        return orderInfo;
+      }),
+    );
+    return coverOrders;
   }
 
   async addOrder(addOrder: Order): Promise<any> {
+    const { matchId } = addOrder;
+    const match = await this.matchService.findById(matchId);
+    console.log(match.selectPeople, addOrder.personCount, match.totalPeople);
+    if (match.selectPeople + addOrder.personCount > match.totalPeople) {
+      return null;
+    }
+
     const isMonthlyCard = await this.monthlyCardService.findByStadiumId(
       addOrder.userId,
     );
@@ -92,14 +109,20 @@ export class OrderService {
       userId: addOrder.userId,
       spaceId: addOrder.spaceId,
       stadiumId: addOrder.stadiumId,
-      matchId: addOrder.matchId,
+      matchId,
       count: addOrder.personCount,
     };
     await this.userRMatchService.addRelation(relation);
 
+    await this.matchService.modifyMatch({
+      ...match,
+      selectPeople: match.selectPeople + addOrder.personCount,
+    });
+
     const order = await this.orderRepository.save({
       ...addOrder,
       isMonthlyCard: !!isMonthlyCard,
+      status: 0,
     });
 
     return order.id;

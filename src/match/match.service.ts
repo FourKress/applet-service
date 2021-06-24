@@ -17,6 +17,7 @@ export class MatchService {
     const list = await this.matchRepository.find({
       spaceId,
     });
+    console.log(list, 222);
     return list;
   }
 
@@ -30,6 +31,11 @@ export class MatchService {
       ...addMatch,
       rebate: 1,
     });
+    return match;
+  }
+
+  async modifyMatch(modifyMatch: any): Promise<Match> {
+    const match = await this.matchRepository.save(modifyMatch);
     return match;
   }
 

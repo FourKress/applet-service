@@ -19,9 +19,13 @@ export class Match {
   @Column()
   duration: number;
 
-  // 时间段
+  // 开始时间
   @Column()
-  runAt: string;
+  startAt: string;
+
+  // 结束时间
+  @Column()
+  endAt: string;
 
   // 总人数
   @Column()
