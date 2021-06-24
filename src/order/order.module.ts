@@ -8,6 +8,7 @@ import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
 import { StadiumModule } from '../stadium/stadium.module';
 import { SpaceModule } from '../space/space.module';
 import { MatchModule } from '../match/match.module';
+import { UserRMatchModule } from '../user-r-match/user-r-match.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MatchModule } from '../match/match.module';
     StadiumModule,
     SpaceModule,
     MatchModule,
+    UserRMatchModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

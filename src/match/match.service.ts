@@ -26,7 +26,10 @@ export class MatchService {
   }
 
   async addMatch(addMatch: Match): Promise<Match> {
-    const match = await this.matchRepository.save(addMatch);
+    const match = await this.matchRepository.save({
+      ...addMatch,
+      rebate: 1,
+    });
     return match;
   }
 

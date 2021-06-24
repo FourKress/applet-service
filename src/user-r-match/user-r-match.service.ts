@@ -44,12 +44,31 @@ export class UserRMatchService {
     return relation;
   }
 
-  async addRelation(addRelation: UserRMatch): Promise<any> {
-    console.log(addRelation);
+  async addRelation(addRelation: any): Promise<any> {
     const { userId, matchId } = addRelation;
     if (!userId || !matchId) {
       return null;
     }
+    const relation = await this.userRMatchRepository.findOne({
+      userId,
+      matchId,
+    });
+    if (relation) {
+      const count = relation.count + addRelation.count;
+      return this.userRMatchRepository.save({
+        ...addRelation,
+        count,
+        id: relation.id,
+      });
+    }
     return this.userRMatchRepository.save(addRelation);
+  }
+
+  async modifyRelation(modifyRelation: UserRMatch): Promise<any> {
+    console.log(modifyRelation);
+    const relation = await this.userRMatchRepository.findOne(modifyRelation);
+
+    const data = {};
+    return this.userRMatchRepository.save(data);
   }
 }

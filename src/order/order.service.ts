@@ -6,6 +6,7 @@ import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { StadiumService } from '../stadium/stadium.service';
 import { SpaceService } from '../space/space.service';
 import { MatchService } from '../match/match.service';
+import { UserRMatchService } from '../user-r-match/user-r-match.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -19,6 +20,7 @@ export class OrderService {
     private readonly stadiumService: StadiumService,
     private readonly spaceService: SpaceService,
     private readonly matchService: MatchService,
+    private readonly userRMatchService: UserRMatchService,
   ) {}
 
   async findAll(): Promise<any> {
@@ -48,12 +50,12 @@ export class OrderService {
       return null;
     }
     const order: Order = await this.orderRepository.findOne(id);
-    const { spaceId, matchId, stadiumId, payAmount, personCount, userId } =
-      order;
+    const { spaceId, matchId, stadiumId, personCount, userId } = order;
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
     const match = await this.matchService.findById(matchId);
     const isMonthlyCard = await this.monthlyCardService.findByStadiumId(userId);
+    const price = match.price * (match.rebate / 10);
     const orderInfo = {
       ...order,
       stadiumName: stadium.name,
@@ -62,7 +64,8 @@ export class OrderService {
       validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
       runAt: match.runAt,
       duration: match.duration,
-      price: match.price,
+      price,
+      totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
       countdown: 1000 * 60 * 30 - (Moment() - Moment(order.createdAt)),
@@ -84,6 +87,16 @@ export class OrderService {
     const isMonthlyCard = await this.monthlyCardService.findByStadiumId(
       addOrder.userId,
     );
+
+    const relation = {
+      userId: addOrder.userId,
+      spaceId: addOrder.spaceId,
+      stadiumId: addOrder.stadiumId,
+      matchId: addOrder.matchId,
+      count: addOrder.personCount,
+    };
+    await this.userRMatchService.addRelation(relation);
+
     const order = await this.orderRepository.save({
       ...addOrder,
       isMonthlyCard: !!isMonthlyCard,
