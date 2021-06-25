@@ -55,7 +55,10 @@ export class OrderService {
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
     const match = await this.matchService.findById(matchId);
-    const isMonthlyCard = await this.monthlyCardService.findByStadiumId(userId);
+    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
+      userId,
+      stadiumId,
+    });
     const price = match.price * (match.rebate / 10);
     const orderInfo = {
       ...order,
@@ -96,14 +99,27 @@ export class OrderService {
   async addOrder(addOrder: Order): Promise<any> {
     const { matchId } = addOrder;
     const match = await this.matchService.findById(matchId);
-    console.log(match.selectPeople, addOrder.personCount, match.totalPeople);
+
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
-      return null;
+      return {
+        code: 11000,
+        msg: '当前场次已没有位置可报名，请选择其它场次进行报名',
+        data: null,
+      };
+    }
+    const nowDate = Moment().format('YYYY-MM-DD');
+    if (Moment() - Moment(`${nowDate} ${match.endAt}`) > 0) {
+      return {
+        code: 11000,
+        msg: '当前场次已结束不能报名，请选择其它场次进行报名。',
+        data: null,
+      };
     }
 
-    const isMonthlyCard = await this.monthlyCardService.findByStadiumId(
-      addOrder.userId,
-    );
+    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
+      userId: addOrder.userId,
+      stadiumId: addOrder.stadiumId,
+    });
 
     const relation = {
       userId: addOrder.userId,
@@ -125,7 +141,11 @@ export class OrderService {
       status: 0,
     });
 
-    return order.id;
+    return {
+      code: 10000,
+      data: order.id,
+      msg: '',
+    };
   }
 
   async modifyOrder(modifyOrder: Order): Promise<any> {

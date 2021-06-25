@@ -18,8 +18,13 @@ export class MonthlyCardController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('add')
-  async addCard(@Body() info: MonthlyCard) {
-    const card = await this.monthlyCardService.addMonthlyCard(info);
+  @HttpCode(200)
+  async addCard(@Request() req, @Body() info: MonthlyCard) {
+    const { userId } = req.user;
+    const card = await this.monthlyCardService.addMonthlyCard({
+      ...info,
+      userId,
+    });
     if (!card) {
       return {
         msg: '添加月卡失败!',
@@ -41,7 +46,7 @@ export class MonthlyCardController {
     const {
       user: { userId },
     } = req;
-    const card = await this.monthlyCardService.findById(userId);
+    const card = await this.monthlyCardService.findByUserId(userId);
     if (!card) {
       return {
         msg: '获取月卡列表失败!',

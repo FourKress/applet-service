@@ -37,22 +37,19 @@ export class UserRelationStadiumService {
     if (!userId || !stadiumId) {
       return null;
     }
+    const { isWatch } = watchStadium;
     const relation = await this.userRelationStadiumRepository.findOne({
       userId,
       stadiumId,
     });
-    if (relation) {
-      await this.userRelationStadiumRepository.update(
-        relation.id,
-        watchStadium,
-      );
-      return watchStadium.isWatch;
-    } else {
-      await this.userRelationStadiumRepository.save({
-        ...watchStadium,
-        isWatch: true,
-      });
-      return true;
+    if (relation && !isWatch) {
+      await this.userRelationStadiumRepository.delete(relation.id);
+      return isWatch;
     }
+    await this.userRelationStadiumRepository.save({
+      ...watchStadium,
+      isWatch: true,
+    });
+    return true;
   }
 }

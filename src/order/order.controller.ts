@@ -103,21 +103,10 @@ export class OrderController {
   @HttpCode(200)
   async add(@Request() req, @Body() addOrder: Order) {
     const { userId } = req.user;
-    const orderId = await this.orderService.addOrder({
+    const result = await this.orderService.addOrder({
       ...addOrder,
       userId,
     });
-    if (!orderId) {
-      return {
-        msg: '订单添加失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: orderId,
-      code: 10000,
-    };
+    return result;
   }
 }

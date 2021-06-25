@@ -19,13 +19,13 @@ export class MonthlyCard {
   @Column()
   stadiumId: string;
 
-  // 有效期
+  // 有效期开始
   @Column()
-  validPeriod: string;
+  validPeriodStart: string;
 
-  // 球场名称
+  // 有效期结束
   @Column()
-  stadiumName: boolean;
+  validPeriodEnd: string;
 
   @CreateDateColumn()
   createdAt: string;

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MonthlyCard } from './monthly-card.entity';
+import { StadiumService } from '../stadium/stadium.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -11,6 +12,7 @@ export class MonthlyCardService {
   constructor(
     @InjectRepository(MonthlyCard)
     private readonly monthlyCardRepository: Repository<MonthlyCard>,
+    private readonly stadiumService: StadiumService,
   ) {}
 
   async addMonthlyCard(info: MonthlyCard): Promise<any> {
@@ -25,14 +27,27 @@ export class MonthlyCardService {
     return monthlyCard;
   }
 
-  async findById(userId: string): Promise<MonthlyCard[]> {
-    const monthlyCard = await this.monthlyCardRepository.find({
+  async findByUserId(userId: string): Promise<any[]> {
+    const relationList = await this.monthlyCardRepository.find({
       userId,
     });
-    return monthlyCard;
+    const monthlyCardList = await Promise.all(
+      relationList.map(async (relation) => {
+        const stadiumInfo = await this.stadiumService.findById(
+          relation.stadiumId,
+        );
+        return {
+          ...relation,
+          stadiumName: stadiumInfo.name,
+          monthlyCardPrice: stadiumInfo.monthlyCardPrice,
+        };
+      }),
+    );
+
+    return monthlyCardList;
   }
 
-  async findByStadiumId(relationInfo: string): Promise<MonthlyCard> {
+  async checkMonthlyCard(relationInfo: any): Promise<MonthlyCard> {
     const monthlyCard = await this.monthlyCardRepository.findOne(relationInfo);
     return monthlyCard;
   }

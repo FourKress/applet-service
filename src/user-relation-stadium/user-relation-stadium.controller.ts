@@ -52,16 +52,9 @@ export class UserRelationStadiumController {
       ...data,
       userId,
     });
-    if (!relation) {
-      return {
-        msg: '获取球场关注失败!',
-        data: null,
-        code: 11000,
-      };
-    }
     return {
       msg: '',
-      data: relation,
+      data: relation || false,
       code: 10000,
     };
   }

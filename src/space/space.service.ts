@@ -23,10 +23,7 @@ export class SpaceService {
           space.id.toString(),
         );
         const full = match.some((m) => m.selectPeople === m.totalPeople);
-        let rebate = null;
-        if (!full) {
-          rebate = match.some((m) => m.rebate);
-        }
+        const rebate = match.some((m) => m.rebate);
         return {
           ...space,
           full,
