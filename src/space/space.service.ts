@@ -16,7 +16,10 @@ export class SpaceService {
   ) {}
 
   async findByStadiumId(space: Space): Promise<any[]> {
-    const spaceList = await this.spaceRepository.find({ ...space });
+    const spaceList = (await this.spaceRepository.find({ ...space })).filter(
+      (space) =>
+        Moment().startOf('day').valueOf() - Moment(space.validateDate) <= 0,
+    );
     const coverSpaceList = await Promise.all(
       spaceList.map(async (space: Space) => {
         const match = await this.matchService.findBySpaceId(

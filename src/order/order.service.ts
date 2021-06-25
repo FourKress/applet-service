@@ -66,7 +66,7 @@ export class OrderService {
       spaceName: space.name,
       unit: space.unit,
       validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
-      runAt: `${match.startAt} - ${match.endAt}`,
+      runAt: `${match.startAt}-${match.endAt}`,
       duration: match.duration,
       price,
       totalPrice: price * personCount,
@@ -97,8 +97,9 @@ export class OrderService {
   }
 
   async addOrder(addOrder: Order): Promise<any> {
-    const { matchId } = addOrder;
+    const { matchId, spaceId } = addOrder;
     const match = await this.matchService.findById(matchId);
+    const space = await this.spaceService.findById(spaceId);
 
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
       return {
@@ -107,7 +108,7 @@ export class OrderService {
         data: null,
       };
     }
-    const nowDate = Moment().format('YYYY-MM-DD');
+    const nowDate = space.validateDate;
     if (Moment() - Moment(`${nowDate} ${match.endAt}`) > 0) {
       return {
         code: 11000,

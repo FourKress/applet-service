@@ -13,7 +13,7 @@ export class UserRelationStadiumService {
     private readonly userRelationStadiumRepository: Repository<UserRelationStadium>,
   ) {}
 
-  async watchListByUserId(userId: any): Promise<any> {
+  async watchListByUserId(userId: any): Promise<UserRelationStadium[]> {
     if (!userId) {
       return null;
     }
