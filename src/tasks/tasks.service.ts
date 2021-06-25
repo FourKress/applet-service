@@ -15,13 +15,15 @@ export class TasksService {
   async handleCron() {
     this.logger.debug('该方法将在0秒标记处每分钟运行一次');
     const list = await this.orderService.findAll();
-    console.log(list);
     list.forEach((item) => {
-      const { createdAt } = item;
-      if (Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >= 30) {
+      const { createdAt, status } = item;
+      if (
+        status === 0 &&
+        Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >= 30
+      ) {
         this.orderService.modifyOrder({
           ...item,
-          status: 1,
+          status: 6,
         });
       }
     });

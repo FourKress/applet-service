@@ -5,6 +5,7 @@ const StatusMap = {
   3: '已退款',
   4: '退款中',
   5: '支付中',
+  6: '已取消',
 };
 
 export default StatusMap;
