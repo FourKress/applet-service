@@ -17,18 +17,11 @@ export class MatchService {
   ) {}
 
   async findBySpaceId(spaceId: string): Promise<any[]> {
-    const space = await this.spaceService.findById(spaceId);
-    const nowDate = space.validateDate;
     const matchList = (
       await this.matchRepository.find({
         spaceId,
       })
-    )
-      .sort(
-        (a: any, b: any) =>
-          Moment(`${nowDate} ${a.endAt}`) - Moment(`${nowDate} ${b.endAt}`),
-      )
-      .filter((match) => Moment() - Moment(`${nowDate} ${match.endAt}`) <= 0);
+    ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
     return matchList;
   }
 
@@ -38,9 +31,13 @@ export class MatchService {
   }
 
   async addMatch(addMatch: Match): Promise<Match> {
+    const space = await this.spaceService.findById(addMatch.spaceId);
+    const nowDate = space.validateDate;
     const match = await this.matchRepository.save({
       ...addMatch,
       rebate: 1,
+      startAt: `${nowDate} ${addMatch.startAt}`,
+      endAt: `${nowDate} ${addMatch.endAt}`,
     });
     return match;
   }

@@ -10,7 +10,7 @@ import { UserRMatchService } from '../user-r-match/user-r-match.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
-import StatusMap from './statusMap';
+import * as utils from './utils';
 
 @Injectable()
 export class OrderService {
@@ -66,14 +66,16 @@ export class OrderService {
       spaceName: space.name,
       unit: space.unit,
       validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
-      runAt: `${match.startAt}-${match.endAt}`,
+      runAt: `${utils.getHour(match.startAt)}-${utils.getHour(match.endAt)}`,
       duration: match.duration,
       price,
       totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
-      countdown: 1000 * 60 * 30 - (Moment() - Moment(order.createdAt)),
-      statusName: StatusMap[order.status],
+      countdown:
+        utils.countdown(order.createdAt, match.endAt) -
+        (Moment() - Moment(order.createdAt)),
+      statusName: utils.StatusMap[order.status],
     };
     return {
       ...orderInfo,
@@ -97,9 +99,8 @@ export class OrderService {
   }
 
   async addOrder(addOrder: Order): Promise<any> {
-    const { matchId, spaceId } = addOrder;
+    const { matchId } = addOrder;
     const match = await this.matchService.findById(matchId);
-    const space = await this.spaceService.findById(spaceId);
 
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
       return {
@@ -108,11 +109,10 @@ export class OrderService {
         data: null,
       };
     }
-    const nowDate = space.validateDate;
-    if (Moment() - Moment(`${nowDate} ${match.endAt}`) > 0) {
+    if (Moment() - Moment(match.endAt) > 0) {
       return {
         code: 11000,
-        msg: '当前场次已结束不能报名，请选择其它场次进行报名。',
+        msg: '当前场次已结束，请选择其它场次进行报名。',
         data: null,
       };
     }

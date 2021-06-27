@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, Interval, Timeout } from '@nestjs/schedule';
 
 import { OrderService } from '../order/order.service';
+import { MatchService } from '../match/match.service';
+import * as utils from '../order/utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -9,33 +11,61 @@ const Moment = require('moment');
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly matchService: MatchService,
+  ) {}
 
-  @Cron('0 * * * * *')
+  // @Cron('0 * * * * *')
+  @Interval(1000 * 10)
   async handleCron() {
-    this.logger.debug('该方法将在0秒标记处每分钟运行一次');
-    const list = await this.orderService.findAll();
-    list.forEach((item) => {
-      const { createdAt, status } = item;
+    this.logger.log('该方法每10秒运行一次');
+    const orderList = await this.orderService.findAll();
+    for (const order of orderList) {
+      const { createdAt, status, matchId } = order;
+      const match = await this.matchService.findById(matchId);
+
       if (
         status === 0 &&
-        Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >= 30
+        Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >=
+          utils.countdown(order.createdAt, match.endAt)
       ) {
-        this.orderService.modifyOrder({
-          ...item,
+        this.logger.log('取消订单');
+        await this.changeOrder({
+          ...order,
           status: 6,
         });
       }
-    });
+
+      if (status === 1) {
+        if (Moment(Moment.now()).diff(Moment(match.endAt), 'minutes') >= 0) {
+          this.logger.log('组队成功 已结束 订单已完成');
+          await this.changeOrder({
+            ...order,
+            status: 2,
+          });
+        } else if (
+          Moment(Moment.now()).diff(Moment(match.startAt), 'minutes') >= 0
+        ) {
+          if (match.selectPeople !== match.totalPeople) {
+            this.logger.log('组队失败 触发退款 取消订单');
+            await this.changeOrder({
+              ...order,
+              status: 4,
+            });
+          } else {
+            this.logger.log('组队成功 进行中');
+            await this.changeOrder({
+              ...order,
+              status: 7,
+            });
+          }
+        }
+      }
+    }
   }
 
-  @Interval(10000)
-  handleInterval122() {
-    this.logger.debug('2');
-  }
-
-  @Timeout(5000)
-  handleTimeout() {
-    this.logger.debug('3');
+  async changeOrder(order) {
+    await this.orderService.modifyOrder(order);
   }
 }

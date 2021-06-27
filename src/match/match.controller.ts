@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseGuards,
+  HttpCode,
+} from '@nestjs/common';
 import { MatchService } from './match.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -30,6 +38,24 @@ export class MatchController {
     if (!match) {
       return {
         msg: '场次添加失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: match,
+      code: 10000,
+    };
+  }
+
+  @Post('orderMatchInfo')
+  @HttpCode(200)
+  async findOrderMatch(@Body() params) {
+    const match = await this.matchService.findById(params.matchId);
+    if (!match) {
+      return {
+        msg: '场次信息获取失败!',
         data: null,
         code: 11000,
       };
