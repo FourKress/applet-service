@@ -109,10 +109,21 @@ export class OrderService {
         data: null,
       };
     }
-    if (Moment() - Moment(match.endAt) > 0) {
+    if (Moment().diff(match.endAt) > 0) {
       return {
         code: 11000,
         msg: '当前场次已结束，请选择其它场次进行报名。',
+        data: null,
+      };
+    }
+
+    if (
+      Moment().diff(match.startAt) > 0 &&
+      match.selectPeople < match.minPeople
+    ) {
+      return {
+        code: 11000,
+        msg: '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
         data: null,
       };
     }

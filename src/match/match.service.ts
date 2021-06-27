@@ -26,6 +26,9 @@ export class MatchService {
       return {
         ...match,
         isDone: Moment().diff(match.endAt) > 0,
+        isCancel:
+          Moment().diff(match.startAt) > 0 &&
+          match.selectPeople < match.minPeople,
       };
     });
     return coverMatchList;
