@@ -5,24 +5,25 @@ const Moment = require('moment');
 
 export const StatusMap = {
   0: '待付款',
-  1: '待开始',
-  2: '已完成',
-  3: '已退款',
-  4: '退款中',
   5: '支付中',
-  6: '已取消',
+  1: '待开始', // 已支付
   7: '进行中',
+  4: '退款中',
+  3: '已退款',
+  2: '已完成',
+  6: '已取消',
 };
 export const getHour = (date) => {
   return date.split(' ')[1];
 };
 
-export const countdown = (createdAt, endAt): number => {
+export const countdown = (createdAt, startAt): number => {
+  let awaitTime: number = CONSTANT.orderMinAwaitTime;
   if (
-    Moment(endAt).diff(Moment(createdAt), 'minutes') >=
+    Moment(startAt).diff(Moment(createdAt), 'minutes') >=
     CONSTANT.orderMaxAwaitTime
   ) {
-    return CONSTANT.orderMaxAwaitTime;
+    awaitTime = CONSTANT.orderMaxAwaitTime;
   }
-  return CONSTANT.orderMinAwaitTime;
+  return awaitTime * 60 * 1000;
 };

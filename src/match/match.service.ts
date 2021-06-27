@@ -17,12 +17,18 @@ export class MatchService {
   ) {}
 
   async findBySpaceId(spaceId: string): Promise<any[]> {
-    const matchList = (
+    const matchList: Match[] = (
       await this.matchRepository.find({
         spaceId,
       })
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
-    return matchList;
+    const coverMatchList = matchList.map((match) => {
+      return {
+        ...match,
+        isDone: Moment().diff(match.endAt) > 0,
+      };
+    });
+    return coverMatchList;
   }
 
   async findById(id: string): Promise<Match> {

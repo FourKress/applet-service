@@ -38,16 +38,18 @@ export class TasksService {
       }
 
       if (status === 1) {
-        if (Moment(Moment.now()).diff(Moment(match.endAt), 'minutes') >= 0) {
+        const nowTime = Moment.now();
+        const isStart =
+          Moment(nowTime).diff(Moment(match.startAt), 'minutes') >= 0;
+        const isEnd = Moment(nowTime).diff(Moment(match.endAt), 'minutes') >= 0;
+        if (isEnd) {
           this.logger.log('组队成功 已结束 订单已完成');
           await this.changeOrder({
             ...order,
             status: 2,
           });
-        } else if (
-          Moment(Moment.now()).diff(Moment(match.startAt), 'minutes') >= 0
-        ) {
-          if (match.selectPeople !== match.totalPeople) {
+        } else if (isStart && !isEnd) {
+          if (match.selectPeople <= match.minPeople) {
             this.logger.log('组队失败 触发退款 取消订单');
             await this.changeOrder({
               ...order,

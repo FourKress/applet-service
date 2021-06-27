@@ -109,4 +109,23 @@ export class OrderController {
     });
     return result;
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('pay')
+  @HttpCode(200)
+  async pay(@Body() payInfo: Order) {
+    const result = await this.orderService.orderPay(payInfo);
+    if (!result) {
+      return {
+        msg: '订单支付失败!',
+        data: null,
+        code: 11000,
+      };
+    }
+    return {
+      msg: '',
+      data: result,
+      code: 10000,
+    };
+  }
 }

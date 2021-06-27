@@ -73,7 +73,7 @@ export class OrderService {
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
       countdown:
-        utils.countdown(order.createdAt, match.endAt) -
+        utils.countdown(order.createdAt, match.startAt) -
         (Moment() - Moment(order.createdAt)),
       statusName: utils.StatusMap[order.status],
     };
@@ -158,5 +158,29 @@ export class OrderService {
     };
     const order = await this.orderRepository.save(data);
     return order;
+  }
+
+  async orderPay(payInfo: Order): Promise<any> {
+    if (!payInfo.id) {
+      return false;
+    }
+    const order = await this.orderRepository.findOne(payInfo.id);
+    if (!order) {
+      return false;
+    }
+    const match = await this.matchService.findById(order.matchId);
+    if (
+      utils.countdown(order.createdAt, match.startAt) -
+        (Moment() - Moment(order.createdAt)) <
+      0
+    ) {
+      return false;
+    }
+
+    await this.orderRepository.save({
+      ...order,
+      status: 1,
+    });
+    return true;
   }
 }
