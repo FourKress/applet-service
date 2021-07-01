@@ -77,12 +77,10 @@ export class UsersController {
   @Post('modify')
   @HttpCode(200)
   async modify(@Request() req, @Body() modifyUser: User) {
-    const {
-      user: { id },
-    } = req;
+    const { userId } = req.user;
     const user = await this.usersService.modify({
       ...modifyUser,
-      id,
+      id: userId,
     });
     if (!user) {
       return {
