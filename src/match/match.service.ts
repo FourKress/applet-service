@@ -52,7 +52,12 @@ export class MatchService {
   }
 
   async modifyMatch(modifyMatch: any): Promise<Match> {
-    const match = await this.matchRepository.save(modifyMatch);
+    const { id, ...info } = modifyMatch;
+    if (!id) {
+      return null;
+    }
+    await this.matchRepository.update(id, info);
+    const match = await this.matchRepository.findOne(id);
     return match;
   }
 

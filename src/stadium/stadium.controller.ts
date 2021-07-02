@@ -36,7 +36,6 @@ export class StadiumController {
 
   @Get('info')
   async info(@Query() params: any) {
-    console.log(params);
     const stadium = await this.stadiumService.findById(params.id);
     if (!stadium) {
       return {
@@ -75,7 +74,6 @@ export class StadiumController {
   @Post('add')
   @HttpCode(200)
   async add(@Body() addStadium: Stadium) {
-    console.log(addStadium);
     const stadium = await this.stadiumService.add(addStadium);
     if (!stadium) {
       return {

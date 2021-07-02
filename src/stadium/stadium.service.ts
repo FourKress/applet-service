@@ -33,7 +33,6 @@ export class StadiumService {
     const isHas = await this.stadiumRepository.findOne({
       name: addStadium.name,
     });
-    console.log(isHas, addStadium, 'add');
     if (!isHas) {
       const stadium = await this.stadiumRepository.save(addStadium);
       return stadium;

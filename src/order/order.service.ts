@@ -162,12 +162,11 @@ export class OrderService {
 
   async modifyOrder(modifyOrder: Order): Promise<any> {
     const { id, ...info } = modifyOrder;
-    const targetOrder = await this.orderRepository.findOne(id);
-    const data = {
-      ...targetOrder,
-      ...info,
-    };
-    const order = await this.orderRepository.save(data);
+    if (!id) {
+      return null;
+    }
+    await this.orderRepository.update(id, info);
+    const order = await this.orderRepository.findOne(id);
     return order;
   }
 

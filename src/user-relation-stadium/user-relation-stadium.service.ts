@@ -42,14 +42,17 @@ export class UserRelationStadiumService {
       userId,
       stadiumId,
     });
-    if (relation && !isWatch) {
-      await this.userRelationStadiumRepository.delete(relation.id);
+    if (!relation) {
+      await this.userRelationStadiumRepository.save({
+        ...watchStadium,
+        isWatch: true,
+      });
+      return true;
+    } else {
+      await this.userRelationStadiumRepository.update(relation.id, {
+        isWatch,
+      });
       return isWatch;
     }
-    await this.userRelationStadiumRepository.save({
-      ...watchStadium,
-      isWatch: true,
-    });
-    return true;
   }
 }
