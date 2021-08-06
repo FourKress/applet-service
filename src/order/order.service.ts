@@ -193,4 +193,28 @@ export class OrderService {
     });
     return true;
   }
+
+  async findOrderByDate(type = 0): Promise<Order[]> {
+    console.log(type);
+    let list = [];
+    switch (type) {
+      case 0:
+        list = await this.orderRepository.find({
+          where: {
+            createdAt: { $gte: Moment().startOf('day').toDate() },
+          },
+        });
+        break;
+      case 1:
+        list = await this.orderRepository.find({
+          where: {
+            createdAt: {
+              $lte: Moment().startOf('day').toDate(),
+              $gte: Moment().startOf('month').toDate(),
+            },
+          },
+        });
+    }
+    return list;
+  }
 }
