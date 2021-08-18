@@ -2,8 +2,8 @@
   "type": "mongodb",
   "host": "47.106.92.138",
   "port": 27017,
-  "username": "",
-  "password": "",
+  "username": "testAdmin",
+  "password": "wuTest",
   "database": "test",
   "entities": ["dist/**/*.entity{.ts,.js}"],
   "synchronize": true
