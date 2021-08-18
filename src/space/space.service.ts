@@ -52,13 +52,12 @@ export class SpaceService {
   }
 
   async modifySpace(info: Space): Promise<Space> {
-    const target = await this.findById(info.id);
-    const data = {
-      ...target,
-      ...info,
-      updateAt: Moment().format(),
-    };
-    const space = await this.spaceRepository.save(data);
+    const { id = '' } = info;
+    if (!id) {
+      return null;
+    }
+    await this.spaceRepository.update(id, info);
+    const space = await this.findById(id);
     return space;
   }
 

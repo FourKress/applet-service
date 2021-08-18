@@ -45,7 +45,6 @@ export class StadiumService {
     if (!id) {
       return null;
     }
-    stadiumInfo.updateAt = Moment().format();
     await this.stadiumRepository.update(id, stadiumInfo);
     const stadium = await this.findById(id);
     return stadium;
