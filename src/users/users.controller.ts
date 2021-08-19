@@ -1,98 +1,88 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
   HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+  Query,
   Request,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { User } from './user.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { UserDto } from './dto/user.dto';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { UsersService } from './users.service';
+// import { User } from './decorators/user.decorator';
+import { User } from './interfaces/user.interface';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('user')
 export class UsersController {
+  // constructor(private readonly usersService: UsersService) {}
+  //
+  // @Get('info')
+  // @HttpCode(HttpStatus.OK)
+  // async findMyInfo(@User() user: UserEntity): Promise<IResponse> {
+  //   const userData = await this.usersService.findUserById(user.userid);
+  //   if (user) {
+  //     return new ResponseSuccess('COMMON.SUCCESS', new UserDto(userData));
+  //   } else {
+  //     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+  //   }
+  // }
+  //
+  // @Post('test')
+  // @HttpCode(HttpStatus.OK)
+  // async testPost(@User() user: UserEntity, @Body() body: any) {
+  //   console.log(body);
+  //
+  //   return new ResponseSuccess('COMMON.SUCCESS');
+  // }
+
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
-  async findAll(): Promise<any> {
+  async findAll(): Promise<IResponse> {
     const users = await this.usersService.findAll();
-    if (!users) {
-      return {
-        msg: '获取用户信息失败!',
-        data: null,
-        code: 11000,
-      };
+    if (users) {
+      return new ResponseSuccess('COMMON.SUCCESS', users);
     }
-    return {
-      msg: '',
-      data: users,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Get('findOneByOpenId')
-  async findOneByOpenId(@Query() userInfo: any): Promise<any> {
-    console.log(userInfo, '查询');
+  async findOneByOpenId(@Query() userInfo: any): Promise<IResponse> {
     const user = await this.usersService.findOneByOpenId(userInfo.openId);
-    if (!user) {
-      return {
-        msg: '',
-        data: null,
-        code: 10000,
-      };
+    if (user) {
+      return new ResponseSuccess('COMMON.SUCCESS', user);
     }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<any> {
+  async findOneById(@Request() req): Promise<IResponse> {
     const {
       user: { userId },
     } = req;
     const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      return {
-        msg: '获取用户信息失败!',
-        data: null,
-        code: 11000,
-      };
+    if (user) {
+      return new ResponseSuccess('COMMON.SUCCESS', user);
     }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('modify')
-  @HttpCode(200)
-  async modify(@Request() req, @Body() modifyUser: User) {
-    const { userId } = req.user;
-    const user = await this.usersService.modify({
-      ...modifyUser,
-      id: userId,
-    });
-    if (!user) {
-      return {
-        msg: '用户信息修改失败!',
-        data: null,
-        code: 11000,
-      };
+  @HttpCode(HttpStatus.OK)
+  async modify(@Request() req, @Body() modifyUser: User): Promise<IResponse> {
+    const user = await this.usersService.modify(modifyUser);
+    if (user) {
+      return new ResponseSuccess('COMMON.SUCCESS', user);
     }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

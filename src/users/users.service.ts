@@ -1,58 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
+import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import * as _ from 'lodash';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {}
+  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
-  async findOneByOpenId(openId: string): Promise<any> {
+  async findOneByOpenId(openId: string): Promise<User> {
     if (!openId) {
       return null;
     }
-    const user = await this.usersRepository.findOne({
-      openId,
-    });
+    const user = await this.userModel
+      .findOne({
+        openId,
+      })
+      .exec();
     return user;
   }
 
-  async findOneById(id: string): Promise<any> {
+  async findOneById(id: string): Promise<User> {
     if (!id) {
       return null;
     }
-    const user = await this.usersRepository.findOne(id);
+    const user = await this.userModel
+      .findOne({
+        id,
+      })
+      .exec();
     return user;
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    return this.userModel.find().exec();
   }
 
-  async create(createUser: User): Promise<any> {
-    const data: User = {
-      ...createUser,
+  async create(createUser: CreateUserDto): Promise<User> {
+    const newUser = new this.userModel(createUser);
+    Object.assign(newUser, {
       teamUpCount: 0,
       monthlyCardCount: 0,
       isBoss: false,
-    };
-    const user = await this.usersRepository.save(data);
-    return user;
+    });
+    return await newUser.save();
   }
 
-  async modify(modifyUser: User): Promise<any> {
+  async modify(modifyUser: User): Promise<User> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
       return null;
     }
-    await this.usersRepository.update(id, userInfo);
-    const target = await this.findOneById(id);
-    return target;
+    await this.userModel
+      .updateOne({ _id: Types.ObjectId(id) }, { $set: userInfo })
+      .exec();
+    // await this.usersRepository.update(id, userInfo);
+    return await this.findOneById(id);
   }
 }
