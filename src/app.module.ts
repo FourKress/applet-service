@@ -5,7 +5,7 @@
 // import { TypeOrmModule } from '@nestjs/typeorm';
 // import { Connection } from 'typeorm';
 //
-// import { UsersModule } from './users/users.module';
+import { UsersModule } from './users/users.module';
 // import { AuthModule } from './auth/auth.module';
 //
 // import { WxModule } from './wx/wx.module';
@@ -67,6 +67,7 @@ console.log(dbUrl);
       useFindAndModify: false,
       useCreateIndex: true,
     }),
+    UsersModule,
   ],
 })
 export class AppModule {
