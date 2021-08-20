@@ -21,21 +21,23 @@ export class StadiumController {
 
   @Get('list')
   async findAll(): Promise<IResponse> {
-    const stadiums = await this.stadiumService.findAll();
-    if (stadiums) {
+    try {
+      const stadiums = await this.stadiumService.findAll();
       return new ResponseSuccess('COMMON.SUCCESS', stadiums);
+    } catch {
+      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
     }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @NoAuth()
   @Get('info')
-  async info(@Query() params: StadiumInterface): Promise<IResponse> {
-    const stadium = await this.stadiumService.findById(params.id);
-    if (stadium) {
+  async info(@Query() params: any): Promise<any> {
+    try {
+      const stadium = await this.stadiumService.findById(params.id);
       return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
+    } catch {
+      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
     }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('modify')

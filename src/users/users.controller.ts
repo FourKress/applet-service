@@ -22,31 +22,34 @@ export class UsersController {
 
   @Get('findAll')
   async findAll(): Promise<IResponse> {
-    const users = await this.usersService.findAll();
-    if (users) {
+    try {
+      const users = await this.usersService.findAll();
       return new ResponseSuccess('COMMON.SUCCESS', users);
+    } catch {
+      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
     }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @NoAuth()
   @Get('findOneByOpenId')
   async findOneByOpenId(@Query() userInfo: UserInterface): Promise<IResponse> {
-    const user = await this.usersService.findOneByOpenId(userInfo.openId);
-    if (user) {
+    try {
+      const user = await this.usersService.findOneByOpenId(userInfo.openId);
       return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
+    } catch {
+      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
     }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Get('findOneById')
   async findOneById(@Request() req): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
-    const user = await this.usersService.findOneById(tokenInfo.userId);
-    if (user) {
+    try {
+      const user = await this.usersService.findOneById(tokenInfo.userId);
       return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
+    } catch {
+      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
     }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('modify')

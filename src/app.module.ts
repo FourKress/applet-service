@@ -2,7 +2,7 @@
 import { AuthModule } from './auth/auth.module';
 import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
-// import { UserRelationStadiumModule } from './user-relation-stadium/user-relation-stadium.module';
+import { UserRStadiumModule } from './userRstadium/userRstadium.module';
 // import { OrderModule } from './order/order.module';
 // import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 // import { SpaceModule } from './space/space.module';
@@ -59,6 +59,7 @@ import { appConfig, dbUrl } from './config';
     AuthModule,
     WxModule,
     StadiumModule,
+    UserRStadiumModule,
   ],
 })
 export class AppModule {
