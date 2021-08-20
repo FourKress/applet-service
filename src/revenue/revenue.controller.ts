@@ -16,7 +16,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class RevenueController {
   constructor(private readonly revenueService: RevenueService) {}
 
-  // @UseGuards(AuthGuard('jwt'))
   @Get('info')
   async getInfo(): Promise<any> {
     const revenue = await this.revenueService.getInfo();

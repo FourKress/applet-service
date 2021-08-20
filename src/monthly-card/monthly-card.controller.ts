@@ -16,7 +16,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class MonthlyCardController {
   constructor(private readonly monthlyCardService: MonthlyCardService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async addCard(@Request() req, @Body() info: MonthlyCard) {
@@ -39,7 +38,6 @@ export class MonthlyCardController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('list')
   @HttpCode(200)
   async findById(@Request() req) {

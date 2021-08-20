@@ -31,7 +31,6 @@ export class MatchController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   async addMatch(@Body() params) {
     const match = await this.matchService.addMatch(params);

@@ -13,10 +13,7 @@ export class JWTService {
       secretOrKey = this.configService.get('auth.secretOrKey');
     const token = jwt.sign(userInfo, secretOrKey, { expiresIn });
 
-    return {
-      expires_in: expiresIn,
-      token,
-    };
+    return token;
   }
 
   async validateUser(signedUser): Promise<User | null> {

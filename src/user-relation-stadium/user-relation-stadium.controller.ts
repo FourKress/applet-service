@@ -18,7 +18,6 @@ export class UserRelationStadiumController {
     private readonly userRelationStadiumService: UserRelationStadiumService,
   ) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('watchList')
   async watchList(@Request() req) {
     const {
@@ -41,7 +40,6 @@ export class UserRelationStadiumController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('watchFlag')
   @HttpCode(200)
   async watchFlag(@Request() req, @Body() data: UserRelationStadium) {
@@ -59,7 +57,6 @@ export class UserRelationStadiumController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('watch')
   @HttpCode(200)
   async watch(@Request() req, @Body() watchRelation: UserRelationStadium) {

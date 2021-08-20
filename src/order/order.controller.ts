@@ -16,7 +16,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
   async findAll(): Promise<any> {
     const orders = await this.orderService.findAll();
@@ -34,7 +33,6 @@ export class OrderController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('listCount')
   async orderCount(@Request() req): Promise<any> {
     const {
@@ -55,7 +53,6 @@ export class OrderController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('info')
   async info(@Query() params) {
     const orders = await this.orderService.findOrderById(params.id);
@@ -73,7 +70,6 @@ export class OrderController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
   @Post('listByStatus')
   async listByStatus(@Request() req, @Body() params: Order) {
@@ -98,7 +94,6 @@ export class OrderController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async add(@Request() req, @Body() addOrder: Order) {
@@ -110,7 +105,6 @@ export class OrderController {
     return result;
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('pay')
   @HttpCode(200)
   async pay(@Body() payInfo: Order) {

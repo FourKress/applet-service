@@ -7,7 +7,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class UserRMatchController {
   constructor(private readonly userRMatchService: UserRMatchService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   async addRelation(@Body() params: UserRMatch) {
     console.log(params);

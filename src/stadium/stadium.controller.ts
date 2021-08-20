@@ -1,22 +1,12 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Post,
-  Query,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { StadiumService } from './stadium.service';
 import { Stadium } from './stadium.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('stadium')
 export class StadiumController {
   constructor(private readonly stadiumService: StadiumService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
   async findAll(): Promise<any> {
     const stadium = await this.stadiumService.findAll();
@@ -34,6 +24,7 @@ export class StadiumController {
     };
   }
 
+  @NoAuth()
   @Get('info')
   async info(@Query() params: any) {
     const stadium = await this.stadiumService.findById(params.id);
@@ -51,7 +42,6 @@ export class StadiumController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('modify')
   @HttpCode(200)
   async modify(@Body() modifyStadium: Stadium) {
@@ -70,7 +60,6 @@ export class StadiumController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
   @HttpCode(200)
   async add(@Body() addStadium: Stadium) {

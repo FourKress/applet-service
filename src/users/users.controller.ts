@@ -9,12 +9,10 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { UserDto } from './dto/user.dto';
 import { IResponse } from '../common/interfaces/response.interface';
 import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
 import { UsersService } from './users.service';
-// import { User } from './decorators/user.decorator';
 import { User } from './interfaces/user.interface';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
@@ -22,7 +20,6 @@ import { UserEntity } from '../auth/interfaces/user-entity.interface';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
   async findAll(): Promise<IResponse> {
     const users = await this.usersService.findAll();
@@ -33,7 +30,7 @@ export class UsersController {
   }
 
   @Get('findOneByOpenId')
-  async findOneByOpenId(@Query() userInfo: UserEntity): Promise<IResponse> {
+  async findOneByOpenId(@Query() userInfo: UserDto): Promise<IResponse> {
     const user = await this.usersService.findOneByOpenId(userInfo.openId);
     if (user) {
       return new ResponseSuccess('COMMON.SUCCESS', user);
@@ -41,12 +38,9 @@ export class UsersController {
     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<IResponse> {
-    const {
-      user: { userId },
-    } = req;
+  async findOneById(@Request() { user: tokenInfo }): Promise<IResponse> {
+    const { userId } = tokenInfo;
     const user = await this.usersService.findOneById(userId);
     if (user) {
       return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
@@ -54,7 +48,6 @@ export class UsersController {
     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('modify')
   @HttpCode(HttpStatus.OK)
   async modify(@Request() req, @Body() modifyUser: User): Promise<IResponse> {
