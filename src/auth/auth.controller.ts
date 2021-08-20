@@ -7,7 +7,7 @@ import {
   Body,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { User } from '../users/interfaces/user.interface';
+import { UserInterface } from '../users/interfaces/user.interface';
 import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
 import { IResponse } from '../common/interfaces/response.interface';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
@@ -19,7 +19,10 @@ export class AuthController {
   @NoAuth()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  public async login(@Request() req, @Body() user: User): Promise<IResponse> {
+  public async login(
+    @Request() req,
+    @Body() user: UserInterface,
+  ): Promise<IResponse> {
     try {
       const loginInfo = await this.authService.login(user);
       return new ResponseSuccess('LOGIN.SUCCESS', loginInfo);

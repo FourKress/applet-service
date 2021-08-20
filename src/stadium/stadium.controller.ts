@@ -1,6 +1,18 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  HttpStatus,
+} from '@nestjs/common';
 import { StadiumService } from './stadium.service';
-import { Stadium } from './stadium.entity';
+import { CreateStadiumDto } from './dto/create-stadium.dto';
+import { StadiumInterface } from './interfaces/stadium,interface';
+import { StadiumDto } from './dto/stadium.dto';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('stadium')
@@ -8,73 +20,41 @@ export class StadiumController {
   constructor(private readonly stadiumService: StadiumService) {}
 
   @Get('list')
-  async findAll(): Promise<any> {
-    const stadium = await this.stadiumService.findAll();
-    if (!stadium) {
-      return {
-        msg: '获取球场信息列表失败!',
-        data: null,
-        code: 11000,
-      };
+  async findAll(): Promise<IResponse> {
+    const stadiums = await this.stadiumService.findAll();
+    if (stadiums) {
+      return new ResponseSuccess('COMMON.SUCCESS', stadiums);
     }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @NoAuth()
   @Get('info')
-  async info(@Query() params: any) {
+  async info(@Query() params: StadiumInterface): Promise<IResponse> {
     const stadium = await this.stadiumService.findById(params.id);
-    if (!stadium) {
-      return {
-        msg: '球场信息获取失败!',
-        data: null,
-        code: 11000,
-      };
+    if (stadium) {
+      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
     }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('modify')
-  @HttpCode(200)
-  async modify(@Body() modifyStadium: Stadium) {
+  @HttpCode(HttpStatus.OK)
+  async modify(@Body() modifyStadium: StadiumInterface): Promise<IResponse> {
     const stadium = await this.stadiumService.modify(modifyStadium);
-    if (!stadium) {
-      return {
-        msg: '球场信息修改失败!',
-        data: null,
-        code: 11000,
-      };
+    if (stadium) {
+      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
     }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('add')
-  @HttpCode(200)
-  async add(@Body() addStadium: Stadium) {
+  @HttpCode(HttpStatus.OK)
+  async add(@Body() addStadium: CreateStadiumDto) {
     const stadium = await this.stadiumService.add(addStadium);
-    if (!stadium) {
-      return {
-        msg: '球场添加失败!',
-        data: null,
-        code: 11000,
-      };
+    if (stadium) {
+      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
     }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

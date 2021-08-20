@@ -1,20 +1,29 @@
 import { Injectable, HttpService } from '@nestjs/common';
-import { appId, appSecret } from './wx.config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WxService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.appId = this.configService.get<string>('auth.wxAppKey');
+    this.appSecret = this.configService.get<string>('auth.wxAppSecret');
+  }
 
-  async code2Session(code) {
-    const params = `appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`;
+  private readonly appId: string;
+  private readonly appSecret: string;
+
+  async code2Session(code): Promise<string> {
+    const params = `appid=${this.appId}&secret=${this.appSecret}&js_code=${code}&grant_type=authorization_code`;
     const res = await this.httpService
       .get(`https://api.weixin.qq.com/sns/jscode2session?${params}`)
       .toPromise();
     return res.data;
   }
 
-  async getActivityId() {
-    const params = `grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+  async getActivityId(): Promise<string> {
+    const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     const accessToken = (
       await this.httpService
         .get(`https://api.weixin.qq.com/cgi-bin/token?${params}`)

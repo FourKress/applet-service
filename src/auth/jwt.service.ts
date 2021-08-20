@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { Injectable } from '@nestjs/common';
-import { User } from '../users/interfaces/user.interface';
+import { UserInterface } from '../users/interfaces/user.interface';
 import { ConfigService } from '@nestjs/config';
 import { UserEntity } from './interfaces/user-entity.interface';
 
@@ -16,7 +16,7 @@ export class JWTService {
     return token;
   }
 
-  async validateUser(signedUser): Promise<User | null> {
+  async validateUser(signedUser): Promise<UserInterface | null> {
     if (signedUser) {
       return signedUser;
     }

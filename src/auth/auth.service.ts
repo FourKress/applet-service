@@ -2,19 +2,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { JWTService } from './jwt.service';
-import { User } from '../users/interfaces/user.interface';
+import { UserInterface } from '../users/interfaces/user.interface';
 import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
+    @InjectModel('User') private readonly userModel: Model<UserInterface>,
     private readonly jwtService: JWTService,
     private readonly usersService: UsersService,
   ) {}
 
-  async login(user: User): Promise<any> {
+  async login(user: UserInterface): Promise<any> {
     const { openId } = user;
     let userFromDb = await this.usersService.findOneByOpenId(openId);
     if (!userFromDb) {

@@ -1,15 +1,7 @@
-﻿// import { Module } from '@nestjs/common';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-//
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import { Connection } from 'typeorm';
-//
-import { UsersModule } from './users/users.module';
+﻿import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-//
-// import { WxModule } from './wx/wx.module';
-// import { StadiumModule } from './stadium/stadium.module';
+import { WxModule } from './wx/wx.module';
+import { StadiumModule } from './stadium/stadium.module';
 // import { UserRelationStadiumModule } from './user-relation-stadium/user-relation-stadium.module';
 // import { OrderModule } from './order/order.module';
 // import { MonthlyCardModule } from './monthly-card/monthly-card.module';
@@ -46,12 +38,8 @@ import { AuthModule } from './auth/auth.module';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
-
 import { appConfig, dbUrl } from './config';
-
-console.log(dbUrl);
 
 @Module({
   imports: [
@@ -69,6 +57,8 @@ console.log(dbUrl);
     }),
     UsersModule,
     AuthModule,
+    WxModule,
+    StadiumModule,
   ],
 })
 export class AppModule {

@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { StadiumSchema } from './schemas/stadium.schema';
 import { StadiumController } from './stadium.controller';
 import { StadiumService } from './stadium.service';
 
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Stadium } from './stadium.entity';
-
-import { UserRelationStadiumModule } from '../user-relation-stadium/user-relation-stadium.module';
-
 @Module({
-  imports: [TypeOrmModule.forFeature([Stadium]), UserRelationStadiumModule],
+  imports: [
+    MongooseModule.forFeature([{ name: 'Stadium', schema: StadiumSchema }]),
+  ],
   controllers: [StadiumController],
   providers: [StadiumService],
   exports: [StadiumService],

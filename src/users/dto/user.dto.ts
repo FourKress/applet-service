@@ -1,7 +1,7 @@
-import { User } from '../interfaces/user.interface';
+import { UserInterface } from '../interfaces/user.interface';
 
 export class UserDto {
-  constructor(object: User) {
+  constructor(object: UserInterface) {
     this.id = object._id;
     this.openId = object.openId;
     this.phoneNum = object.phoneNum;

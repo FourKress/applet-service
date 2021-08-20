@@ -1,52 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Stadium } from './stadium.entity';
-import { Repository } from 'typeorm';
-
-import { UserRelationStadiumService } from '../user-relation-stadium/user-relation-stadium.service';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
+import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { StadiumInterface } from './interfaces/stadium,interface';
+import { CreateStadiumDto } from './dto/create-stadium.dto';
 
 @Injectable()
 export class StadiumService {
   constructor(
-    @InjectRepository(Stadium)
-    private readonly stadiumRepository: Repository<Stadium>,
-    private readonly userRelationStadiumService: UserRelationStadiumService,
+    @InjectModel('Stadium')
+    private readonly stadiumModel: Model<StadiumInterface>,
   ) {}
 
-  async findAll(): Promise<any> {
-    const stadium = await this.stadiumRepository.find();
-    return stadium;
+  async findAll(): Promise<StadiumInterface[]> {
+    return this.stadiumModel.find().exec();
   }
 
-  async findById(id: string): Promise<any> {
+  async findById(id: string): Promise<StadiumInterface> {
     if (!id) {
       return null;
     }
-    const stadium = await this.stadiumRepository.findOne(id);
-    return stadium;
+    return await this.stadiumModel
+      .findOne({
+        _id: Types.ObjectId(id),
+      })
+      .exec();
   }
 
-  async add(addStadium: Stadium): Promise<any> {
-    const isHas = await this.stadiumRepository.findOne({
+  async add(addStadium: CreateStadiumDto): Promise<StadiumInterface> {
+    const hasStadium = await this.stadiumModel.findOne({
       name: addStadium.name,
     });
-    if (!isHas) {
-      const stadium = await this.stadiumRepository.save(addStadium);
-      return stadium;
+    if (hasStadium) {
+      return null;
     }
-    return null;
+    const newStadium = new this.stadiumModel(addStadium);
+    return await newStadium.save();
   }
 
-  async modify(modifyStadium: Stadium): Promise<any> {
+  async modify(modifyStadium: StadiumInterface): Promise<StadiumInterface> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       return null;
     }
-    await this.stadiumRepository.update(id, stadiumInfo);
-    const stadium = await this.findById(id);
-    return stadium;
+    return await this.stadiumModel
+      .findOneAndUpdate(
+        { _id: Types.ObjectId(id) },
+        {
+          $set: stadiumInfo,
+        },
+      )
+      .exec();
   }
 }

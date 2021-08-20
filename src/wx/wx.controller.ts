@@ -1,41 +1,30 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { WxService } from './wx.service';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('wx')
 export class WxController {
   constructor(private readonly wxService: WxService) {}
 
+  @NoAuth()
   @Get('code2Session')
-  async code2Session(@Query() params: any) {
+  async code2Session(@Query() params: any): Promise<IResponse> {
     const wxInfo = await this.wxService.code2Session(params.code);
-    if (!wxInfo) {
-      return {
-        msg: '获取openId失败!',
-        data: null,
-        code: 11000,
-      };
+    if (wxInfo) {
+      return new ResponseSuccess('COMMON.SUCCESS', wxInfo);
     }
-    return {
-      msg: '',
-      data: wxInfo,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
+  @NoAuth()
   @Get('getActivityId')
-  async getActivityId() {
+  async getActivityId(): Promise<IResponse> {
     const activityId = await this.wxService.getActivityId();
-    if (!activityId) {
-      return {
-        msg: '获取ActivityId失败!',
-        data: null,
-        code: 11000,
-      };
+    if (activityId) {
+      return new ResponseSuccess('COMMON.SUCCESS', activityId);
     }
-    return {
-      msg: '',
-      data: activityId,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

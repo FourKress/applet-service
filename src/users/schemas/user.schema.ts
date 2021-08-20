@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import { User } from '../interfaces/user.interface';
+import { UserInterface } from '../interfaces/user.interface';
 
-export const UserSchema = new mongoose.Schema<User>(
+export const UserSchema = new mongoose.Schema<UserInterface>(
   {
     id: { type: String, index: true },
     openId: { type: String, required: [true, '此项为必填内容'], trim: true },

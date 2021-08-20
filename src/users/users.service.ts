@@ -1,43 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import * as _ from 'lodash';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './interfaces/user.interface';
+import { UserInterface } from './interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<UserInterface>,
+  ) {}
 
-  async findOneByOpenId(openId: string): Promise<User> {
+  async findOneByOpenId(openId: string): Promise<UserInterface> {
     if (!openId) {
       return null;
     }
-    const user = await this.userModel
+    return await this.userModel
       .findOne({
         openId,
       })
       .exec();
-    return user;
   }
 
-  async findOneById(id: string): Promise<User> {
+  async findOneById(id: string): Promise<UserInterface> {
     if (!id) {
       return null;
     }
-    const user = await this.userModel
+    return await this.userModel
       .findOne({
         _id: Types.ObjectId(id),
       })
       .exec();
-    return user;
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserInterface[]> {
     return this.userModel.find().exec();
   }
 
-  async create(createUser: CreateUserDto): Promise<User> {
+  async create(createUser: CreateUserDto): Promise<UserInterface> {
     const newUser = new this.userModel(createUser);
     Object.assign(newUser, {
       teamUpCount: 0,
@@ -47,7 +46,7 @@ export class UsersService {
     return await newUser.save();
   }
 
-  async modify(modifyUser: User): Promise<User> {
+  async modify(modifyUser: UserInterface): Promise<UserInterface> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
       return null;

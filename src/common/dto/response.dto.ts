@@ -5,6 +5,7 @@ export class ResponseError implements IResponse {
     this.success = false;
     this.message = infoMessage;
     this.data = data;
+    this.code = 10100;
     console.warn(
       `${new Date().toString()} - [Response]: ${infoMessage}${
         data ? ` - ${JSON.stringify(data)}` : ''
@@ -16,6 +17,7 @@ export class ResponseError implements IResponse {
   errorMessage: any;
   error: any;
   success: boolean;
+  code: number;
 }
 
 export class ResponseSuccess implements IResponse {
@@ -23,6 +25,7 @@ export class ResponseSuccess implements IResponse {
     this.success = true;
     this.message = infoMessage;
     this.data = data;
+    this.code = 10000;
     if (!notLog) {
       try {
         const obfuscateRequest = JSON.parse(JSON.stringify(data));
@@ -42,4 +45,5 @@ export class ResponseSuccess implements IResponse {
   errorMessage: any;
   error: any;
   success: boolean;
+  code: number;
 }
