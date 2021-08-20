@@ -1,33 +1,28 @@
 import {
   Controller,
-  Post,
   Request,
-  UseGuards,
-  Body,
+  HttpStatus,
   HttpCode,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
+import { User } from '../users/interfaces/user.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { IResponse } from '../common/interfaces/response.interface';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @HttpCode(200)
-  async login(@Request() req, @Body() params) {
-    const loginInfo = await this.authService.login(params);
-    if (!loginInfo) {
-      return {
-        msg: '微信快捷登录失败!',
-        data: null,
-        code: 11000,
-      };
+  @HttpCode(HttpStatus.OK)
+  public async login(@Request() req, @Body() user: User): Promise<IResponse> {
+    try {
+      const loginInfo = await this.authService.login(user);
+      return new ResponseSuccess('LOGIN.SUCCESS', loginInfo);
+    } catch (error) {
+      return new ResponseError('LOGIN.ERROR', error);
     }
-    return {
-      msg: '',
-      data: loginInfo,
-      code: 10000,
-    };
   }
 }

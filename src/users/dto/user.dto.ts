@@ -2,7 +2,7 @@ import { User } from '../interfaces/user.interface';
 
 export class UserDto {
   constructor(object: User) {
-    this.id = object.id;
+    this.id = object._id;
     this.openId = object.openId;
     this.phoneNum = object.phoneNum;
     this.nickName = object.nickName;
@@ -15,7 +15,7 @@ export class UserDto {
     this.isBoss = object.isBoss;
     this.monthlyCardCount = object.monthlyCardCount;
     this.createdAt = object.createdAt;
-    this.updateAt = object.updateAt;
+    this.updatedAt = object.updatedAt;
   }
   readonly id: string;
   readonly openId: string;
@@ -30,5 +30,5 @@ export class UserDto {
   readonly isBoss: boolean;
   readonly monthlyCardCount: number;
   readonly createdAt: Date;
-  readonly updateAt: Date;
+  readonly updatedAt: Date;
 }

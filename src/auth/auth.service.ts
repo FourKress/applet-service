@@ -1,39 +1,33 @@
+import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { JWTService } from './jwt.service';
+import { User } from '../users/interfaces/user.interface';
+import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
-
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly jwtService: JWTService,
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(openId: string): Promise<any> {
-    const user = await this.usersService.findOneByOpenId(openId);
-    if (user && user.openId === openId) {
-      return user;
-    }
-    return null;
-  }
-
-  async login(user: any): Promise<any> {
+  async login(user: User): Promise<any> {
     const { openId } = user;
-    const targetUser = await this.validateUser(openId);
-    if (targetUser) {
-      console.log(99, targetUser);
-      return {
-        token: this.jwtService.sign({ openId, sub: targetUser.id }),
-        userInfo: targetUser,
-      };
-    } else {
-      const userInfo = await this.usersService.create(user);
-      console.log(88, userInfo);
-      return {
-        token: this.jwtService.sign({ openId, sub: userInfo.id }),
-        userInfo,
-      };
+    let userFromDb = await this.usersService.findOneByOpenId(openId);
+    if (!userFromDb) {
+      userFromDb = await this.usersService.create(user);
     }
+    const tokenInfo = await this.jwtService.createToken({
+      userId: userFromDb._id,
+      openId: userFromDb.openId,
+      isBoss: userFromDb.isBoss,
+    });
+    return {
+      ...tokenInfo,
+      userInfo: new UserDto(userFromDb),
+    };
   }
 }

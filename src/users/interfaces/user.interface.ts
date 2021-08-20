@@ -25,5 +25,5 @@ export interface User extends Document {
   // 月卡数量
   monthlyCardCount: number;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 }

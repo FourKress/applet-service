@@ -27,7 +27,7 @@ export class UsersService {
     }
     const user = await this.userModel
       .findOne({
-        id,
+        _id: Types.ObjectId(id),
       })
       .exec();
     return user;
@@ -52,10 +52,13 @@ export class UsersService {
     if (!id) {
       return null;
     }
-    await this.userModel
-      .updateOne({ _id: Types.ObjectId(id) }, { $set: userInfo })
+    return await this.userModel
+      .findOneAndUpdate(
+        { _id: Types.ObjectId(id) },
+        {
+          $set: userInfo,
+        },
+      )
       .exec();
-    // await this.usersRepository.update(id, userInfo);
-    return await this.findOneById(id);
   }
 }

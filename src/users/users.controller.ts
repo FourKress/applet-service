@@ -20,30 +20,9 @@ import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('user')
 export class UsersController {
-  // constructor(private readonly usersService: UsersService) {}
-  //
-  // @Get('info')
-  // @HttpCode(HttpStatus.OK)
-  // async findMyInfo(@User() user: UserEntity): Promise<IResponse> {
-  //   const userData = await this.usersService.findUserById(user.userid);
-  //   if (user) {
-  //     return new ResponseSuccess('COMMON.SUCCESS', new UserDto(userData));
-  //   } else {
-  //     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-  //   }
-  // }
-  //
-  // @Post('test')
-  // @HttpCode(HttpStatus.OK)
-  // async testPost(@User() user: UserEntity, @Body() body: any) {
-  //   console.log(body);
-  //
-  //   return new ResponseSuccess('COMMON.SUCCESS');
-  // }
-
   constructor(private readonly usersService: UsersService) {}
 
-  // @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
   async findAll(): Promise<IResponse> {
     const users = await this.usersService.findAll();
@@ -54,7 +33,7 @@ export class UsersController {
   }
 
   @Get('findOneByOpenId')
-  async findOneByOpenId(@Query() userInfo: any): Promise<IResponse> {
+  async findOneByOpenId(@Query() userInfo: UserEntity): Promise<IResponse> {
     const user = await this.usersService.findOneByOpenId(userInfo.openId);
     if (user) {
       return new ResponseSuccess('COMMON.SUCCESS', user);
@@ -70,7 +49,7 @@ export class UsersController {
     } = req;
     const user = await this.usersService.findOneById(userId);
     if (user) {
-      return new ResponseSuccess('COMMON.SUCCESS', user);
+      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
     }
     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
@@ -81,7 +60,7 @@ export class UsersController {
   async modify(@Request() req, @Body() modifyUser: User): Promise<IResponse> {
     const user = await this.usersService.modify(modifyUser);
     if (user) {
-      return new ResponseSuccess('COMMON.SUCCESS', user);
+      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
     }
     return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }

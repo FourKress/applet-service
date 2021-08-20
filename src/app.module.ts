@@ -6,7 +6,7 @@
 // import { Connection } from 'typeorm';
 //
 import { UsersModule } from './users/users.module';
-// import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 //
 // import { WxModule } from './wx/wx.module';
 // import { StadiumModule } from './stadium/stadium.module';
@@ -68,6 +68,7 @@ console.log(dbUrl);
       useCreateIndex: true,
     }),
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {
