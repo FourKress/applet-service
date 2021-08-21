@@ -3,12 +3,13 @@ import { AuthModule } from './auth/auth.module';
 import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
 import { UserRStadiumModule } from './userRstadium/userRstadium.module';
+import { SpaceModule } from './space/space.module';
+import { MatchModule } from './match/match.module';
+
 // import { OrderModule } from './order/order.module';
 // import { MonthlyCardModule } from './monthly-card/monthly-card.module';
-// import { SpaceModule } from './space/space.module';
 //
 // import { TasksModule } from './tasks/tasks.module';
-// import { MatchModule } from './match/match.module';
 // import { UserRMatchModule } from './user-r-match/user-r-match.module';
 // import { RevenueModule } from './revenue/revenue.module';
 //
@@ -60,6 +61,8 @@ import { appConfig, dbUrl } from './config';
     WxModule,
     StadiumModule,
     UserRStadiumModule,
+    SpaceModule,
+    MatchModule,
   ],
 })
 export class AppModule {

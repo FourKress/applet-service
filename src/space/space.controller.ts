@@ -1,53 +1,31 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Query,
-  HttpCode,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { SpaceService } from './space.service';
-import { Space } from './space.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseError, ResponseSuccess } from '../common/dto/response.dto';
+import { SpaceInterface } from './interfaces/space.interface';
+import { SpaceDto } from './dto/space.dto';
 
 @Controller('space')
 export class SpaceController {
   constructor(private readonly spaceService: SpaceService) {}
 
   @Post('add')
-  @HttpCode(200)
-  async addSpace(@Body() params: Space) {
+  @HttpCode(HttpStatus.OK)
+  async addSpace(@Body() params: SpaceInterface): Promise<IResponse> {
     const space = await this.spaceService.addSpace(params);
-    if (!space) {
-      return {
-        msg: '添加场次失败!',
-        data: null,
-        code: 11000,
-      };
+    if (space) {
+      return new ResponseSuccess('COMMON.SUCCESS', new SpaceDto(space));
     }
-    return {
-      msg: '',
-      data: space,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('list')
-  @HttpCode(200)
-  async findByStadium(@Body() params: Space) {
+  @HttpCode(HttpStatus.OK)
+  async findByStadium(@Body() params: string): Promise<IResponse> {
     const spaces = await this.spaceService.findByStadiumId(params);
-    if (!spaces) {
-      return {
-        msg: '获取球场场次失败!',
-        data: null,
-        code: 11000,
-      };
+    if (spaces) {
+      return new ResponseSuccess('COMMON.SUCCESS', spaces);
     }
-    return {
-      msg: '',
-      data: spaces,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

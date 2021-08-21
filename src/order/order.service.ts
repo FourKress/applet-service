@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Order } from './order.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { OrderInterface } from './interfaces/order.interface';
+import { CreateOderDto } from './dto/create-oder.dto';
+import { OrderInfoInterface } from './interfaces/order-info.interface';
+import { OrderCountInterface } from './interfaces/order-count.interface';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { StadiumService } from '../stadium/stadium.service';
 import { SpaceService } from '../space/space.service';
@@ -15,8 +18,7 @@ import * as utils from './utils';
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    @InjectModel('Order') private readonly orderModel: Model<OrderInterface>,
     private readonly monthlyCardService: MonthlyCardService,
     private readonly stadiumService: StadiumService,
     private readonly spaceService: SpaceService,
@@ -24,21 +26,24 @@ export class OrderService {
     private readonly userRMatchService: UserRMatchService,
   ) {}
 
-  async findAll(): Promise<any> {
-    const orders = await this.orderRepository.find();
-    return orders;
+  async findAll(): Promise<OrderInterface[]> {
+    return await this.orderModel.find().exec();
   }
 
-  async orderCount(userId: string): Promise<any> {
-    const payCount = await this.orderRepository.find({
-      status: 0,
-      userId,
-    });
-    const startCount = await this.orderRepository.find({
-      status: 1,
-      userId,
-    });
-    const allCount = await this.orderRepository.find({ userId });
+  async orderCount(userId: string): Promise<OrderCountInterface> {
+    const payCount = await this.orderModel
+      .find({
+        status: 0,
+        userId,
+      })
+      .exec();
+    const startCount = await this.orderModel
+      .find({
+        status: 1,
+        userId,
+      })
+      .exec();
+    const allCount = await this.orderModel.find({ userId }).exec();
     return {
       payCount: payCount.length,
       startCount: startCount.length,
@@ -46,11 +51,11 @@ export class OrderService {
     };
   }
 
-  async findOrderById(id: string): Promise<any> {
+  async findOrderById(id: string): Promise<OrderInfoInterface> {
     if (!id) {
       return null;
     }
-    const order: Order = await this.orderRepository.findOne(id);
+    const order = await this.orderModel.findById(id);
     const { spaceId, matchId, stadiumId, personCount, userId } = order;
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
@@ -60,8 +65,7 @@ export class OrderService {
       stadiumId,
     });
     const price = match.price * (match.rebate / 10);
-    const orderInfo = {
-      ...order,
+    const orderInfo = Object.assign({}, order, {
       stadiumName: stadium.name,
       spaceName: space.name,
       unit: space.unit,
@@ -76,21 +80,19 @@ export class OrderService {
         utils.countdown(order.createdAt, match.startAt) -
         (Moment() - Moment(order.createdAt)),
       statusName: utils.StatusMap[order.status],
-    };
-    return {
-      ...orderInfo,
-    };
+    });
+    return orderInfo;
   }
 
-  async findOrderByStatus(params: Order): Promise<any> {
+  async findOrderByStatus(params: OrderInterface): Promise<OrderInterface[]> {
     if (!params.userId) {
       return null;
     }
-    const orders = (await this.orderRepository.find({ ...params })).sort(
+    const orders = (await this.orderModel.find({ ...params }).exec()).sort(
       (a: any, b: any) => b.createdAt - a.createdAt,
     );
     const coverOrders = await Promise.all(
-      orders.map(async (order: Order) => {
+      orders.map(async (order: OrderInterface) => {
         const orderInfo = await this.findOrderById(order.id);
         return orderInfo;
       }),

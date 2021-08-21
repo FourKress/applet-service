@@ -1,7 +1,9 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Match } from './match.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { MatchInterface } from './interfaces/match.interface';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { MatchSpaceDto } from './dto/match-space.dto';
 import { SpaceService } from '../space/space.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -10,17 +12,18 @@ const Moment = require('moment');
 @Injectable()
 export class MatchService {
   constructor(
-    @InjectRepository(Match)
-    private readonly matchRepository: Repository<Match>,
+    @InjectModel('Match') private readonly matchModel: Model<MatchInterface>,
     @Inject(forwardRef(() => SpaceService))
     private readonly spaceService: SpaceService,
   ) {}
 
-  async findBySpaceId(spaceId: string): Promise<any[]> {
-    const matchList: Match[] = (
-      await this.matchRepository.find({
-        spaceId,
-      })
+  async findBySpaceId(spaceId: string): Promise<MatchSpaceDto[]> {
+    const matchList: MatchInterface[] = (
+      await this.matchModel
+        .find({
+          spaceId,
+        })
+        .exec()
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
     const coverMatchList = matchList.map((match) => {
       return {
@@ -34,34 +37,42 @@ export class MatchService {
     return coverMatchList;
   }
 
-  async findById(id: string): Promise<Match> {
-    const match = await this.matchRepository.findOne(id);
-    return match;
+  async findById(id: string): Promise<MatchInterface> {
+    return await this.matchModel.findById(id).exec();
   }
 
-  async addMatch(addMatch: Match): Promise<Match> {
+  async addMatch(addMatch: CreateMatchDto): Promise<MatchInterface> {
+    const { spaceId, startAt, endAt } = addMatch;
+    const hasMatch = await this.matchModel.findOne({
+      spaceId,
+      startAt,
+      endAt,
+    });
+    if (hasMatch || !spaceId) {
+      return null;
+    }
+
     const space = await this.spaceService.findById(addMatch.spaceId);
     const nowDate = space.validateDate;
-    const match = await this.matchRepository.save({
-      ...addMatch,
+
+    const newMatch = new this.matchModel(addMatch);
+    Object.assign(newMatch, {
       rebate: 1,
       startAt: `${nowDate} ${addMatch.startAt}`,
       endAt: `${nowDate} ${addMatch.endAt}`,
     });
-    return match;
+    return await newMatch.save();
   }
 
-  async modifyMatch(modifyMatch: any): Promise<Match> {
-    const { id, ...info } = modifyMatch;
+  async modifyMatch(modifyMatch: MatchInterface): Promise<MatchInterface> {
+    const { id, ...match } = modifyMatch;
     if (!id) {
       return null;
     }
-    await this.matchRepository.update(id, info);
-    const match = await this.matchRepository.findOne(id);
-    return match;
+    return await this.matchModel.findByIdAndUpdate(id, match).exec();
   }
 
   async removeMatch(id: string): Promise<any> {
-    await this.matchRepository.delete(id);
+    await this.matchModel.findByIdAndDelete(id);
   }
 }

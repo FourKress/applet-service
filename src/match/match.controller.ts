@@ -1,68 +1,42 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, HttpCode } from '@nestjs/common';
 import { MatchService } from './match.service';
-import { AuthGuard } from '@nestjs/passport';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { MatchInterface } from './interfaces/match.interface';
+import { MatchDto } from './dto/match.dto';
+import { MatchSpaceDto } from './dto/match-space.dto';
+import { SpaceDto } from '../space/dto/space.dto';
 
 @Controller('match')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get('info')
-  async findById(@Query() params) {
+  async findById(@Query() params: MatchInterface): Promise<IResponse> {
     const matchList = await this.matchService.findBySpaceId(params.spaceId);
-    if (!matchList) {
-      return {
-        msg: '场次信息获取失败!',
-        data: null,
-        code: 11000,
-      };
+    if (matchList) {
+      return new ResponseSuccess('COMMON.SUCCESS', matchList);
     }
-    return {
-      msg: '',
-      data: matchList,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('add')
-  async addMatch(@Body() params) {
+  async addMatch(@Body() params: MatchInterface): Promise<IResponse> {
     const match = await this.matchService.addMatch(params);
-    if (!match) {
-      return {
-        msg: '场次添加失败!',
-        data: null,
-        code: 11000,
-      };
+    if (match) {
+      return new ResponseSuccess('COMMON.SUCCESS', new MatchDto(match));
     }
-    return {
-      msg: '',
-      data: match,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('orderMatchInfo')
   @HttpCode(200)
-  async findOrderMatch(@Body() params) {
+  async findOrderMatch(@Body() params): Promise<IResponse> {
     const match = await this.matchService.findById(params.matchId);
-    if (!match) {
-      return {
-        msg: '场次信息获取失败!',
-        data: null,
-        code: 11000,
-      };
+    if (match) {
+      return new ResponseSuccess('COMMON.SUCCESS', new MatchDto(match));
     }
-    return {
-      msg: '',
-      data: match,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }
