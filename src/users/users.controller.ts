@@ -54,8 +54,26 @@ export class UsersController {
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
-  async modify(@Body() modifyUser: UserInterface): Promise<IResponse> {
-    const user = await this.usersService.modify(modifyUser);
+  async modify(
+    @Request() req,
+    @Body() modifyUser: UserInterface,
+  ): Promise<IResponse> {
+    const tokenInfo: UserEntity = req.user;
+    const user = await this.usersService.modify(
+      Object.assign({}, modifyUser, {
+        id: tokenInfo.userId,
+      }),
+    );
+    if (user) {
+      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
+    }
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+  }
+
+  @Post('setBoss')
+  @HttpCode(HttpStatus.OK)
+  async setBoss(@Body() params: UserDto): Promise<IResponse> {
+    const user = await this.usersService.setBoss(params.id);
     if (user) {
       return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
     }

@@ -13,6 +13,7 @@ export class UserDto {
     this.avatarUrl = object?.avatarUrl;
     this.teamUpCount = object?.teamUpCount;
     this.isBoss = object?.isBoss;
+    this.bossId = object?.bossId;
     this.monthlyCardCount = object?.monthlyCardCount;
     this.createdAt = object?.createdAt;
     this.updatedAt = object?.updatedAt;
@@ -28,6 +29,7 @@ export class UserDto {
   readonly avatarUrl: string;
   readonly teamUpCount: number;
   readonly isBoss: boolean;
+  readonly bossId: string;
   readonly monthlyCardCount: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;

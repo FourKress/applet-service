@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { MonthlyCard } from './monthly-card.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { MonthlyCardInterface } from './interfaces/monthlyCard.interface';
+import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
 import { StadiumService } from '../stadium/stadium.service';
+import { Model } from 'mongoose';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -10,25 +11,26 @@ const Moment = require('moment');
 @Injectable()
 export class MonthlyCardService {
   constructor(
-    @InjectRepository(MonthlyCard)
-    private readonly monthlyCardRepository: Repository<MonthlyCard>,
+    @InjectModel('MonthlyCard')
+    private readonly monthlyCardModel: Model<MonthlyCardInterface>,
     private readonly stadiumService: StadiumService,
   ) {}
 
-  async addMonthlyCard(info: MonthlyCard): Promise<any> {
-    const monthlyCard = await this.monthlyCardRepository.save(info);
-    return monthlyCard;
+  async addMonthlyCard(
+    info: CreateMonthlyCardDto,
+  ): Promise<MonthlyCardInterface> {
+    const newMonthlyCard = new this.monthlyCardModel(info);
+    return await newMonthlyCard.save();
   }
 
   async removeByIds(userId: string): Promise<any> {
-    const monthlyCard = await this.monthlyCardRepository.delete({
+    return this.monthlyCardModel.findOneAndDelete({
       userId,
     });
-    return monthlyCard;
   }
 
   async findByUserId(userId: string): Promise<any[]> {
-    const relationList = await this.monthlyCardRepository.find({
+    const relationList = await this.monthlyCardModel.find({
       userId,
     });
     const monthlyCardList = await Promise.all(
@@ -47,22 +49,24 @@ export class MonthlyCardService {
     return monthlyCardList;
   }
 
-  async checkMonthlyCard(relationInfo: any): Promise<MonthlyCard> {
-    const monthlyCard = await this.monthlyCardRepository.findOne(relationInfo);
+  async checkMonthlyCard(relationInfo: any): Promise<MonthlyCardInterface> {
+    const monthlyCard = await this.monthlyCardModel.findOne(relationInfo);
     return monthlyCard;
   }
 
-  async modifyByIds(modifyInfo: MonthlyCard): Promise<any> {
-    const { userId, stadiumId, ...data } = modifyInfo;
-    const target = await this.monthlyCardRepository.findOne({
-      userId,
-      stadiumId,
-    });
-    const info = {
-      ...target,
-      ...data,
-    };
-    const monthlyCard = await this.monthlyCardRepository.save(info);
+  async modifyByIds(
+    modifyInfo: MonthlyCardInterface,
+  ): Promise<MonthlyCardInterface> {
+    const { userId, stadiumId } = modifyInfo;
+    const monthlyCard = await this.monthlyCardModel.findOneAndUpdate(
+      {
+        userId,
+        stadiumId,
+      },
+      {
+        $set: modifyInfo,
+      },
+    );
     return monthlyCard;
   }
 }

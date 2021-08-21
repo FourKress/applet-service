@@ -19,6 +19,7 @@ export class CreateUserDto {
   readonly teamUpCount: number;
   // 是否场主
   readonly isBoss: boolean;
+  readonly bossId: string;
   // 月卡数量
   readonly monthlyCardCount: number;
 }

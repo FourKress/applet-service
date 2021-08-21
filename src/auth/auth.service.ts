@@ -23,7 +23,7 @@ export class AuthService {
     const token = await this.jwtService.createToken({
       userId: userFromDb._id,
       openId: userFromDb.openId,
-      isBoss: userFromDb.isBoss,
+      bossId: userFromDb.bossId,
     });
     return {
       token,

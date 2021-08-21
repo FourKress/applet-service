@@ -51,13 +51,18 @@ export class UsersService {
     if (!id) {
       return null;
     }
+
+    return await this.userModel.findByIdAndUpdate(id, userInfo).exec();
+  }
+
+  async setBoss(id: string): Promise<UserInterface> {
+    const bossId = Types.ObjectId().toHexString();
+    console.log(bossId);
     return await this.userModel
-      .findOneAndUpdate(
-        { _id: Types.ObjectId(id) },
-        {
-          $set: userInfo,
-        },
-      )
+      .findByIdAndUpdate(id, {
+        isBoss: true,
+        bossId,
+      })
       .exec();
   }
 }

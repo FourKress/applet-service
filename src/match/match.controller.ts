@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { MatchService } from './match.service';
 import { IResponse } from '../common/interfaces/response.interface';
 import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
@@ -31,7 +39,7 @@ export class MatchController {
   }
 
   @Post('orderMatchInfo')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async findOrderMatch(@Body() params): Promise<IResponse> {
     const match = await this.matchService.findById(params.matchId);
     if (match) {

@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
-
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Order } from './order.entity';
+import { MongooseModule } from '@nestjs/mongoose';
+import { OrderSchema } from './schemas/order.schema';
 import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
 import { StadiumModule } from '../stadium/stadium.module';
 import { SpaceModule } from '../space/space.module';
 import { MatchModule } from '../match/match.module';
-import { UserRMatchModule } from '../user-r-match/user-r-match.module';
+import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order]),
+    MongooseModule.forFeature([{ name: 'Order', schema: OrderSchema }]),
     MonthlyCardModule,
     StadiumModule,
     SpaceModule,

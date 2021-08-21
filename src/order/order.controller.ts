@@ -4,121 +4,91 @@ import {
   Post,
   Body,
   Query,
-  UseGuards,
   HttpCode,
   Request,
+  HttpStatus,
 } from '@nestjs/common';
-import { Order } from './order.entity';
 import { OrderService } from './order.service';
-import { AuthGuard } from '@nestjs/passport';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { OrderDto } from './dto/order.dto';
+import { CreateOderDto } from './dto/create-oder.dto';
+import { OrderInterface } from './interfaces/order.interface';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('list')
-  async findAll(): Promise<any> {
+  async findAll(): Promise<IResponse> {
     const orders = await this.orderService.findAll();
-    if (!orders) {
-      return {
-        msg: '获取订单列表失败!',
-        data: null,
-        code: 11000,
-      };
+    if (orders) {
+      return new ResponseSuccess('COMMON.SUCCESS', orders);
     }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Get('listCount')
-  async orderCount(@Request() req): Promise<any> {
-    const {
-      user: { userId },
-    } = req;
-    const counts = await this.orderService.orderCount(userId);
-    if (!counts) {
-      return {
-        msg: '获取订单数量失败!',
-        data: null,
-        code: 11000,
-      };
+  async orderCount(@Request() req): Promise<IResponse> {
+    const tokenInfo: UserEntity = req.user;
+    const counts = await this.orderService.orderCount(tokenInfo.userId);
+    if (counts) {
+      return new ResponseSuccess('COMMON.SUCCESS', counts);
     }
-    return {
-      msg: '',
-      data: counts,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Get('info')
-  async info(@Query() params) {
-    const orders = await this.orderService.findOrderById(params.id);
-    if (!orders) {
-      return {
-        msg: '订单信息获取失败!',
-        data: null,
-        code: 11000,
-      };
+  async info(@Query() params: OrderDto): Promise<IResponse> {
+    const orderInfo = await this.orderService.findOrderById(params.id);
+    if (orderInfo) {
+      return new ResponseSuccess('COMMON.SUCCESS', orderInfo);
     }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('listByStatus')
-  async listByStatus(@Request() req, @Body() params: Order) {
+  async listByStatus(
+    @Request() req,
+    @Body() params: OrderDto,
+  ): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
     const orders = await this.orderService.findOrderByStatus(
       params.status,
       tokenInfo.userId,
     );
-    if (!orders) {
-      return {
-        msg: '订单列表获取失败!',
-        data: null,
-        code: 11000,
-      };
+    if (orders) {
+      return new ResponseSuccess('COMMON.SUCCESS', orders);
     }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('add')
-  @HttpCode(200)
-  async add(@Request() req, @Body() addOrder: Order) {
-    const { userId } = req.user;
+  @HttpCode(HttpStatus.OK)
+  async add(
+    @Request() req,
+    @Body() addOrder: CreateOderDto,
+  ): Promise<IResponse> {
+    const tokenInfo: UserEntity = req.user;
     const result = await this.orderService.addOrder({
       ...addOrder,
-      userId,
+      userId: tokenInfo.userId,
     });
-    return result;
+    if (result?.orderId) {
+      return new ResponseSuccess('COMMON.SUCCESS', result.orderId);
+    }
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR', result.msg);
   }
 
   @Post('pay')
-  @HttpCode(200)
-  async pay(@Body() payInfo: Order) {
+  @HttpCode(HttpStatus.OK)
+  async pay(@Body() payInfo: OrderInterface): Promise<IResponse> {
     const result = await this.orderService.orderPay(payInfo);
-    if (!result) {
-      return {
-        msg: '订单支付失败!',
-        data: null,
-        code: 11000,
-      };
+    if (result) {
+      return new ResponseSuccess('COMMON.SUCCESS', result);
     }
-    return {
-      msg: '',
-      data: result,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

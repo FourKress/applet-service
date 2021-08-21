@@ -14,6 +14,7 @@ export const UserSchema = new mongoose.Schema<UserInterface>(
     avatarUrl: String,
     teamUpCount: Number,
     isBoss: Boolean,
+    bossId: String,
     monthlyCardCount: Number,
   },
   {

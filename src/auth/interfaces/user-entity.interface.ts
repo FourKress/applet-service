@@ -6,6 +6,6 @@ export interface UserEntity {
   userId: string;
   // 微信唯一标识
   openId: string;
-  // 用户身份
-  isBoss: boolean;
+  // 场主Id
+  bossId: string;
 }

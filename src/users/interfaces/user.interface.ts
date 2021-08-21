@@ -22,6 +22,8 @@ export interface UserInterface extends Document {
   teamUpCount: number;
   // 是否场主
   isBoss: boolean;
+  // 场主Id
+  bossId: string;
   // 月卡数量
   monthlyCardCount: number;
   createdAt: Date;

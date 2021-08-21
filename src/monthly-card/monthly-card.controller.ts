@@ -1,61 +1,47 @@
 import {
   Controller,
-  Get,
-  Query,
   Post,
   Body,
-  UseGuards,
   HttpCode,
   Request,
+  HttpStatus,
 } from '@nestjs/common';
 import { MonthlyCardService } from './monthly-card.service';
-import { MonthlyCard } from './monthly-card.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { IResponse } from '../common/interfaces/response.interface';
+import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { MonthlyCardDto } from './dto/monthlyCard.dto';
+import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('monthlyCard')
 export class MonthlyCardController {
   constructor(private readonly monthlyCardService: MonthlyCardService) {}
 
   @Post('add')
-  @HttpCode(200)
-  async addCard(@Request() req, @Body() info: MonthlyCard) {
-    const { userId } = req.user;
+  @HttpCode(HttpStatus.OK)
+  async addCard(
+    @Request() req,
+    @Body() info: CreateMonthlyCardDto,
+  ): Promise<IResponse> {
+    const tokenInfo: UserEntity = req.user;
     const card = await this.monthlyCardService.addMonthlyCard({
       ...info,
-      userId,
+      userId: tokenInfo.userId,
     });
-    if (!card) {
-      return {
-        msg: '添加月卡失败!',
-        data: null,
-        code: 11000,
-      };
+    if (card) {
+      return new ResponseSuccess('COMMON.SUCCESS', new MonthlyCardDto(card));
     }
-    return {
-      msg: '',
-      data: card,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 
   @Post('list')
-  @HttpCode(200)
-  async findById(@Request() req) {
-    const {
-      user: { userId },
-    } = req;
-    const card = await this.monthlyCardService.findByUserId(userId);
-    if (!card) {
-      return {
-        msg: '获取月卡列表失败!',
-        data: null,
-        code: 11000,
-      };
+  @HttpCode(HttpStatus.OK)
+  async findById(@Request() req): Promise<IResponse> {
+    const tokenInfo: UserEntity = req.user;
+    const cards = await this.monthlyCardService.findByUserId(tokenInfo.userId);
+    if (cards) {
+      return new ResponseSuccess('COMMON.SUCCESS', cards);
     }
-    return {
-      msg: '',
-      data: card,
-      code: 10000,
-    };
+    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
   }
 }

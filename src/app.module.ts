@@ -1,46 +1,21 @@
-﻿import { UsersModule } from './users/users.module';
+﻿import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { appConfig, dbUrl } from './config';
+
+import { TasksModule } from './tasks/tasks.module';
+import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
 import { UserRStadiumModule } from './userRstadium/userRstadium.module';
 import { SpaceModule } from './space/space.module';
 import { MatchModule } from './match/match.module';
-
-// import { OrderModule } from './order/order.module';
-// import { MonthlyCardModule } from './monthly-card/monthly-card.module';
-//
-// import { TasksModule } from './tasks/tasks.module';
-// import { UserRMatchModule } from './user-r-match/user-r-match.module';
+import { OrderModule } from './order/order.module';
+import { MonthlyCardModule } from './monthly-card/monthly-card.module';
+import { UserRMatchModule } from './userRMatch/userRMatch.module';
 // import { RevenueModule } from './revenue/revenue.module';
-//
-// @Module({
-//   imports: [
-//     TypeOrmModule.forRoot(),
-//     UsersModule,
-//     AuthModule,
-//     WxModule,
-//     StadiumModule,
-//     UserRelationStadiumModule,
-//     OrderModule,
-//     MonthlyCardModule,
-//     SpaceModule,
-//     TasksModule,
-//     MatchModule,
-//     UserRMatchModule,
-//     RevenueModule,
-//   ],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {
-//   constructor(private readonly connection: Connection) {}
-// }
-
-import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
-import { appConfig, dbUrl } from './config';
 
 @Module({
   imports: [
@@ -56,6 +31,7 @@ import { appConfig, dbUrl } from './config';
       useFindAndModify: false,
       useCreateIndex: true,
     }),
+    TasksModule,
     UsersModule,
     AuthModule,
     WxModule,
@@ -63,6 +39,9 @@ import { appConfig, dbUrl } from './config';
     UserRStadiumModule,
     SpaceModule,
     MatchModule,
+    OrderModule,
+    MonthlyCardModule,
+    UserRMatchModule,
   ],
 })
 export class AppModule {

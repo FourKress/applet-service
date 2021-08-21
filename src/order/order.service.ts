@@ -9,7 +9,7 @@ import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { StadiumService } from '../stadium/stadium.service';
 import { SpaceService } from '../space/space.service';
 import { MatchService } from '../match/match.service';
-import { UserRMatchService } from '../user-r-match/user-r-match.service';
+import { UserRMatchService } from '../userRMatch/userRMatch.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -111,16 +111,12 @@ export class OrderService {
 
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
       return {
-        code: 11000,
         msg: '当前场次已没有位置可报名，请选择其它场次进行报名',
-        data: null,
       };
     }
     if (Moment().diff(match.endAt) > 0) {
       return {
-        code: 11000,
         msg: '当前场次已结束，请选择其它场次进行报名。',
-        data: null,
       };
     }
 
@@ -129,9 +125,7 @@ export class OrderService {
       match.selectPeople < match.minPeople
     ) {
       return {
-        code: 11000,
         msg: '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
-        data: null,
       };
     }
 
@@ -149,39 +143,37 @@ export class OrderService {
     };
     await this.userRMatchService.addRelation(relation);
 
-    await this.matchService.modifyMatch({
-      ...match,
-      selectPeople: match.selectPeople + addOrder.personCount,
-    });
-
-    const order = await this.orderRepository.save({
+    await this.matchService.modifyMatch(
+      Object.assign({}, match, {
+        selectPeople: match.selectPeople + addOrder.personCount,
+      }),
+    );
+    const newOrder = new this.orderModel({
       ...addOrder,
       isMonthlyCard: !!isMonthlyCard,
       status: 0,
     });
+    await newOrder.save();
 
     return {
-      code: 10000,
-      data: order.id,
-      msg: '',
+      orderId: newOrder.id,
     };
   }
 
   async modifyOrder(modifyOrder: OrderInterface): Promise<OrderInterface> {
-    const { id, ...info } = modifyOrder;
+    const { id, ...order } = modifyOrder;
     if (!id) {
       return null;
     }
-    await this.orderRepository.update(id, info);
-    const order = await this.orderRepository.findOne(id);
-    return order;
+    return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(payInfo: Order): Promise<any> {
-    if (!payInfo.id) {
+  async orderPay(payInfo: OrderInterface): Promise<any> {
+    const { id } = payInfo;
+    if (!id) {
       return false;
     }
-    const order = await this.orderRepository.findOne(payInfo.id);
+    const order = await this.orderModel.findById(id);
     if (!order) {
       return false;
     }
@@ -193,27 +185,28 @@ export class OrderService {
     ) {
       return false;
     }
-
-    await this.orderRepository.save({
-      ...order,
-      status: 1,
-    });
+    await this.orderModel
+      .findByIdAndUpdate(id, {
+        payInfo,
+        status: 1,
+      })
+      .exec();
     return true;
   }
 
-  async findOrderByDate(type = 0): Promise<Order[]> {
+  async findOrderByDate(type = 0): Promise<OrderInterface[]> {
     console.log(type);
     let list = [];
     switch (type) {
       case 0:
-        list = await this.orderRepository.find({
+        list = await this.orderModel.find({
           where: {
             createdAt: { $gte: Moment().startOf('day').toDate() },
           },
         });
         break;
       case 1:
-        list = await this.orderRepository.find({
+        list = await this.orderModel.find({
           where: {
             createdAt: {
               $lte: Moment().startOf('day').toDate(),
