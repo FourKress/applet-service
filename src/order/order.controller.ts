@@ -11,6 +11,7 @@ import {
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
 import { AuthGuard } from '@nestjs/passport';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('order')
 export class OrderController {
@@ -73,13 +74,11 @@ export class OrderController {
   @HttpCode(200)
   @Post('listByStatus')
   async listByStatus(@Request() req, @Body() params: Order) {
-    const {
-      user: { userId },
-    } = req;
-    const orders = await this.orderService.findOrderByStatus({
-      ...params,
-      userId,
-    });
+    const tokenInfo: UserEntity = req.user;
+    const orders = await this.orderService.findOrderByStatus(
+      params.status,
+      tokenInfo.userId,
+    );
     if (!orders) {
       return {
         msg: '订单列表获取失败!',

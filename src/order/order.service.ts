@@ -84,13 +84,18 @@ export class OrderService {
     return orderInfo;
   }
 
-  async findOrderByStatus(params: OrderInterface): Promise<OrderInterface[]> {
-    if (!params.userId) {
+  async findOrderByStatus(status, userId): Promise<OrderInterface[]> {
+    if (!userId) {
       return null;
     }
-    const orders = (await this.orderModel.find({ ...params }).exec()).sort(
-      (a: any, b: any) => b.createdAt - a.createdAt,
-    );
+    const orders = (
+      await this.orderModel
+        .find({
+          status,
+          userId,
+        })
+        .exec()
+    ).sort((a: any, b: any) => b.createdAt - a.createdAt);
     const coverOrders = await Promise.all(
       orders.map(async (order: OrderInterface) => {
         const orderInfo = await this.findOrderById(order.id);
@@ -100,7 +105,7 @@ export class OrderService {
     return coverOrders;
   }
 
-  async addOrder(addOrder: Order): Promise<any> {
+  async addOrder(addOrder: CreateOderDto): Promise<any> {
     const { matchId } = addOrder;
     const match = await this.matchService.findById(matchId);
 
@@ -162,7 +167,7 @@ export class OrderService {
     };
   }
 
-  async modifyOrder(modifyOrder: Order): Promise<any> {
+  async modifyOrder(modifyOrder: OrderInterface): Promise<OrderInterface> {
     const { id, ...info } = modifyOrder;
     if (!id) {
       return null;
