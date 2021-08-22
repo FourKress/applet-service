@@ -23,6 +23,12 @@ export class ResponseSuccess implements IResponse {
     this.success = true;
     this.message = infoMessage;
     this.data = data;
+    if (Array.isArray(data)) {
+      this.data = data.map((d) => {
+        d.id = d._id;
+        return d;
+      });
+    }
     this.code = 10000;
     if (!notLog) {
       try {

@@ -2,6 +2,8 @@ import { Document } from 'mongoose';
 
 export class StadiumInterface extends Document {
   id: string;
+  // 关联的用户bossId
+  bossId: string;
   // 球场名称
   name: string;
   // 区

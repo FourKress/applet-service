@@ -12,9 +12,6 @@ import { HttpExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
-import * as mongoose from 'mongoose';
-mongoose.set('returnOriginal', false);
-
 declare const module: any;
 
 async function bootstrap() {

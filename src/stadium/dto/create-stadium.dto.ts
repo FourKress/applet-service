@@ -1,4 +1,5 @@
 export class CreateStadiumDto {
+  bossId: string;
   // 球场名称
   name: string;
   // 区

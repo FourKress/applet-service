@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { StadiumInterface } from './interfaces/stadium,interface';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/interfaces/tools-service';
+import { StadiumDto } from './dto/stadium.dto';
 
 @Injectable()
 export class StadiumService {
@@ -20,11 +21,14 @@ export class StadiumService {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
-    return await this.stadiumModel
-      .findOne({
-        _id: Types.ObjectId(id),
-      })
-      .exec();
+    return await this.stadiumModel.findById(id).exec();
+  }
+
+  async findByBossId(bossId: string): Promise<StadiumInterface[]> {
+    if (!bossId) {
+      ToolsService.fail('bossId不能为空！');
+    }
+    return await this.stadiumModel.find({ bossId }).exec();
   }
 
   async add(addStadium: CreateStadiumDto): Promise<StadiumInterface> {
@@ -38,7 +42,7 @@ export class StadiumService {
     return await newStadium.save();
   }
 
-  async modify(modifyStadium: StadiumInterface): Promise<StadiumInterface> {
+  async modify(modifyStadium: StadiumDto): Promise<StadiumInterface> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');

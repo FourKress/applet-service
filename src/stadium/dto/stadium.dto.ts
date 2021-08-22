@@ -3,6 +3,7 @@ import { StadiumInterface } from '../interfaces/stadium,interface';
 export class StadiumDto {
   constructor(object: StadiumInterface) {
     this.id = object?._id;
+    this.bossId = object?.bossId;
     this.name = object?.name;
     this.city = object?.city;
     this.province = object?.province;
@@ -18,6 +19,7 @@ export class StadiumDto {
     this.updatedAt = object?.updatedAt;
   }
   readonly id: string;
+  readonly bossId: string;
   readonly name: string;
   readonly city: string;
   readonly province: string;
