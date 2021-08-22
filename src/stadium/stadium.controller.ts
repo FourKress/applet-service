@@ -9,7 +9,6 @@ import {
   Request,
 } from '@nestjs/common';
 import { StadiumService } from './stadium.service';
-import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { StadiumDto } from './dto/stadium.dto';
 import { IResponse } from '../common/interfaces/response.interface';
 import { ResponseSuccess } from '../common/dto/response.dto';
@@ -43,7 +42,7 @@ export class StadiumController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async add(@Body() addStadium: CreateStadiumDto) {
+  async add(@Body() addStadium: StadiumDto) {
     const stadium = await this.stadiumService.add(addStadium);
     return new ResponseSuccess(stadium);
   }

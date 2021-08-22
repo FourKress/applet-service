@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { StadiumInterface } from './interfaces/stadium.interface';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
 import { StadiumDto } from './dto/stadium.dto';
