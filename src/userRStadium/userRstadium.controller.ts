@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserRStadiumService } from './userRstadium.service';
 import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { ResponseSuccess } from '../common/dto/response.dto';
 import { UserRStadiumDto } from './dto/userRStadium.dto';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { UserRStadiumInterface } from './interfaces/userRStadium.interface';
@@ -23,14 +23,10 @@ export class UserRStadiumController {
   async watchList(@Request() req): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
 
-    try {
-      const list = await this.userRStadiumService.watchListByUserId(
-        tokenInfo.userId,
-      );
-      return new ResponseSuccess('COMMON.SUCCESS', list);
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const list = await this.userRStadiumService.watchListByUserId(
+      tokenInfo.userId,
+    );
+    return new ResponseSuccess(list);
   }
 
   @Post('watchFlag')
@@ -38,18 +34,11 @@ export class UserRStadiumController {
   async watchFlag(@Request() req, @Body() data: any): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
 
-    try {
-      const relation = await this.userRStadiumService.watchFlag(
-        data.stadiumId,
-        tokenInfo.userId,
-      );
-      return new ResponseSuccess(
-        'COMMON.SUCCESS',
-        new UserRStadiumDto(relation),
-      );
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const relation = await this.userRStadiumService.watchFlag(
+      data.stadiumId,
+      tokenInfo.userId,
+    );
+    return new ResponseSuccess(new UserRStadiumDto(relation));
   }
 
   @Post('watch')
@@ -60,14 +49,10 @@ export class UserRStadiumController {
   ): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
 
-    try {
-      const relation = await this.userRStadiumService.watch({
-        ...watchRelation,
-        userId: tokenInfo.userId,
-      });
-      return new ResponseSuccess('COMMON.SUCCESS', relation);
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const relation = await this.userRStadiumService.watch({
+      ...watchRelation,
+      userId: tokenInfo.userId,
+    });
+    return new ResponseSuccess(relation);
   }
 }

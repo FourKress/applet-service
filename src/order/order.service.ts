@@ -14,6 +14,7 @@ import { UserRMatchService } from '../userRMatch/userRMatch.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 import * as utils from './utils';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 @Injectable()
 export class OrderService {
@@ -53,7 +54,7 @@ export class OrderService {
 
   async findOrderById(id: string): Promise<OrderInfoInterface> {
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     const order = await this.orderModel.findById(id);
     const { spaceId, matchId, stadiumId, personCount, userId } = order;
@@ -86,7 +87,7 @@ export class OrderService {
 
   async findOrderByStatus(status, userId): Promise<OrderInterface[]> {
     if (!userId) {
-      return null;
+      ToolsService.fail('userId不能为空！');
     }
     const orders = (
       await this.orderModel
@@ -105,28 +106,24 @@ export class OrderService {
     return coverOrders;
   }
 
-  async addOrder(addOrder: CreateOderDto): Promise<any> {
+  async addOrder(addOrder: CreateOderDto): Promise<string> {
     const { matchId } = addOrder;
     const match = await this.matchService.findById(matchId);
 
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
-      return {
-        msg: '当前场次已没有位置可报名，请选择其它场次进行报名',
-      };
+      ToolsService.fail('当前场次已没有位置可报名，请选择其它场次进行报名！');
     }
     if (Moment().diff(match.endAt) > 0) {
-      return {
-        msg: '当前场次已结束，请选择其它场次进行报名。',
-      };
+      ToolsService.fail('当前场次已结束，请选择其它场次进行报名。');
     }
 
     if (
       Moment().diff(match.startAt) > 0 &&
       match.selectPeople < match.minPeople
     ) {
-      return {
-        msg: '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
-      };
+      ToolsService.fail(
+        '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
+      );
     }
 
     const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
@@ -155,27 +152,25 @@ export class OrderService {
     });
     await newOrder.save();
 
-    return {
-      orderId: newOrder.id,
-    };
+    return newOrder.id;
   }
 
   async modifyOrder(modifyOrder: OrderInterface): Promise<OrderInterface> {
     const { id, ...order } = modifyOrder;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(payInfo: OrderInterface): Promise<any> {
+  async orderPay(payInfo: OrderInterface): Promise<boolean> {
     const { id } = payInfo;
     if (!id) {
-      return false;
+      ToolsService.fail('id不能为空！');
     }
     const order = await this.orderModel.findById(id);
     if (!order) {
-      return false;
+      ToolsService.fail('支付失败，未找到对应的订单！');
     }
     const match = await this.matchService.findById(order.matchId);
     if (
@@ -183,7 +178,7 @@ export class OrderService {
         (Moment() - Moment(order.createdAt)) <
       0
     ) {
-      return false;
+      ToolsService.fail('支付失败，订单已超时！');
     }
     await this.orderModel
       .findByIdAndUpdate(id, {

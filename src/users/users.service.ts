@@ -3,6 +3,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserInterface } from './interfaces/user.interface';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +13,7 @@ export class UsersService {
 
   async findOneByOpenId(openId: string): Promise<UserInterface> {
     if (!openId) {
-      return null;
+      ToolsService.fail('openId不能为空！');
     }
     return await this.userModel
       .findOne({
@@ -23,7 +24,7 @@ export class UsersService {
 
   async findOneById(id: string): Promise<UserInterface> {
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.userModel
       .findOne({
@@ -49,15 +50,18 @@ export class UsersService {
   async modify(modifyUser: UserInterface): Promise<UserInterface> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
 
     return await this.userModel.findByIdAndUpdate(id, userInfo).exec();
   }
 
   async setBoss(id: string): Promise<UserInterface> {
+    const hasBoss = await this.userModel.findById(id);
+    if (hasBoss.isBoss || hasBoss.bossId) {
+      ToolsService.fail('设置失败，该账号已是场主身份！');
+    }
     const bossId = Types.ObjectId().toHexString();
-    console.log(bossId);
     return await this.userModel
       .findByIdAndUpdate(id, {
         isBoss: true,

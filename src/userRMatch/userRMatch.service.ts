@@ -4,6 +4,7 @@ import { CreateUserRMatchDto } from './dto/create-userRMatch.dto';
 import { UserRMatchInterface } from './interfaces/userRMatch.interface';
 import { UsersService } from '../users/users.service';
 import { Model } from 'mongoose';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 @Injectable()
 export class UserRMatchService {
@@ -33,7 +34,7 @@ export class UserRMatchService {
 
   async relationByUserId(userId: string): Promise<UserRMatchInterface[]> {
     if (!userId) {
-      return null;
+      ToolsService.fail('userId不能为空！');
     }
     const relation = await this.userRMatchModel.find({
       userId,
@@ -46,7 +47,7 @@ export class UserRMatchService {
   ): Promise<UserRMatchInterface> {
     const { userId, matchId } = addRelation;
     if (!userId || !matchId) {
-      return null;
+      ToolsService.fail('userId、matchId不能为空！');
     }
     const relation = await this.userRMatchModel.findOne({
       userId,
@@ -66,7 +67,6 @@ export class UserRMatchService {
   async modifyRelation(
     modifyRelation: UserRMatchInterface,
   ): Promise<UserRMatchInterface> {
-    console.log(modifyRelation);
     return this.userRMatchModel.findByIdAndUpdate(
       modifyRelation.id,
       modifyRelation,

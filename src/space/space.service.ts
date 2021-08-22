@@ -5,6 +5,7 @@ import { SpaceInterface } from './interfaces/space.interface';
 import { SpaceMatchDto } from './dto/space-match.dto';
 import { MatchService } from '../match/match.service';
 import { Model, Types } from 'mongoose';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -52,7 +53,9 @@ export class SpaceService {
       name,
     });
     if (hasSpace || !stadiumId) {
-      return null;
+      ToolsService.fail(
+        `${stadiumId} ? '添加失败，场地名称已存在！' : 'stadiumId不能为空！'`,
+      );
     }
 
     const newSpace = new this.spaceModel(info);
@@ -62,7 +65,7 @@ export class SpaceService {
   async modifySpace(info: SpaceInterface): Promise<SpaceInterface> {
     const { id, ...spaceInfo } = info;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.spaceModel.findByIdAndUpdate(id, spaceInfo).exec();
   }

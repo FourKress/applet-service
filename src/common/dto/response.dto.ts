@@ -1,7 +1,7 @@
 import { IResponse } from '../interfaces/response.interface';
 
 export class ResponseError implements IResponse {
-  constructor(infoMessage: string, data?: any) {
+  constructor(infoMessage = '失败', data?: any) {
     this.success = false;
     this.message = infoMessage;
     this.data = data;
@@ -14,14 +14,12 @@ export class ResponseError implements IResponse {
   }
   message: string;
   data: any[];
-  errorMessage: any;
-  error: any;
   success: boolean;
   code: number;
 }
 
 export class ResponseSuccess implements IResponse {
-  constructor(infoMessage: string, data?: any, notLog?: boolean) {
+  constructor(data?: any, infoMessage = '成功', notLog?: boolean) {
     this.success = true;
     this.message = infoMessage;
     this.data = data;
@@ -42,8 +40,6 @@ export class ResponseSuccess implements IResponse {
   }
   message: string;
   data: any[];
-  errorMessage: any;
-  error: any;
   success: boolean;
   code: number;
 }

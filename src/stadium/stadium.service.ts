@@ -3,6 +3,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { StadiumInterface } from './interfaces/stadium,interface';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 @Injectable()
 export class StadiumService {
@@ -17,7 +18,7 @@ export class StadiumService {
 
   async findById(id: string): Promise<StadiumInterface> {
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.stadiumModel
       .findOne({
@@ -31,7 +32,7 @@ export class StadiumService {
       name: addStadium.name,
     });
     if (hasStadium) {
-      return null;
+      ToolsService.fail('添加失败，球场名称已存在！');
     }
     const newStadium = new this.stadiumModel(addStadium);
     return await newStadium.save();
@@ -40,7 +41,7 @@ export class StadiumService {
   async modify(modifyStadium: StadiumInterface): Promise<StadiumInterface> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.stadiumModel
       .findOneAndUpdate(

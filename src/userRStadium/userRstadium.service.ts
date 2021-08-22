@@ -3,6 +3,7 @@ import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserRStadiumInterface } from './interfaces/userRStadium.interface';
 import { CreateUserRStadiumDto } from './dto/create-userRStadium.dto';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 @Injectable()
 export class UserRStadiumService {
@@ -13,7 +14,7 @@ export class UserRStadiumService {
 
   async watchListByUserId(userId: string): Promise<UserRStadiumInterface[]> {
     if (!userId) {
-      return null;
+      ToolsService.fail('userId不能为空！');
     }
     return await this.userRStadium
       .find({
@@ -39,7 +40,7 @@ export class UserRStadiumService {
   ): Promise<boolean> {
     const { userId, stadiumId } = watchStadium;
     if (!userId || !stadiumId) {
-      return null;
+      ToolsService.fail('userId、stadiumId不能为空！');
     }
     const { isWatch } = watchStadium;
     const relation = await this.userRStadium

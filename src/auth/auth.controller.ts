@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserInterface } from '../users/interfaces/user.interface';
-import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { ResponseSuccess } from '../common/dto/response.dto';
 import { IResponse } from '../common/interfaces/response.interface';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 
@@ -23,11 +23,7 @@ export class AuthController {
     @Request() req,
     @Body() user: UserInterface,
   ): Promise<IResponse> {
-    try {
-      const loginInfo = await this.authService.login(user);
-      return new ResponseSuccess('LOGIN.SUCCESS', loginInfo);
-    } catch (error) {
-      return new ResponseError('LOGIN.ERROR', error);
-    }
+    const loginInfo = await this.authService.login(user);
+    return new ResponseSuccess(loginInfo);
   }
 }

@@ -12,7 +12,7 @@ import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { StadiumInterface } from './interfaces/stadium,interface';
 import { StadiumDto } from './dto/stadium.dto';
 import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { ResponseSuccess } from '../common/dto/response.dto';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('stadium')
@@ -21,42 +21,28 @@ export class StadiumController {
 
   @Get('list')
   async findAll(): Promise<IResponse> {
-    try {
-      const stadiums = await this.stadiumService.findAll();
-      return new ResponseSuccess('COMMON.SUCCESS', stadiums);
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const stadiums = await this.stadiumService.findAll();
+    return new ResponseSuccess(stadiums);
   }
 
   @NoAuth()
   @Get('info')
   async info(@Query() params: any): Promise<any> {
-    try {
-      const stadium = await this.stadiumService.findById(params.id);
-      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const stadium = await this.stadiumService.findById(params.id);
+    return new ResponseSuccess(new StadiumDto(stadium));
   }
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
   async modify(@Body() modifyStadium: StadiumInterface): Promise<IResponse> {
     const stadium = await this.stadiumService.modify(modifyStadium);
-    if (stadium) {
-      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(new StadiumDto(stadium));
   }
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
   async add(@Body() addStadium: CreateStadiumDto) {
     const stadium = await this.stadiumService.add(addStadium);
-    if (stadium) {
-      return new ResponseSuccess('COMMON.SUCCESS', new StadiumDto(stadium));
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(new StadiumDto(stadium));
   }
 }

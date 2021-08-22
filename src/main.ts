@@ -7,7 +7,8 @@ import * as rateLimit from 'express-rate-limit';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './common/filters/all-exception.filter';
+import { AnyExceptionsFilter } from './common/filters/any-exception.filter';
+import { HttpExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -26,7 +27,7 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AnyExceptionsFilter(), new HttpExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe());
   /* 安全 */
   app.enable('trust proxy');

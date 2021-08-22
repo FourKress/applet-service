@@ -5,6 +5,7 @@ import { MatchInterface } from './interfaces/match.interface';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { MatchSpaceDto } from './dto/match-space.dto';
 import { SpaceService } from '../space/space.service';
+import { ToolsService } from '../common/interfaces/tools-service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -49,7 +50,7 @@ export class MatchService {
       endAt,
     });
     if (hasMatch || !spaceId) {
-      return null;
+      ToolsService.fail('hasMatch、spaceId不能为空！');
     }
 
     const space = await this.spaceService.findById(addMatch.spaceId);
@@ -67,7 +68,7 @@ export class MatchService {
   async modifyMatch(modifyMatch: MatchInterface): Promise<MatchInterface> {
     const { id, ...match } = modifyMatch;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
     return await this.matchModel.findByIdAndUpdate(id, match).exec();
   }

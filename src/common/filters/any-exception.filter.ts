@@ -8,7 +8,7 @@ import { HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
-export class AllExceptionsFilter implements ExceptionFilter {
+export class AnyExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -19,6 +19,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else {
       console.log(exception);
     }
+    console.log('any');
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { SpaceService } from './space.service';
 import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseError, ResponseSuccess } from '../common/dto/response.dto';
+import { ResponseSuccess } from '../common/dto/response.dto';
 import { SpaceDto } from './dto/space.dto';
 
 @Controller('space')
@@ -12,19 +12,13 @@ export class SpaceController {
   @HttpCode(HttpStatus.OK)
   async addSpace(@Body() params: SpaceDto): Promise<IResponse> {
     const space = await this.spaceService.addSpace(params);
-    if (space) {
-      return new ResponseSuccess('COMMON.SUCCESS', new SpaceDto(space));
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(new SpaceDto(space));
   }
 
   @Post('list')
   @HttpCode(HttpStatus.OK)
   async findByStadium(@Body() params: SpaceDto): Promise<IResponse> {
     const spaces = await this.spaceService.findByStadiumId(params.stadiumId);
-    if (spaces) {
-      return new ResponseSuccess('COMMON.SUCCESS', spaces);
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(spaces);
   }
 }

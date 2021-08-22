@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
 import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess, ResponseError } from '../common/dto/response.dto';
+import { ResponseSuccess } from '../common/dto/response.dto';
 import { UsersService } from './users.service';
 import { UserInterface } from './interfaces/user.interface';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
@@ -22,34 +22,22 @@ export class UsersController {
 
   @Get('findAll')
   async findAll(): Promise<IResponse> {
-    try {
-      const users = await this.usersService.findAll();
-      return new ResponseSuccess('COMMON.SUCCESS', users);
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const users = await this.usersService.findAll();
+    return new ResponseSuccess(users);
   }
 
   @NoAuth()
   @Get('findOneByOpenId')
   async findOneByOpenId(@Query() userInfo: UserInterface): Promise<IResponse> {
-    try {
-      const user = await this.usersService.findOneByOpenId(userInfo.openId);
-      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const user = await this.usersService.findOneByOpenId(userInfo.openId);
+    return new ResponseSuccess(new UserDto(user));
   }
 
   @Get('findOneById')
   async findOneById(@Request() req): Promise<IResponse> {
     const tokenInfo: UserEntity = req.user;
-    try {
-      const user = await this.usersService.findOneById(tokenInfo.userId);
-      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
-    } catch {
-      return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
-    }
+    const user = await this.usersService.findOneById(tokenInfo.userId);
+    return new ResponseSuccess(new UserDto(user));
   }
 
   @Post('modify')
@@ -64,19 +52,13 @@ export class UsersController {
         id: tokenInfo.userId,
       }),
     );
-    if (user) {
-      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(new UserDto(user));
   }
 
   @Post('setBoss')
   @HttpCode(HttpStatus.OK)
   async setBoss(@Body() params: UserDto): Promise<IResponse> {
     const user = await this.usersService.setBoss(params.id);
-    if (user) {
-      return new ResponseSuccess('COMMON.SUCCESS', new UserDto(user));
-    }
-    return new ResponseError('COMMON.ERROR.GENERIC_ERROR');
+    return new ResponseSuccess(new UserDto(user));
   }
 }
