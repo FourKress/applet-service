@@ -4,7 +4,7 @@ import { CreateUserRMatchDto } from './dto/create-userRMatch.dto';
 import { UserRMatchInterface } from './interfaces/userRMatch.interface';
 import { UsersService } from '../users/users.service';
 import { Model } from 'mongoose';
-import { ToolsService } from '../common/interfaces/tools-service';
+import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class UserRMatchService {

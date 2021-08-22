@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
@@ -9,8 +8,10 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AppModule } from './app.module';
 import { AnyExceptionsFilter } from './common/filters/any-exception.filter';
 import { HttpExceptionsFilter } from './common/filters/http-exception.filter';
+import { BadRequestExceptionFilter } from './common/filters/badRequest-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { ValidationPipe } from './common/pipe/validation.pipe';
 
 declare const module: any;
 
@@ -24,7 +25,11 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
-  app.useGlobalFilters(new AnyExceptionsFilter(), new HttpExceptionsFilter());
+  app.useGlobalFilters(
+    new AnyExceptionsFilter(),
+    new HttpExceptionsFilter(),
+    new BadRequestExceptionFilter(),
+  );
   app.useGlobalPipes(new ValidationPipe());
   /* 安全 */
   app.enable('trust proxy');

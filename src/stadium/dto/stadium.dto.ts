@@ -1,4 +1,4 @@
-import { StadiumInterface } from '../interfaces/stadium,interface';
+import { StadiumInterface } from '../interfaces/stadium.interface';
 
 export class StadiumDto {
   constructor(object: StadiumInterface) {

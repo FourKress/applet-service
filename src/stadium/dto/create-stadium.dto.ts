@@ -1,6 +1,11 @@
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
 export class CreateStadiumDto {
+  @IsNotEmpty({ message: 'bossId不能为空' })
+  @IsString()
   bossId: string;
-  // 球场名称
+  @IsNotEmpty({ message: 'name不能为空' })
+  @IsString()
   name: string;
   // 区
   city: string;

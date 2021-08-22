@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { StadiumInterface } from '../interfaces/stadium,interface';
+import { StadiumInterface } from '../interfaces/stadium.interface';
 
 export const StadiumSchema = new mongoose.Schema<StadiumInterface>(
   {

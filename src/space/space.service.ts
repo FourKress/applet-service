@@ -5,7 +5,7 @@ import { SpaceInterface } from './interfaces/space.interface';
 import { SpaceMatchDto } from './dto/space-match.dto';
 import { MatchService } from '../match/match.service';
 import { Model, Types } from 'mongoose';
-import { ToolsService } from '../common/interfaces/tools-service';
+import { ToolsService } from '../common/utils/tools-service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
