@@ -31,29 +31,27 @@ export class StadiumController {
   async info(@Query() params: StadiumDto): Promise<IResponse> {
     console.log(params);
     const stadium = await this.stadiumService.findById(params.id);
-    return new ResponseSuccess(new StadiumDto(stadium));
+    return new ResponseSuccess(stadium);
   }
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
   async modify(@Body() modifyStadium: StadiumDto): Promise<IResponse> {
     const stadium = await this.stadiumService.modify(modifyStadium);
-    return new ResponseSuccess(new StadiumDto(stadium));
+    return new ResponseSuccess(stadium);
   }
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
   async add(@Body() addStadium: CreateStadiumDto) {
     const stadium = await this.stadiumService.add(addStadium);
-    return new ResponseSuccess(new StadiumDto(stadium));
+    return new ResponseSuccess(stadium);
   }
 
   @Get('stadiumList')
-  async stadiumList(@Request() req): Promise<IResponse> {
+  async stadiumList(@Request() req): Promise<StadiumDto[]> {
     const tokenInfo: UserEntity = req.user;
-    const stadiumList = await this.stadiumService.findByBossId(
-      tokenInfo.bossId,
-    );
-    return new ResponseSuccess(stadiumList);
+    return await this.stadiumService.findByBossId(tokenInfo.bossId);
+    // return new ResponseSuccess(stadiumList);
   }
 }

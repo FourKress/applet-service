@@ -5,33 +5,34 @@ import { StadiumInterface } from './interfaces/stadium.interface';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
 import { StadiumDto } from './dto/stadium.dto';
+import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 
 @Injectable()
 export class StadiumService {
   constructor(
-    @InjectModel('Stadium')
-    private readonly stadiumModel: Model<StadiumInterface>,
+    @InjectModel(Stadium.name)
+    private readonly stadiumModel: Model<StadiumDocument>,
   ) {}
 
-  async findAll(): Promise<StadiumInterface[]> {
+  async findAll(): Promise<Stadium[]> {
     return this.stadiumModel.find().exec();
   }
 
-  async findById(id: string): Promise<StadiumInterface> {
+  async findById(id: string): Promise<Stadium> {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
     return await this.stadiumModel.findById(id).exec();
   }
 
-  async findByBossId(bossId: string): Promise<StadiumInterface[]> {
+  async findByBossId(bossId: string): Promise<Stadium[]> {
     if (!bossId) {
       ToolsService.fail('bossId不能为空！');
     }
     return await this.stadiumModel.find({ bossId }).exec();
   }
 
-  async add(addStadium: CreateStadiumDto): Promise<StadiumInterface> {
+  async add(addStadium: CreateStadiumDto): Promise<Stadium> {
     const hasStadium = await this.stadiumModel.findOne({
       name: addStadium.name,
     });
@@ -42,7 +43,7 @@ export class StadiumService {
     return await newStadium.save();
   }
 
-  async modify(modifyStadium: StadiumDto): Promise<StadiumInterface> {
+  async modify(modifyStadium: StadiumDto): Promise<Stadium> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');

@@ -1,30 +1,48 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsMobilePhone,
+  IsString,
+  IsNumberString,
+} from 'class-validator';
 
 export class CreateStadiumDto {
-  @IsNotEmpty({ message: 'bossId不能为空' })
-  @IsString()
+  @IsNotEmpty({ message: 'bossId 不能为空' })
+  @IsNumberString({}, { message: 'bossId 必须是数字的 string 类型' })
   bossId: string;
-  @IsNotEmpty({ message: 'name不能为空' })
-  @IsString()
+  @IsNotEmpty({ message: 'name 不能为空' })
+  @IsString({ message: 'name 必须是 string 类型' })
   name: string;
-  // 区
+  // @IsString({ message: 'city 必须是 string 类型' })
   city: string;
-  // 省
+  // @IsString({ message: 'province 必须是 string 类型' })
   province: string;
-  // 国家
+  // @IsString({ message: 'country 必须是 string 类型' })
   country: string;
-  // 球场电话
+  // @IsNotEmpty({ message: 'firstPhoneNum 不能为空' })
+  // @IsMobilePhone(
+  //   'zh-CN',
+  //   { strictMode: false },
+  //   { message: 'firstPhoneNum 不是正确的手机号' },
+  // )
   firstPhoneNum: string;
-  // 球场电话
+  // @IsMobilePhone(
+  //   'zh-CN',
+  //   { strictMode: false },
+  //   { message: 'secondPhoneNum 不是正确的手机号' },
+  // )
   secondPhoneNum: string;
-  // 球场地址
-  address: number;
-  // 球场图
+  // @IsString({ message: 'address 必须是 string 类型' })
+  address: string;
+  // @IsString({ message: 'stadiumUrl 必须是 string 类型' })
   stadiumUrl: string;
-  // 场地
+  // @IsString({ message: 'remarks 必须是 string 类型' })
   remarks: string;
-  // 富文本描述
+  // @IsString({ message: 'description 必须是 string 类型' })
   description: string;
-  // 月卡价格
-  monthlyCardPrice: string;
+  // @IsNumber(
+  //   { allowNaN: false },
+  //   { message: 'monthlyCardPrice 必须是 number 类型' },
+  // )
+  monthlyCardPrice: number;
 }
