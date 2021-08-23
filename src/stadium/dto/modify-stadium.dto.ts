@@ -3,17 +3,17 @@ import {
   IsNumber,
   IsMobilePhone,
   IsString,
-  IsNumberString,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
 
 export class ModifyStadiumDto {
   @IsNotEmpty({ message: 'id 不能为空' })
-  @IsNumberString({}, { message: 'id 必须是数字的 string 类型' })
+  @IsMongoId({ message: 'id 不是正确的ID类型' })
   readonly id: string;
 
   @IsNotEmpty({ message: 'bossId 不能为空' })
-  @IsNumberString({}, { message: 'bossId 必须是数字的 string 类型' })
+  @IsMongoId({ message: 'bossId 不是正确的ID类型' })
   bossId: string;
 
   @IsOptional()

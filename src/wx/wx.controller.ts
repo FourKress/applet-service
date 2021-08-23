@@ -1,7 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { WxService } from './wx.service';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('wx')
@@ -10,15 +8,13 @@ export class WxController {
 
   @NoAuth()
   @Get('code2Session')
-  async code2Session(@Query() params: any): Promise<IResponse> {
-    const wxInfo = await this.wxService.code2Session(params.code);
-    return new ResponseSuccess(wxInfo);
+  async code2Session(@Query() params: any): Promise<string> {
+    return await this.wxService.code2Session(params.code);
   }
 
   @NoAuth()
   @Get('getActivityId')
-  async getActivityId(): Promise<IResponse> {
-    const activityId = await this.wxService.getActivityId();
-    return new ResponseSuccess(activityId);
+  async getActivityId(): Promise<string> {
+    return await this.wxService.getActivityId();
   }
 }

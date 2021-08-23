@@ -1,5 +1,6 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class WxService {
@@ -16,25 +17,29 @@ export class WxService {
 
   async code2Session(code): Promise<string> {
     const params = `appid=${this.appId}&secret=${this.appSecret}&js_code=${code}&grant_type=authorization_code`;
-    const res = await this.httpService
-      .get(`https://api.weixin.qq.com/sns/jscode2session?${params}`)
-      .toPromise();
+    const res = await lastValueFrom(
+      this.httpService.get(
+        `https://api.weixin.qq.com/sns/jscode2session?${params}`,
+      ),
+    );
     return res.data;
   }
 
   async getActivityId(): Promise<string> {
     const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     const accessToken = (
-      await this.httpService
-        .get(`https://api.weixin.qq.com/cgi-bin/token?${params}`)
-        .toPromise()
+      await lastValueFrom(
+        this.httpService.get(
+          `https://api.weixin.qq.com/cgi-bin/token?${params}`,
+        ),
+      )
     ).data?.access_token;
     const activityId = (
-      await this.httpService
-        .get(
+      await lastValueFrom(
+        this.httpService.get(
           `https://api.weixin.qq.com/cgi-bin/message/wxopen/activityid/create?access_token=${accessToken}`,
-        )
-        .toPromise()
+        ),
+      )
     ).data?.activity_id;
     return activityId;
   }
