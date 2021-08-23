@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, Interval, Timeout } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 
 import { OrderService } from '../order/order.service';
 import { MatchService } from '../match/match.service';

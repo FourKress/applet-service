@@ -10,33 +10,30 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { OrderDto } from './dto/order.dto';
 import { CreateOderDto } from './dto/create-oder.dto';
 import { OrderInterface } from './interfaces/order.interface';
+import { OrderCountInterface } from './interfaces/order-count.interface';
+import { OrderInfoInterface } from './interfaces/order-info.interface';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('list')
-  async findAll(): Promise<IResponse> {
-    const orders = await this.orderService.findAll();
-    return new ResponseSuccess(orders);
+  async findAll(): Promise<OrderInterface[]> {
+    return await this.orderService.findAll();
   }
 
   @Get('listCount')
-  async orderCount(@Request() req): Promise<IResponse> {
+  async orderCount(@Request() req): Promise<OrderCountInterface> {
     const tokenInfo: UserEntity = req.user;
-    const counts = await this.orderService.orderCount(tokenInfo.userId);
-    return new ResponseSuccess(counts);
+    return await this.orderService.orderCount(tokenInfo.userId);
   }
 
   @Get('info')
-  async info(@Query() params: OrderDto): Promise<IResponse> {
-    const orderInfo = await this.orderService.findOrderById(params.id);
-    return new ResponseSuccess(orderInfo);
+  async info(@Query() params: OrderDto): Promise<OrderInfoInterface> {
+    return await this.orderService.findOrderById(params.id);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -44,33 +41,27 @@ export class OrderController {
   async listByStatus(
     @Request() req,
     @Body() params: OrderDto,
-  ): Promise<IResponse> {
+  ): Promise<OrderInterface[]> {
     const tokenInfo: UserEntity = req.user;
-    const orders = await this.orderService.findOrderByStatus(
+    return await this.orderService.findOrderByStatus(
       params.status,
       tokenInfo.userId,
     );
-    return new ResponseSuccess(orders);
   }
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async add(
-    @Request() req,
-    @Body() addOrder: CreateOderDto,
-  ): Promise<IResponse> {
+  async add(@Request() req, @Body() addOrder: CreateOderDto): Promise<string> {
     const tokenInfo: UserEntity = req.user;
-    const orderId = await this.orderService.addOrder({
+    return await this.orderService.addOrder({
       ...addOrder,
       userId: tokenInfo.userId,
     });
-    return new ResponseSuccess(orderId);
   }
 
   @Post('pay')
   @HttpCode(HttpStatus.OK)
-  async pay(@Body() payInfo: OrderInterface): Promise<IResponse> {
-    const result = await this.orderService.orderPay(payInfo);
-    return new ResponseSuccess(result);
+  async pay(@Body() payInfo: OrderInterface): Promise<boolean> {
+    return await this.orderService.orderPay(payInfo);
   }
 }

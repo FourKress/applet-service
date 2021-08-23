@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserRStadiumInterface } from './interfaces/userRStadium.interface';
 import { CreateUserRStadiumDto } from './dto/create-userRStadium.dto';
@@ -57,12 +57,9 @@ export class UserRStadiumService {
       await newWatch.save();
       return true;
     } else {
-      await this.userRStadium.updateOne(
-        { _id: Types.ObjectId(relation.id) },
-        {
-          $set: { isWatch },
-        },
-      );
+      await this.userRStadium.findByIdAndUpdate(relation.id, {
+        isWatch,
+      });
       return isWatch;
     }
   }

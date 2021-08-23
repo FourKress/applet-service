@@ -9,8 +9,6 @@ import {
   Request,
 } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { UsersService } from './users.service';
 import { UserInterface } from './interfaces/user.interface';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
@@ -21,23 +19,22 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('findAll')
-  async findAll(): Promise<IResponse> {
-    const users = await this.usersService.findAll();
-    return new ResponseSuccess(users);
+  async findAll(): Promise<UserInterface[]> {
+    return await this.usersService.findAll();
   }
 
   @NoAuth()
   @Get('findOneByOpenId')
-  async findOneByOpenId(@Query() userInfo: UserInterface): Promise<IResponse> {
-    const user = await this.usersService.findOneByOpenId(userInfo.openId);
-    return new ResponseSuccess(new UserDto(user));
+  async findOneByOpenId(
+    @Query() userInfo: UserInterface,
+  ): Promise<UserInterface> {
+    return await this.usersService.findOneByOpenId(userInfo.openId);
   }
 
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<IResponse> {
+  async findOneById(@Request() req): Promise<UserInterface> {
     const tokenInfo: UserEntity = req.user;
-    const user = await this.usersService.findOneById(tokenInfo.userId);
-    return new ResponseSuccess(new UserDto(user));
+    return await this.usersService.findOneById(tokenInfo.userId);
   }
 
   @Post('modify')
@@ -45,20 +42,18 @@ export class UsersController {
   async modify(
     @Request() req,
     @Body() modifyUser: UserInterface,
-  ): Promise<IResponse> {
+  ): Promise<UserInterface> {
     const tokenInfo: UserEntity = req.user;
-    const user = await this.usersService.modify(
+    return await this.usersService.modify(
       Object.assign({}, modifyUser, {
         id: tokenInfo.userId,
       }),
     );
-    return new ResponseSuccess(new UserDto(user));
   }
 
   @Post('setBoss')
   @HttpCode(HttpStatus.OK)
-  async setBoss(@Body() params: UserDto): Promise<IResponse> {
-    const user = await this.usersService.setBoss(params.id);
-    return new ResponseSuccess(new UserDto(user));
+  async setBoss(@Body() params: UserDto): Promise<UserInterface> {
+    return await this.usersService.setBoss(params.id);
   }
 }

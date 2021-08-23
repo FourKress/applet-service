@@ -5,9 +5,6 @@ import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
 import { StadiumService } from '../stadium/stadium.service';
 import { Model } from 'mongoose';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
-
 @Injectable()
 export class MonthlyCardService {
   constructor(

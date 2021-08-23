@@ -7,11 +7,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { MonthlyCardService } from './monthly-card.service';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { MonthlyCardDto } from './dto/monthlyCard.dto';
 import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { MonthlyCardInterface } from './interfaces/monthlyCard.interface';
 
 @Controller('monthlyCard')
 export class MonthlyCardController {
@@ -22,20 +21,18 @@ export class MonthlyCardController {
   async addCard(
     @Request() req,
     @Body() info: CreateMonthlyCardDto,
-  ): Promise<IResponse> {
+  ): Promise<MonthlyCardInterface> {
     const tokenInfo: UserEntity = req.user;
-    const card = await this.monthlyCardService.addMonthlyCard({
+    return await this.monthlyCardService.addMonthlyCard({
       ...info,
       userId: tokenInfo.userId,
     });
-    return new ResponseSuccess(new MonthlyCardDto(card));
   }
 
   @Post('list')
   @HttpCode(HttpStatus.OK)
-  async findById(@Request() req): Promise<IResponse> {
+  async findById(@Request() req): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    const cards = await this.monthlyCardService.findByUserId(tokenInfo.userId);
-    return new ResponseSuccess(cards);
+    return await this.monthlyCardService.findByUserId(tokenInfo.userId);
   }
 }

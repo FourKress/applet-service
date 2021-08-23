@@ -1,8 +1,8 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { SpaceService } from './space.service';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { SpaceDto } from './dto/space.dto';
+import { SpaceInterface } from './interfaces/space.interface';
+import { SpaceMatchDto } from './dto/space-match.dto';
 
 @Controller('space')
 export class SpaceController {
@@ -10,15 +10,13 @@ export class SpaceController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async addSpace(@Body() params: SpaceDto): Promise<IResponse> {
-    const space = await this.spaceService.addSpace(params);
-    return new ResponseSuccess(new SpaceDto(space));
+  async addSpace(@Body() params: SpaceDto): Promise<SpaceInterface> {
+    return await this.spaceService.addSpace(params);
   }
 
   @Post('list')
   @HttpCode(HttpStatus.OK)
-  async findByStadium(@Body() params: SpaceDto): Promise<IResponse> {
-    const spaces = await this.spaceService.findByStadiumId(params.stadiumId);
-    return new ResponseSuccess(spaces);
+  async findByStadium(@Body() params: SpaceDto): Promise<SpaceMatchDto[]> {
+    return await this.spaceService.findByStadiumId(params.stadiumId);
   }
 }
