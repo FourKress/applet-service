@@ -1,17 +1,11 @@
-export class StadiumDto {
+import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
+import { CreateStadiumDto } from './create-stadium.dto';
+import { StadiumInterface } from '../interfaces/stadium.interface';
+
+export class StadiumDto extends CreateStadiumDto implements StadiumInterface {
+  @IsNotEmpty({ message: 'id 不能为空' })
+  @IsNumberString({}, { message: 'id 必须是数字的 string 类型' })
   readonly id: string;
-  readonly bossId: string;
-  readonly name: string;
-  readonly city: string;
-  readonly province: string;
-  readonly country: string;
-  readonly firstPhoneNum: string;
-  readonly secondPhoneNum: string;
-  readonly address: string;
-  readonly stadiumUrl: string;
-  readonly remarks: string;
-  readonly description: string;
-  readonly monthlyCardPrice: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

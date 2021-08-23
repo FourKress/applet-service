@@ -9,48 +9,42 @@ import {
   Request,
 } from '@nestjs/common';
 import { StadiumService } from './stadium.service';
-import { StadiumDto } from './dto/stadium.dto';
-import { IResponse } from '../common/interfaces/response.interface';
-import { ResponseSuccess } from '../common/dto/response.dto';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { Stadium } from './schemas/stadium.schema';
+import { CreateStadiumDto } from './dto/create-stadium.dto';
+import { ModifyStadiumDto } from './dto/modify-stadium.dto';
 
 @Controller('stadium')
 export class StadiumController {
   constructor(private readonly stadiumService: StadiumService) {}
 
   @Get('list')
-  async findAll(): Promise<IResponse> {
-    const stadiums = await this.stadiumService.findAll();
-    return new ResponseSuccess(stadiums);
+  async findAll(): Promise<Stadium[]> {
+    return await this.stadiumService.findAll();
   }
 
   @NoAuth()
   @Get('info')
-  async info(@Query() params: StadiumDto): Promise<IResponse> {
-    console.log(params);
-    const stadium = await this.stadiumService.findById(params.id);
-    return new ResponseSuccess(stadium);
+  async info(@Query('id') stadiumId: string): Promise<Stadium> {
+    return await this.stadiumService.findById(stadiumId);
   }
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
-  async modify(@Body() modifyStadium: StadiumDto): Promise<IResponse> {
-    const stadium = await this.stadiumService.modify(modifyStadium);
-    return new ResponseSuccess(stadium);
+  async modify(@Body() modifyStadium: ModifyStadiumDto): Promise<Stadium> {
+    return await this.stadiumService.modify(modifyStadium);
   }
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async add(@Body() addStadium: StadiumDto) {
-    const stadium = await this.stadiumService.add(addStadium);
-    return new ResponseSuccess(stadium);
+  async add(@Body() addStadium: CreateStadiumDto): Promise<any> {
+    return await this.stadiumService.add(addStadium);
   }
 
   @Get('stadiumList')
-  async stadiumList(@Request() req): Promise<StadiumDto[]> {
+  async stadiumList(@Request() req): Promise<Stadium[]> {
     const tokenInfo: UserEntity = req.user;
     return await this.stadiumService.findByBossId(tokenInfo.bossId);
-    // return new ResponseSuccess(stadiumList);
   }
 }

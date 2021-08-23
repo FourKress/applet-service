@@ -29,7 +29,7 @@ export type StadiumDocument = Stadium & Document;
 
 @Schema()
 export class Stadium {
-  @Prop()
+  @Prop({ name: 'id' })
   id: string;
   @Prop()
   bossId: string;

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
-import { StadiumDto } from './dto/stadium.dto';
 import { Stadium, StadiumDocument } from './schemas/stadium.schema';
+import { ModifyStadiumDto } from './dto/modify-stadium.dto';
 
 @Injectable()
 export class StadiumService {
@@ -42,18 +42,11 @@ export class StadiumService {
     return await newStadium.save();
   }
 
-  async modify(modifyStadium: StadiumDto): Promise<Stadium> {
+  async modify(modifyStadium: ModifyStadiumDto): Promise<Stadium> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
-    return await this.stadiumModel
-      .findOneAndUpdate(
-        { _id: Types.ObjectId(id) },
-        {
-          $set: stadiumInfo,
-        },
-      )
-      .exec();
+    return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
   }
 }
