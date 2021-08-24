@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export class UserRStadiumInterface extends Document {
+export interface UserRStadiumInterface {
   id: string;
   // 用户Id
   userId: string;

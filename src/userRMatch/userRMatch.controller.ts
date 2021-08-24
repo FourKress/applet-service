@@ -1,23 +1,22 @@
 import { Controller, Get, Post, Query, Body } from '@nestjs/common';
 import { UserRMatchService } from './userRMatch.service';
 import { CreateUserRMatchDto } from './dto/create-userRMatch.dto';
-import { UserRMatchInterface } from './interfaces/userRMatch.interface';
+import { UserRMatch } from './schemas/userRMatch.schema';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('userRMatch')
 export class UserRMatchController {
   constructor(private readonly userRMatchService: UserRMatchService) {}
 
   @Post('add')
-  async addRelation(
-    @Body() params: CreateUserRMatchDto,
-  ): Promise<UserRMatchInterface> {
+  async addRelation(@Body() params: CreateUserRMatchDto): Promise<UserRMatch> {
     return await this.userRMatchService.addRelation(params);
   }
 
   @Get('findAllByMatchId')
   async findAllByMatchId(
-    @Query() params: UserRMatchInterface,
-  ): Promise<UserRMatchInterface[]> {
-    return await this.userRMatchService.findAllByMatchId(params.matchId);
+    @Query('matchId', new ValidationIDPipe()) matchId: string,
+  ): Promise<UserRMatch[]> {
+    return await this.userRMatchService.findAllByMatchId(matchId);
   }
 }

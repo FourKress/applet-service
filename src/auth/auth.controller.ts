@@ -9,6 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { UserInterface } from '../users/interfaces/user.interface';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { AuthInterface } from './interfaces/auth.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -20,7 +21,7 @@ export class AuthController {
   public async login(
     @Request() req,
     @Body() user: UserInterface,
-  ): Promise<any> {
+  ): Promise<AuthInterface> {
     return await this.authService.login(user);
   }
 }

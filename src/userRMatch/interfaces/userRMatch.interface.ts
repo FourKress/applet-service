@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export class UserRMatchInterface extends Document {
+export interface UserRMatchInterface {
   id: string;
   // 用户Id
   userId: string;

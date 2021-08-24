@@ -30,7 +30,6 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
       useUnifiedTopology: true,
       useFindAndModify: false,
       useCreateIndex: true,
-      returnOriginal: false,
     }),
     TasksModule,
     UsersModule,

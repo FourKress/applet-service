@@ -1,6 +1,9 @@
 import { IsMongoId, IsNumber } from 'class-validator';
 
-export class CreateUserRMatchDto {
+export class ModifyUserRMatchDto {
+  @IsMongoId({ message: 'id 不是正确的ID类型' })
+  id: string;
+
   @IsMongoId({ message: 'userId 不是正确的ID类型' })
   userId: string;
 

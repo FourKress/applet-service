@@ -41,7 +41,7 @@ export class StadiumController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async add(@Body() addStadium: CreateStadiumDto): Promise<any> {
+  async add(@Body() addStadium: CreateStadiumDto): Promise<Stadium> {
     return await this.stadiumService.add(addStadium);
   }
 

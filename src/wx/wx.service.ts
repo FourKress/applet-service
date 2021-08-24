@@ -15,7 +15,7 @@ export class WxService {
   private readonly appId: string;
   private readonly appSecret: string;
 
-  async code2Session(code): Promise<string> {
+  async code2Session(code: string): Promise<string> {
     const params = `appid=${this.appId}&secret=${this.appSecret}&js_code=${code}&grant_type=authorization_code`;
     const res = await lastValueFrom(
       this.httpService.get(

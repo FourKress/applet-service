@@ -8,29 +8,27 @@ import {
 } from 'class-validator';
 
 export class ModifyStadiumDto {
-  @IsNotEmpty({ message: 'id 不能为空' })
   @IsMongoId({ message: 'id 不是正确的ID类型' })
   readonly id: string;
 
-  @IsNotEmpty({ message: 'bossId 不能为空' })
   @IsMongoId({ message: 'bossId 不是正确的ID类型' })
-  bossId: string;
+  readonly bossId: string;
 
   @IsOptional()
   @IsString({ message: 'name 必须是 string 类型' })
-  name: string;
+  readonly name: string;
 
   @IsOptional()
   @IsString({ message: 'city 必须是 string 类型' })
-  city: string;
+  readonly city: string;
 
   @IsOptional()
   @IsString({ message: 'province 必须是 string 类型' })
-  province: string;
+  readonly province: string;
 
   @IsOptional()
   @IsString({ message: 'country 必须是 string 类型' })
-  country: string;
+  readonly country: string;
 
   @IsOptional()
   @IsNotEmpty({ message: 'firstPhoneNum 不能为空' })
@@ -39,7 +37,7 @@ export class ModifyStadiumDto {
     { strictMode: false },
     { message: 'firstPhoneNum 不是正确的手机号' },
   )
-  firstPhoneNum: string;
+  readonly firstPhoneNum: string;
 
   @IsOptional()
   @IsMobilePhone(
@@ -47,28 +45,28 @@ export class ModifyStadiumDto {
     { strictMode: false },
     { message: 'secondPhoneNum 不是正确的手机号' },
   )
-  secondPhoneNum: string;
+  readonly secondPhoneNum: string;
 
   @IsOptional()
   @IsString({ message: 'address 必须是 string 类型' })
-  address: string;
+  readonly address: string;
 
   @IsOptional()
   @IsString({ message: 'stadiumUrl 必须是 string 类型' })
-  stadiumUrl: string;
+  readonly stadiumUrl: string;
 
   @IsOptional()
   @IsString({ message: 'remarks 必须是 string 类型' })
-  remarks: string;
+  readonly remarks: string;
 
   @IsOptional()
   @IsString({ message: 'description 必须是 string 类型' })
-  description: string;
+  readonly description: string;
 
   @IsOptional()
   @IsNumber(
     { allowNaN: false },
     { message: 'monthlyCardPrice 必须是 number 类型' },
   )
-  monthlyCardPrice: number;
+  readonly monthlyCardPrice: number;
 }

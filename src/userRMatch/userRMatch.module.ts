@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { UserRMatchController } from './userRMatch.controller';
 import { UserRMatchService } from './userRMatch.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserRMatchSchema } from './schemas/userRMatch.schema';
 import { UsersModule } from '../users/users.module';
+import { UserRMatch, UserRMatchSchema } from './schemas/userRMatch.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'UserRMatch', schema: UserRMatchSchema },
+      { name: UserRMatch.name, schema: UserRMatchSchema },
     ]),
     UsersModule,
   ],

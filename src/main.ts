@@ -12,7 +12,6 @@ import { BadRequestExceptionFilter } from './common/filters/badRequest-exception
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ValidationPipe } from './common/pipe/validation.pipe';
-// import { ValidationPipe } from '@nestjs/common';
 
 import * as mongoose from 'mongoose';
 mongoose.set('returnOriginal', false);

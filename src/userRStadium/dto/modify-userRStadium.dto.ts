@@ -1,17 +1,22 @@
-import { IsString, IsMongoId, IsBoolean, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsMongoId, IsBoolean } from 'class-validator';
 
-export class CreateUserRStadiumDto {
+export class ModifyUserRStadiumDto {
+  @IsMongoId({ message: 'id 不是正确的ID类型' })
+  id: string;
+
+  @IsOptional()
   @IsMongoId({ message: 'userId 不是正确的ID类型' })
   userId: string;
 
+  @IsOptional()
   @IsMongoId({ message: 'stadiumId 不是正确的ID类型' })
   stadiumId: string;
 
-  @IsNotEmpty({ message: 'stadiumName 不能为空' })
+  @IsOptional()
   @IsString({ message: 'stadiumName 必须是 string 类型' })
   stadiumName: string;
 
-  @IsNotEmpty({ message: 'isWatch 不能为空' })
+  @IsOptional()
   @IsBoolean({ message: 'isWatch 必须是 boolean 类型' })
   isWatch: boolean;
 }

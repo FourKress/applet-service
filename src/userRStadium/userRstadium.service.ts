@@ -1,18 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserRStadiumInterface } from './interfaces/userRStadium.interface';
+import { ModifyUserRStadiumDto } from './dto/modify-userRStadium.dto';
 import { CreateUserRStadiumDto } from './dto/create-userRStadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
+import {
+  UserRStadium,
+  UserRStadiumDocument,
+} from './schemas/userRStadium.schema';
 
 @Injectable()
 export class UserRStadiumService {
   constructor(
-    @InjectModel('UserRStadium')
-    private readonly userRStadium: Model<UserRStadiumInterface>,
+    @InjectModel(UserRStadium.name)
+    private readonly userRStadium: Model<UserRStadiumDocument>,
   ) {}
 
-  async watchListByUserId(userId: string): Promise<UserRStadiumInterface[]> {
+  async watchListByUserId(userId: string): Promise<UserRStadium[]> {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
@@ -23,10 +27,7 @@ export class UserRStadiumService {
       .exec();
   }
 
-  async watchFlag(
-    stadiumId: string,
-    userId: string,
-  ): Promise<UserRStadiumInterface> {
+  async watchFlag(stadiumId: string, userId: string): Promise<UserRStadium> {
     return await this.userRStadium
       .findOne({
         userId,
@@ -36,7 +37,7 @@ export class UserRStadiumService {
   }
 
   async watch(
-    watchStadium: CreateUserRStadiumDto | UserRStadiumInterface,
+    watchStadium: CreateUserRStadiumDto | ModifyUserRStadiumDto,
   ): Promise<boolean> {
     const { userId, stadiumId } = watchStadium;
     if (!userId || !stadiumId) {

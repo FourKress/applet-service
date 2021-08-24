@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export interface UserInterface extends Document {
+export interface UserInterface {
   id: string;
   // 微信openId
   openId: string;

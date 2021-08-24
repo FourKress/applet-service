@@ -1,16 +1,28 @@
-import * as mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { SchemaOptions } from '../../common/schemas/schema-options';
 import { UserRMatchInterface } from '../interfaces/userRMatch.interface';
 
-export const UserRMatchSchema = new mongoose.Schema<UserRMatchInterface>(
-  {
-    id: { type: String, index: true },
-    userId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    matchId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    spaceId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    stadiumId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    count: Number,
-  },
-  {
-    timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-  },
-);
+export type UserRMatchDocument = UserRMatch & Document;
+
+@Schema(SchemaOptions)
+export class UserRMatch implements UserRMatchInterface {
+  @Prop()
+  id: string;
+  @Prop()
+  userId: string;
+  @Prop()
+  count: number;
+  @Prop()
+  matchId: string;
+  @Prop()
+  spaceId: string;
+  @Prop()
+  stadiumId: string;
+  @Prop()
+  createdAt: Date;
+  @Prop()
+  updatedAt: Date;
+}
+
+export const UserRMatchSchema = SchemaFactory.createForClass(UserRMatch);

@@ -2,16 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserInterface } from './interfaces/user.interface';
+import { ModifyUserDto } from './dto/modify-user.dto';
 import { ToolsService } from '../common/utils/tools-service';
+import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel('User') private readonly userModel: Model<UserInterface>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async findOneByOpenId(openId: string): Promise<UserInterface> {
+  async findOneByOpenId(openId: string): Promise<User> {
     if (!openId) {
       ToolsService.fail('openId不能为空！');
     }
@@ -22,7 +23,7 @@ export class UsersService {
       .exec();
   }
 
-  async findOneById(id: string): Promise<UserInterface> {
+  async findOneById(id: string): Promise<User> {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
@@ -33,11 +34,11 @@ export class UsersService {
       .exec();
   }
 
-  async findAll(): Promise<UserInterface[]> {
+  async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
 
-  async create(createUser: CreateUserDto): Promise<UserInterface> {
+  async create(createUser: CreateUserDto): Promise<User> {
     const newUser = new this.userModel(createUser);
     Object.assign(newUser, {
       teamUpCount: 0,
@@ -47,7 +48,7 @@ export class UsersService {
     return await newUser.save();
   }
 
-  async modify(modifyUser: UserInterface): Promise<UserInterface> {
+  async modify(modifyUser: ModifyUserDto): Promise<User> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -56,7 +57,7 @@ export class UsersService {
     return await this.userModel.findByIdAndUpdate(id, userInfo).exec();
   }
 
-  async setBoss(id: string): Promise<UserInterface> {
+  async setBoss(id: string): Promise<User> {
     const hasBoss = await this.userModel.findById(id);
     if (hasBoss.isBoss || hasBoss.bossId) {
       ToolsService.fail('设置失败，该账号已是场主身份！');

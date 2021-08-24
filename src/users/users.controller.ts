@@ -8,31 +8,33 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
-import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
-import { UserInterface } from './interfaces/user.interface';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { User } from './schemas/user.schema';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ModifyUserDto } from './dto/modify-user.dto';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('findAll')
-  async findAll(): Promise<UserInterface[]> {
+  async findAll(): Promise<User[]> {
     return await this.usersService.findAll();
   }
 
   @NoAuth()
   @Get('findOneByOpenId')
   async findOneByOpenId(
-    @Query() userInfo: UserInterface,
-  ): Promise<UserInterface> {
-    return await this.usersService.findOneByOpenId(userInfo.openId);
+    @Query('openId', new ValidationIDPipe()) openId: string,
+  ): Promise<User> {
+    return await this.usersService.findOneByOpenId(openId);
   }
 
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<UserInterface> {
+  async findOneById(@Request() req): Promise<User> {
     const tokenInfo: UserEntity = req.user;
     return await this.usersService.findOneById(tokenInfo.userId);
   }
@@ -41,8 +43,8 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async modify(
     @Request() req,
-    @Body() modifyUser: UserInterface,
-  ): Promise<UserInterface> {
+    @Body() modifyUser: ModifyUserDto,
+  ): Promise<User> {
     const tokenInfo: UserEntity = req.user;
     return await this.usersService.modify(
       Object.assign({}, modifyUser, {
@@ -53,7 +55,7 @@ export class UsersController {
 
   @Post('setBoss')
   @HttpCode(HttpStatus.OK)
-  async setBoss(@Body() params: UserDto): Promise<UserInterface> {
-    return await this.usersService.setBoss(params.id);
+  async setBoss(@Body('id', new ValidationIDPipe()) id: string): Promise<User> {
+    return await this.usersService.setBoss(id);
   }
 }
