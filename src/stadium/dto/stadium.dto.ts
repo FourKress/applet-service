@@ -7,8 +7,10 @@ import {
   IsNumber,
 } from 'class-validator';
 import { StadiumInterface } from '../interfaces/stadium.interface';
+import { Exclude } from 'class-transformer';
 
 export class StadiumDto implements StadiumInterface {
+  // @Exclude()
   @IsNotEmpty({ message: 'id 不能为空' })
   @IsMongoId({ message: 'id 不是正确的ID类型' })
   readonly id: string;

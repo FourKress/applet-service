@@ -7,7 +7,9 @@ import {
   IsMongoId,
 } from 'class-validator';
 
-export class CreateStadiumDto {
+import { StadiumDto } from './stadium.dto';
+
+export class CreateStadiumDto extends StadiumDto {
   @IsNotEmpty({ message: 'bossId 不能为空' })
   @IsMongoId({ message: 'bossId 不是正确的ID类型' })
   bossId: string;
