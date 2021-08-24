@@ -14,6 +14,7 @@ import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { Stadium } from './schemas/stadium.schema';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('stadium')
 export class StadiumController {
@@ -26,7 +27,9 @@ export class StadiumController {
 
   @NoAuth()
   @Get('info')
-  async info(@Query('id') stadiumId: string): Promise<Stadium> {
+  async info(
+    @Query('id', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Stadium> {
     return await this.stadiumService.findById(stadiumId);
   }
 

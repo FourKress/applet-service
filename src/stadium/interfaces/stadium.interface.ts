@@ -1,29 +1,29 @@
 export interface StadiumInterface {
-  id: string;
+  readonly id: string;
   // 关联的用户bossId
-  bossId: string;
+  readonly bossId: string;
   // 球场名称
-  name: string;
+  readonly name: string;
   // 区
-  city: string;
+  readonly city: string;
   // 省
-  province: string;
+  readonly province: string;
   // 国家
-  country: string;
+  readonly country: string;
   // 球场电话
-  firstPhoneNum: string;
+  readonly firstPhoneNum: string;
   // 球场电话
-  secondPhoneNum: string;
+  readonly secondPhoneNum: string;
   // 球场地址
-  address: string;
+  readonly address: string;
   // 球场图
-  stadiumUrl: string;
+  readonly stadiumUrl: string;
   // 场地
-  remarks: string;
+  readonly remarks: string;
   // 富文本描述
-  description: string;
+  readonly description: string;
   // 月卡价格
-  monthlyCardPrice: number;
-  createdAt: Date;
-  updatedAt: Date;
+  readonly monthlyCardPrice: number;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }

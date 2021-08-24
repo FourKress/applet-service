@@ -1,35 +1,13 @@
-// import * as mongoose from 'mongoose';
-// import { StadiumInterface } from '../interfaces/stadium.interface';
-//
-// export const StadiumSchema = new mongoose.Schema<StadiumInterface>(
-//   {
-//     id: { type: String, index: true },
-//     bossId: { type: String, required: [true, '此项为必填内容'], trim: true },
-//     name: { type: String, required: [true, '此项为必填内容'], trim: true },
-//     city: String,
-//     country: String,
-//     province: String,
-//     firstPhoneNum: String,
-//     secondPhoneNum: String,
-//     address: String,
-//     stadiumUrl: String,
-//     remarks: String,
-//     description: String,
-//     monthlyCardPrice: Number,
-//   },
-//   {
-//     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-//   },
-// );
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { SchemaOptions } from '../../common/schemas/schema-options';
+import { StadiumInterface } from '../interfaces/stadium.interface';
 
 export type StadiumDocument = Stadium & Document;
 
-@Schema()
-export class Stadium {
-  @Prop({ name: 'id' })
+@Schema(SchemaOptions)
+export class Stadium implements StadiumInterface {
+  @Prop()
   id: string;
   @Prop()
   bossId: string;
