@@ -11,9 +11,7 @@ export interface StadiumInterface {
   // 国家
   readonly country: string;
   // 球场电话
-  readonly firstPhoneNum: string;
-  // 球场电话
-  readonly secondPhoneNum: string;
+  readonly phoneNum: string;
   // 球场地址
   readonly address: string;
   // 球场图
@@ -22,6 +20,8 @@ export interface StadiumInterface {
   readonly remarks: string;
   // 富文本描述
   readonly description: string;
+  // 月卡是否开启状态
+  readonly monthlyCardStatus: number;
   // 月卡价格
   readonly monthlyCardPrice: number;
   readonly createdAt: Date;

@@ -12,7 +12,6 @@ import { UsersService } from './users.service';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 import { User } from './schemas/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
 import { ModifyUserDto } from './dto/modify-user.dto';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
@@ -27,9 +26,7 @@ export class UsersController {
 
   @NoAuth()
   @Get('findOneByOpenId')
-  async findOneByOpenId(
-    @Query('openId', new ValidationIDPipe()) openId: string,
-  ): Promise<User> {
+  async findOneByOpenId(@Query('openId') openId: string): Promise<User> {
     return await this.usersService.findOneByOpenId(openId);
   }
 

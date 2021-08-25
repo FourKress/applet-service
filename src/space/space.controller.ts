@@ -4,6 +4,7 @@ import { SpaceMatchDto } from './dto/space-match.dto';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { Space } from './schemas/space.schema';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('space')
 export class SpaceController {
@@ -15,6 +16,7 @@ export class SpaceController {
     return await this.spaceService.addSpace(params);
   }
 
+  @NoAuth()
   @Post('list')
   @HttpCode(HttpStatus.OK)
   async findByStadium(

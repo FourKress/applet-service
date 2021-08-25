@@ -31,21 +31,13 @@ export class ModifyStadiumDto {
   readonly country: string;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'firstPhoneNum 不能为空' })
+  @IsNotEmpty({ message: 'phoneNum 不能为空' })
   @IsMobilePhone(
     'zh-CN',
     { strictMode: false },
-    { message: 'firstPhoneNum 不是正确的手机号' },
+    { message: 'phoneNum 不是正确的手机号' },
   )
-  readonly firstPhoneNum: string;
-
-  @IsOptional()
-  @IsMobilePhone(
-    'zh-CN',
-    { strictMode: false },
-    { message: 'secondPhoneNum 不是正确的手机号' },
-  )
-  readonly secondPhoneNum: string;
+  readonly phoneNum: string;
 
   @IsOptional()
   @IsString({ message: 'address 必须是 string 类型' })
@@ -62,6 +54,13 @@ export class ModifyStadiumDto {
   @IsOptional()
   @IsString({ message: 'description 必须是 string 类型' })
   readonly description: string;
+
+  @IsOptional()
+  @IsNumber(
+    { allowNaN: false },
+    { message: 'monthlyCardStatus 必须是 number 类型' },
+  )
+  readonly monthlyCardStatus: number;
 
   @IsOptional()
   @IsNumber(

@@ -9,9 +9,9 @@ export type StadiumDocument = Stadium & Document;
 export class Stadium implements StadiumInterface {
   @Prop()
   id: string;
-  @Prop()
+  @Prop({ required: true })
   bossId: string;
-  @Prop()
+  @Prop({ required: true })
   name: string;
   @Prop()
   city: string;
@@ -19,10 +19,8 @@ export class Stadium implements StadiumInterface {
   country: string;
   @Prop()
   province: string;
-  @Prop()
-  firstPhoneNum: string;
-  @Prop()
-  secondPhoneNum: string;
+  @Prop({ required: true })
+  phoneNum: string;
   @Prop()
   address: string;
   @Prop()
@@ -31,7 +29,9 @@ export class Stadium implements StadiumInterface {
   remarks: string;
   @Prop()
   description: string;
-  @Prop()
+  @Prop({ default: false })
+  monthlyCardStatus: number;
+  @Prop({ default: 0 })
   monthlyCardPrice: number;
   @Prop()
   createdAt: Date;

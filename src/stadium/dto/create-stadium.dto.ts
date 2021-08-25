@@ -3,7 +3,6 @@ import {
   IsNumber,
   IsMobilePhone,
   IsString,
-  IsOptional,
   IsMongoId,
 } from 'class-validator';
 
@@ -24,21 +23,13 @@ export class CreateStadiumDto {
   @IsString({ message: 'country 必须是 string 类型' })
   readonly country: string;
 
-  @IsNotEmpty({ message: 'firstPhoneNum 不能为空' })
+  @IsNotEmpty({ message: 'phoneNum 不能为空' })
   @IsMobilePhone(
     'zh-CN',
     { strictMode: false },
-    { message: 'firstPhoneNum 不是正确的手机号' },
+    { message: 'phoneNum 不是正确的手机号' },
   )
-  readonly firstPhoneNum: string;
-
-  @IsOptional()
-  @IsMobilePhone(
-    'zh-CN',
-    { strictMode: false },
-    { message: 'secondPhoneNum 不是正确的手机号' },
-  )
-  readonly secondPhoneNum: string;
+  readonly phoneNum: string;
 
   @IsString({ message: 'address 必须是 string 类型' })
   readonly address: string;
@@ -51,6 +42,12 @@ export class CreateStadiumDto {
 
   @IsString({ message: 'description 必须是 string 类型' })
   readonly description: string;
+
+  @IsNumber(
+    { allowNaN: false },
+    { message: 'monthlyCardStatus 必须是 number 类型' },
+  )
+  readonly monthlyCardStatus: number;
 
   @IsNumber(
     { allowNaN: false },
