@@ -7,10 +7,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { MonthlyCardService } from './monthly-card.service';
-import { MonthlyCardDto } from './dto/monthlyCard.dto';
 import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
-import { MonthlyCardInterface } from './interfaces/monthlyCard.interface';
+import { MonthlyCard } from './schemas/monthlyCard.schema';
 
 @Controller('monthlyCard')
 export class MonthlyCardController {
@@ -21,7 +20,7 @@ export class MonthlyCardController {
   async addCard(
     @Request() req,
     @Body() info: CreateMonthlyCardDto,
-  ): Promise<MonthlyCardInterface> {
+  ): Promise<MonthlyCard> {
     const tokenInfo: UserEntity = req.user;
     return await this.monthlyCardService.addMonthlyCard({
       ...info,

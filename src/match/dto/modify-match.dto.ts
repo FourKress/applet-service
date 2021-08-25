@@ -1,38 +1,41 @@
-import { IsNotEmpty, IsNumber, IsString, IsMongoId } from 'class-validator';
+import { IsNumber, IsString, IsMongoId, IsOptional } from 'class-validator';
 
-export class CreateMatchDto {
+export class ModifyMatchDto {
+  @IsMongoId({ message: 'id 不是正确的ID类型' })
+  readonly id: string;
+
   @IsMongoId({ message: 'spaceId 不是正确的ID类型' })
   readonly spaceId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'duration 必须是 number 类型' })
   readonly duration: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString({ message: 'startAt 必须是 string 类型' })
   readonly startAt: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString({ message: 'endAt 必须是 string 类型' })
   readonly endAt: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'totalPeople 必须是 number 类型' })
   readonly totalPeople: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'selectPeople 必须是 number 类型' })
   readonly selectPeople: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'minPeople 必须是 number 类型' })
   readonly minPeople: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'rebate 必须是 number 类型' })
   readonly rebate: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'price 必须是 number 类型' })
   readonly price: number;
 }

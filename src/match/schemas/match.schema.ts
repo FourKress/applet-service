@@ -1,20 +1,36 @@
-import * as mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { SchemaOptions } from '../../common/schemas/schema-options';
 import { MatchInterface } from '../interfaces/match.interface';
 
-export const MatchSchema = new mongoose.Schema<MatchInterface>(
-  {
-    id: { type: String, index: true },
-    spaceId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    duration: Number,
-    startAt: String,
-    endAt: String,
-    totalPeople: Number,
-    selectPeople: Number,
-    minPeople: Number,
-    rebate: Number,
-    price: Number,
-  },
-  {
-    timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-  },
-);
+export type MatchDocument = Match & Document;
+
+@Schema(SchemaOptions)
+export class Match implements MatchInterface {
+  @Prop()
+  id: string;
+  @Prop()
+  spaceId: string;
+  @Prop()
+  duration: number;
+  @Prop()
+  startAt: string;
+  @Prop()
+  endAt: string;
+  @Prop()
+  totalPeople: number;
+  @Prop()
+  selectPeople: number;
+  @Prop()
+  minPeople: number;
+  @Prop()
+  rebate: number;
+  @Prop()
+  price: number;
+  @Prop()
+  createdAt: Date;
+  @Prop()
+  updatedAt: Date;
+}
+
+export const MatchSchema = SchemaFactory.createForClass(Match);

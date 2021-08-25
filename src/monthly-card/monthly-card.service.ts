@@ -1,21 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { MonthlyCardInterface } from './interfaces/monthlyCard.interface';
 import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
+import { ModifyMonthlyCardDto } from './dto/modify.monthlyCard.dto';
 import { StadiumService } from '../stadium/stadium.service';
 import { Model } from 'mongoose';
+import { MonthlyCard, MonthlyCardDocument } from './schemas/monthlyCard.schema';
 
 @Injectable()
 export class MonthlyCardService {
   constructor(
-    @InjectModel('MonthlyCard')
-    private readonly monthlyCardModel: Model<MonthlyCardInterface>,
+    @InjectModel(MonthlyCard.name)
+    private readonly monthlyCardModel: Model<MonthlyCardDocument>,
     private readonly stadiumService: StadiumService,
   ) {}
 
-  async addMonthlyCard(
-    info: CreateMonthlyCardDto,
-  ): Promise<MonthlyCardInterface> {
+  async addMonthlyCard(info: CreateMonthlyCardDto): Promise<MonthlyCard> {
     const newMonthlyCard = new this.monthlyCardModel(info);
     return await newMonthlyCard.save();
   }
@@ -46,14 +45,12 @@ export class MonthlyCardService {
     return monthlyCardList;
   }
 
-  async checkMonthlyCard(relationInfo: any): Promise<MonthlyCardInterface> {
+  async checkMonthlyCard(relationInfo: any): Promise<MonthlyCard> {
     const monthlyCard = await this.monthlyCardModel.findOne(relationInfo);
     return monthlyCard;
   }
 
-  async modifyByIds(
-    modifyInfo: MonthlyCardInterface,
-  ): Promise<MonthlyCardInterface> {
+  async modifyByIds(modifyInfo: ModifyMonthlyCardDto): Promise<MonthlyCard> {
     const { userId, stadiumId } = modifyInfo;
     const monthlyCard = await this.monthlyCardModel.findOneAndUpdate(
       {

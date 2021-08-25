@@ -1,9 +1,10 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MatchInterface } from './interfaces/match.interface';
+import { Match, MatchDocument } from './schemas/match.schema';
 import { CreateMatchDto } from './dto/create-match.dto';
-import { MatchSpaceDto } from './dto/match-space.dto';
+import { ModifyMatchDto } from './dto/modify-match.dto';
+import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { SpaceService } from '../space/space.service';
 import { ToolsService } from '../common/utils/tools-service';
 
@@ -13,13 +14,13 @@ const Moment = require('moment');
 @Injectable()
 export class MatchService {
   constructor(
-    @InjectModel('Match') private readonly matchModel: Model<MatchInterface>,
+    @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
     @Inject(forwardRef(() => SpaceService))
     private readonly spaceService: SpaceService,
   ) {}
 
-  async findBySpaceId(spaceId: string): Promise<MatchSpaceDto[]> {
-    const matchList: MatchInterface[] = (
+  async findBySpaceId(spaceId: string): Promise<MatchSpaceInterface[]> {
+    const matchList = (
       await this.matchModel
         .find({
           spaceId,
@@ -38,11 +39,11 @@ export class MatchService {
     return coverMatchList;
   }
 
-  async findById(id: string): Promise<MatchInterface> {
+  async findById(id: string): Promise<Match> {
     return await this.matchModel.findById(id).exec();
   }
 
-  async addMatch(addMatch: CreateMatchDto): Promise<MatchInterface> {
+  async addMatch(addMatch: CreateMatchDto): Promise<Match> {
     const { spaceId, startAt, endAt } = addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
@@ -65,7 +66,7 @@ export class MatchService {
     return await newMatch.save();
   }
 
-  async modifyMatch(modifyMatch: MatchInterface): Promise<MatchInterface> {
+  async modifyMatch(modifyMatch: ModifyMatchDto): Promise<Match> {
     const { id, ...match } = modifyMatch;
     if (!id) {
       ToolsService.fail('id不能为空！');

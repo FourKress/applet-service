@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export class MonthlyCardInterface extends Document {
+export interface MonthlyCardInterface {
   id: string;
   // 用户ID
   userId: string;

@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export class MatchInterface extends Document {
+export interface MatchInterface {
   id: string;
   // 场地Id
   spaceId: string;
