@@ -1,15 +1,26 @@
-import * as mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { SchemaOptions } from '../../common/schemas/schema-options';
 import { SpaceInterface } from '../interfaces/space.interface';
 
-export const SpaceSchema = new mongoose.Schema<SpaceInterface>(
-  {
-    id: { type: String, index: true },
-    stadiumId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    name: String,
-    unit: String,
-    validateDate: String,
-  },
-  {
-    timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-  },
-);
+export type SpaceDocument = Space & Document;
+
+@Schema(SchemaOptions)
+export class Space implements SpaceInterface {
+  @Prop()
+  id: string;
+  @Prop()
+  stadiumId: string;
+  @Prop()
+  name: string;
+  @Prop()
+  unit: string;
+  @Prop()
+  validateDate: string;
+  @Prop()
+  createdAt: Date;
+  @Prop()
+  updatedAt: Date;
+}
+
+export const SpaceSchema = SchemaFactory.createForClass(Space);

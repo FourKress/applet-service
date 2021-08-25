@@ -1,6 +1,4 @@
-import { Document } from 'mongoose';
-
-export class OrderInterface extends Document {
+export interface OrderInterface {
   id: string;
   // 用户ID
   userId: string;

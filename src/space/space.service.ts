@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateSpaceDto } from './dto/create-space.dto';
-import { SpaceInterface } from './interfaces/space.interface';
+import { ModifySpaceDto } from './dto/modify-space.dto';
 import { SpaceMatchDto } from './dto/space-match.dto';
 import { MatchService } from '../match/match.service';
-import { Model, Types } from 'mongoose';
 import { ToolsService } from '../common/utils/tools-service';
+import { Space, SpaceDocument } from './schemas/space.schema';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -13,7 +14,7 @@ const Moment = require('moment');
 @Injectable()
 export class SpaceService {
   constructor(
-    @InjectModel('Space') private readonly spaceModel: Model<SpaceInterface>,
+    @InjectModel(Space.name) private readonly spaceModel: Model<SpaceDocument>,
     private readonly matchService: MatchService,
   ) {}
 
@@ -39,7 +40,7 @@ export class SpaceService {
     return coverSpaceList;
   }
 
-  async findById(id: string): Promise<SpaceInterface> {
+  async findById(id: string): Promise<Space> {
     return await this.spaceModel
       .findOne({
         _id: Types.ObjectId(id),
@@ -47,7 +48,7 @@ export class SpaceService {
       .exec();
   }
 
-  async addSpace(info: CreateSpaceDto): Promise<SpaceInterface> {
+  async addSpace(info: CreateSpaceDto): Promise<Space> {
     const { name, stadiumId } = info;
     const hasSpace = await this.spaceModel.findOne({
       name,
@@ -62,7 +63,7 @@ export class SpaceService {
     return await newSpace.save();
   }
 
-  async modifySpace(info: SpaceInterface): Promise<SpaceInterface> {
+  async modifySpace(info: ModifySpaceDto): Promise<Space> {
     const { id, ...spaceInfo } = info;
     if (!id) {
       ToolsService.fail('id不能为空！');

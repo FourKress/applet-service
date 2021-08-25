@@ -10,18 +10,19 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
-import { OrderDto } from './dto/order.dto';
 import { CreateOderDto } from './dto/create-oder.dto';
-import { OrderInterface } from './interfaces/order.interface';
+import { ModifyOderDto } from './dto/modify-oder.dto';
 import { OrderCountInterface } from './interfaces/order-count.interface';
 import { OrderInfoInterface } from './interfaces/order-info.interface';
+import { Order } from './schemas/order.schema';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get('list')
-  async findAll(): Promise<OrderInterface[]> {
+  async findAll(): Promise<Order[]> {
     return await this.orderService.findAll();
   }
 
@@ -32,21 +33,20 @@ export class OrderController {
   }
 
   @Get('info')
-  async info(@Query() params: OrderDto): Promise<OrderInfoInterface> {
-    return await this.orderService.findOrderById(params.id);
+  async info(
+    @Query('id', new ValidationIDPipe()) id: string,
+  ): Promise<OrderInfoInterface> {
+    return await this.orderService.findOrderById(id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('listByStatus')
   async listByStatus(
     @Request() req,
-    @Body() params: OrderDto,
-  ): Promise<OrderInterface[]> {
+    @Body('status') status: string,
+  ): Promise<Order[]> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.findOrderByStatus(
-      params.status,
-      tokenInfo.userId,
-    );
+    return await this.orderService.findOrderByStatus(status, tokenInfo.userId);
   }
 
   @Post('add')
@@ -61,7 +61,7 @@ export class OrderController {
 
   @Post('pay')
   @HttpCode(HttpStatus.OK)
-  async pay(@Body() payInfo: OrderInterface): Promise<boolean> {
-    return await this.orderService.orderPay(payInfo);
+  async pay(@Body('id', new ValidationIDPipe()) id: string): Promise<boolean> {
+    return await this.orderService.orderPay(id);
   }
 }

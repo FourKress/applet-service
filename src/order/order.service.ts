@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { OrderInterface } from './interfaces/order.interface';
 import { CreateOderDto } from './dto/create-oder.dto';
+import { ModifyOderDto } from './dto/modify-oder.dto';
 import { OrderInfoInterface } from './interfaces/order-info.interface';
 import { OrderCountInterface } from './interfaces/order-count.interface';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
@@ -10,6 +11,7 @@ import { StadiumService } from '../stadium/stadium.service';
 import { SpaceService } from '../space/space.service';
 import { MatchService } from '../match/match.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
+import { Order, OrderDocument } from './schemas/order.schema';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -19,7 +21,7 @@ import { ToolsService } from '../common/utils/tools-service';
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectModel('Order') private readonly orderModel: Model<OrderInterface>,
+    @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
     private readonly monthlyCardService: MonthlyCardService,
     private readonly stadiumService: StadiumService,
     private readonly spaceService: SpaceService,
@@ -27,7 +29,7 @@ export class OrderService {
     private readonly userRMatchService: UserRMatchService,
   ) {}
 
-  async findAll(): Promise<OrderInterface[]> {
+  async findAll(): Promise<Order[]> {
     return await this.orderModel.find().exec();
   }
 
@@ -85,7 +87,7 @@ export class OrderService {
     return orderInfo;
   }
 
-  async findOrderByStatus(status, userId): Promise<OrderInterface[]> {
+  async findOrderByStatus(status, userId): Promise<Order[]> {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
@@ -155,7 +157,7 @@ export class OrderService {
     return newOrder.id;
   }
 
-  async modifyOrder(modifyOrder: OrderInterface): Promise<OrderInterface> {
+  async modifyOrder(modifyOrder: ModifyOderDto): Promise<Order> {
     const { id, ...order } = modifyOrder;
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -163,8 +165,7 @@ export class OrderService {
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(payInfo: OrderInterface): Promise<boolean> {
-    const { id } = payInfo;
+  async orderPay(id: string): Promise<boolean> {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
@@ -182,14 +183,13 @@ export class OrderService {
     }
     await this.orderModel
       .findByIdAndUpdate(id, {
-        payInfo,
         status: 1,
       })
       .exec();
     return true;
   }
 
-  async findOrderByDate(type = 0): Promise<OrderInterface[]> {
+  async findOrderByDate(type = 0): Promise<Order[]> {
     console.log(type);
     let list = [];
     switch (type) {

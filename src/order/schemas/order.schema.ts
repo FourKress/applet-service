@@ -1,19 +1,34 @@
-import * as mongoose from 'mongoose';
+import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { SchemaOptions } from '../../common/schemas/schema-options';
 import { OrderInterface } from '../interfaces/order.interface';
 
-export const OrderSchema = new mongoose.Schema<OrderInterface>(
-  {
-    id: { type: String, index: true },
-    userId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    stadiumId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    spaceId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    matchId: { type: String, required: [true, '此项为必填内容'], trim: true },
-    payAmount: String,
-    isMonthlyCard: Boolean,
-    personCount: Number,
-    status: Number,
-  },
-  {
-    timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
-  },
-);
+export type OrderDocument = Order & Document;
+
+@Schema(SchemaOptions)
+export class Order implements OrderInterface {
+  @Prop()
+  id: string;
+  @Prop()
+  userId: string;
+  @Prop()
+  stadiumId: string;
+  @Prop()
+  spaceId: string;
+  @Prop()
+  matchId: string;
+  @Prop()
+  payAmount: string;
+  @Prop()
+  isMonthlyCard: boolean;
+  @Prop()
+  personCount: number;
+  @Prop()
+  status: number;
+  @Prop()
+  createdAt: Date;
+  @Prop()
+  updatedAt: Date;
+}
+
+export const OrderSchema = SchemaFactory.createForClass(Order);

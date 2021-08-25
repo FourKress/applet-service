@@ -1,5 +1,4 @@
-import { Document } from 'mongoose';
-export class SpaceInterface extends Document {
+export interface SpaceInterface {
   id: string;
   // 球场Id
   stadiumId: string;
