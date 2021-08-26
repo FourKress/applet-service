@@ -18,7 +18,12 @@ export class ValidationPipe implements PipeTransform {
     const object = plainToClass(metaType, value);
     const errors = await validate(object);
     if (errors.length > 0) {
-      const msg = Object.values(errors[0].constraints)[0];
+      let msg;
+      if (errors[0]?.children?.length) {
+        msg = this.recursionLookErrorMsg(errors[0].children[0].children);
+      } else {
+        msg = Object.values(errors[0].constraints)[0];
+      }
       throw new BadRequestException(`Validation failed: ${msg}`);
     }
     return value;
@@ -26,5 +31,13 @@ export class ValidationPipe implements PipeTransform {
   private toValidate(metaType: any): boolean {
     const types: any[] = [String, Boolean, Number, Array, Object, Date];
     return !types.includes(metaType);
+  }
+
+  private recursionLookErrorMsg(target: any): any {
+    if (target['children']?.length) {
+      this.recursionLookErrorMsg(target['children'][0]);
+    }
+    const msg = Object.values(target[0].constraints)[0];
+    return msg;
   }
 }

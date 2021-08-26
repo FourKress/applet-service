@@ -9,11 +9,11 @@ export type SpaceDocument = Space & Document;
 export class Space implements SpaceInterface {
   @Prop()
   id: string;
-  @Prop()
+  @Prop({ required: true })
   stadiumId: string;
-  @Prop()
+  @Prop({ required: true })
   name: string;
-  @Prop()
+  @Prop({ required: true })
   unit: string;
   @Prop()
   createdAt: Date;

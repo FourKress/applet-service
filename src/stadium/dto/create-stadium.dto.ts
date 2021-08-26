@@ -6,7 +6,10 @@ import {
   IsMongoId,
   IsOptional,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { SpaceDto } from '../dto/space.dto';
 
 export class CreateStadiumDto {
   @IsMongoId({ message: 'bossId 不是正确的ID类型' })
@@ -55,4 +58,11 @@ export class CreateStadiumDto {
     { message: 'monthlyCardPrice 必须是 number 类型' },
   )
   readonly monthlyCardPrice: number;
+
+  @IsNotEmpty({ message: 'spaces 不能为空' })
+  @ValidateNested({
+    message: (constraints) => constraints['isString'],
+  })
+  @Type(() => SpaceDto)
+  readonly spaces: SpaceDto[];
 }

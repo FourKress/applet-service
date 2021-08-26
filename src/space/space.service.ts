@@ -8,9 +8,6 @@ import { MatchService } from '../match/match.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { Space, SpaceDocument } from './schemas/space.schema';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
-
 @Injectable()
 export class SpaceService {
   constructor(
@@ -45,28 +42,63 @@ export class SpaceService {
       .exec();
   }
 
-  async addSpace(info: CreateSpaceDto): Promise<Space> {
-    const { name, stadiumId } = info;
-    const hasSpace = await this.spaceModel.findOne({
-      name,
-    });
-    if (hasSpace || !stadiumId) {
-      ToolsService.fail(
-        stadiumId ? '添加失败，场地名称已存在！' : 'stadiumId不能为空！',
-      );
-    }
-
-    const newSpace = new this.spaceModel(info);
-    console.log(newSpace);
-    return await newSpace.save();
+  checkNameRepeat(arr) {
+    const names = arr.map((d) => d.name);
+    const filter = [...new Set(names)];
+    return filter.length !== arr.length;
   }
 
-  async modifySpace(info: ModifySpaceDto): Promise<Space> {
-    const { id, ...spaceInfo } = info;
-    if (!id) {
-      ToolsService.fail('id不能为空！');
+  async addSpace(spaces: CreateSpaceDto[]): Promise<any> {
+    if (this.checkNameRepeat(spaces)) {
+      ToolsService.fail('场地名称不能重复');
     }
-    return await this.spaceModel.findByIdAndUpdate(id, spaceInfo).exec();
+    const notStadiumId = spaces.find((d) => !d.stadiumId);
+    const hasSpace = await this.spaceModel
+      .find({
+        $or: spaces.map((d) => {
+          return {
+            name: d.name,
+            stadiumId: d.stadiumId,
+          };
+        }),
+      })
+      .exec();
+    if (hasSpace?.length || notStadiumId) {
+      ToolsService.fail(
+        notStadiumId ? 'stadiumId不能为空！' : '添加失败，场地名称已存在！',
+      );
+    }
+    return await this.spaceModel.insertMany(spaces, {
+      ordered: true,
+      rawResult: false,
+    });
+  }
+
+  async modifySpace(spaces: ModifySpaceDto[]): Promise<Space[]> {
+    if (this.checkNameRepeat(spaces)) {
+      ToolsService.fail('场地名称不能重复');
+    }
+    const hasSpace = await this.spaceModel
+      .find({
+        $or: spaces,
+      })
+      .exec();
+    if (hasSpace?.length) {
+      ToolsService.fail('修改失败，场地名称已存在！');
+    }
+
+    const result = await Promise.all(
+      spaces.map(async (space) => {
+        const { id = '', ...spaceInfo } = space;
+        if (id) {
+          return await this.spaceModel.findByIdAndUpdate(id, spaceInfo).exec();
+        } else {
+          const newSpace = new this.spaceModel(space);
+          return await newSpace.save();
+        }
+      }),
+    );
+    return result;
   }
 
   async removeSpace(id: string): Promise<any> {

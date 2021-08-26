@@ -6,7 +6,10 @@ import {
   IsOptional,
   IsMongoId,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
+import { SpaceDto } from '../dto/space.dto';
+import { Type } from 'class-transformer';
 
 export class ModifyStadiumDto {
   @IsMongoId({ message: 'id 不是正确的ID类型' })
@@ -56,6 +59,7 @@ export class ModifyStadiumDto {
   @IsString({ message: 'description 必须是 string 类型' })
   readonly description: string;
 
+  @IsOptional()
   @IsBoolean({ message: 'monthlyCardStatus 必须是 boolean 类型' })
   readonly monthlyCardStatus: boolean;
 
@@ -65,4 +69,10 @@ export class ModifyStadiumDto {
     { message: 'monthlyCardPrice 必须是 number 类型' },
   )
   readonly monthlyCardPrice: number;
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'spaces 不能为空' })
+  @ValidateNested({ each: true })
+  @Type(() => SpaceDto)
+  readonly spaces: SpaceDto[];
 }

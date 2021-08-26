@@ -12,7 +12,7 @@ export class SpaceController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async addSpace(@Body() params: CreateSpaceDto): Promise<Space> {
+  async addSpace(@Body() params: CreateSpaceDto[]): Promise<Space> {
     return await this.spaceService.addSpace(params);
   }
 
