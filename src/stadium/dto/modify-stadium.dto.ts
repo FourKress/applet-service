@@ -5,6 +5,7 @@ import {
   IsString,
   IsOptional,
   IsMongoId,
+  IsBoolean,
 } from 'class-validator';
 
 export class ModifyStadiumDto {
@@ -55,12 +56,8 @@ export class ModifyStadiumDto {
   @IsString({ message: 'description 必须是 string 类型' })
   readonly description: string;
 
-  @IsOptional()
-  @IsNumber(
-    { allowNaN: false },
-    { message: 'monthlyCardStatus 必须是 number 类型' },
-  )
-  readonly monthlyCardStatus: number;
+  @IsBoolean({ message: 'monthlyCardStatus 必须是 boolean 类型' })
+  readonly monthlyCardStatus: boolean;
 
   @IsOptional()
   @IsNumber(

@@ -6,8 +6,6 @@ export interface SpaceInterface {
   name: string;
   // 5V5
   unit: string;
-  // 日期
-  validateDate: string;
   createdAt: Date;
   updatedAt: Date;
 }

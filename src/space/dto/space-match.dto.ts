@@ -5,7 +5,6 @@ export class SpaceMatchDto implements SpaceInterface {
   readonly stadiumId: string;
   readonly name: string;
   readonly unit: string;
-  readonly validateDate: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
   readonly full: boolean;

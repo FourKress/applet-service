@@ -1,3 +1,5 @@
+import { SpaceInterface } from '../../space/interfaces/space.interface';
+
 export interface StadiumInterface {
   readonly id: string;
   // 关联的用户bossId
@@ -21,9 +23,11 @@ export interface StadiumInterface {
   // 富文本描述
   readonly description: string;
   // 月卡是否开启状态
-  readonly monthlyCardStatus: number;
+  readonly monthlyCardStatus: boolean;
   // 月卡价格
   readonly monthlyCardPrice: number;
+  // readonly spaces: [];
+
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

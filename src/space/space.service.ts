@@ -19,10 +19,7 @@ export class SpaceService {
   ) {}
 
   async findByStadiumId(stadiumId: string): Promise<SpaceMatchDto[]> {
-    const spaceList = (await this.spaceModel.find({ stadiumId }).exec()).filter(
-      (space) =>
-        Moment().startOf('day').valueOf() - Moment(space.validateDate) <= 0,
-    );
+    const spaceList = await this.spaceModel.find({ stadiumId }).exec();
     const coverSpaceList = await Promise.all(
       spaceList.map(async (space) => {
         const match = await this.matchService.findBySpaceId(
@@ -55,11 +52,12 @@ export class SpaceService {
     });
     if (hasSpace || !stadiumId) {
       ToolsService.fail(
-        `${stadiumId} ? '添加失败，场地名称已存在！' : 'stadiumId不能为空！'`,
+        stadiumId ? '添加失败，场地名称已存在！' : 'stadiumId不能为空！',
       );
     }
 
     const newSpace = new this.spaceModel(info);
+    console.log(newSpace);
     return await newSpace.save();
   }
 

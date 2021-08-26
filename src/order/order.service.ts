@@ -72,7 +72,6 @@ export class OrderService {
       stadiumName: stadium.name,
       spaceName: space.name,
       unit: space.unit,
-      validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
       runAt: `${utils.getHour(match.startAt)}-${utils.getHour(match.endAt)}`,
       duration: match.duration,
       price,

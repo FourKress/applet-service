@@ -16,9 +16,4 @@ export class ModifySpaceDto {
   @IsNotEmpty({ message: 'unit 不能为空' })
   @IsString({ message: 'unit 必须是 string 类型' })
   unit: string;
-
-  @IsOptional()
-  @IsNotEmpty({ message: 'validateDate 不能为空' })
-  @IsString({ message: 'validateDate 必须是 string 类型' })
-  validateDate: string;
 }

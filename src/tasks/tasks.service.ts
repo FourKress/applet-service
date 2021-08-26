@@ -19,7 +19,7 @@ export class TasksService {
   // @Cron('0 * * * * *')
   @Interval(1000 * 10)
   async handleCron() {
-    this.logger.log('该方法每10秒运行一次');
+    this.logger.log('function 10s loop');
     const orderList = await this.orderService.findAll();
     for (const order of orderList) {
       const { createdAt, status, matchId } = order;

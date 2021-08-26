@@ -30,7 +30,7 @@ export class Stadium implements StadiumInterface {
   @Prop()
   description: string;
   @Prop({ default: false })
-  monthlyCardStatus: number;
+  monthlyCardStatus: boolean;
   @Prop({ default: 0 })
   monthlyCardPrice: number;
   @Prop()

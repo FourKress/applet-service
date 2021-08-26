@@ -55,7 +55,7 @@ export class MatchService {
     }
 
     const space = await this.spaceService.findById(addMatch.spaceId);
-    const nowDate = space.validateDate;
+    const nowDate = '';
 
     const newMatch = new this.matchModel(addMatch);
     Object.assign(newMatch, {

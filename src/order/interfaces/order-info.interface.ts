@@ -15,7 +15,6 @@ export class OrderInfoInterface implements OrderInterface {
   stadiumName: string;
   spaceName: string;
   unit: string;
-  validateDate: string;
   runAt: string;
   duration: number;
   price: number;

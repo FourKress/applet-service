@@ -4,6 +4,8 @@ import {
   IsMobilePhone,
   IsString,
   IsMongoId,
+  IsOptional,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateStadiumDto {
@@ -43,12 +45,11 @@ export class CreateStadiumDto {
   @IsString({ message: 'description 必须是 string 类型' })
   readonly description: string;
 
-  @IsNumber(
-    { allowNaN: false },
-    { message: 'monthlyCardStatus 必须是 number 类型' },
-  )
-  readonly monthlyCardStatus: number;
+  @IsOptional()
+  @IsBoolean({ message: 'monthlyCardStatus 必须是 boolean 类型' })
+  readonly monthlyCardStatus: boolean;
 
+  @IsOptional()
   @IsNumber(
     { allowNaN: false },
     { message: 'monthlyCardPrice 必须是 number 类型' },

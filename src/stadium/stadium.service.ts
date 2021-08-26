@@ -5,12 +5,14 @@ import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
 import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
+import { SpaceService } from '../space/space.service';
 
 @Injectable()
 export class StadiumService {
   constructor(
     @InjectModel(Stadium.name)
     private readonly stadiumModel: Model<StadiumDocument>,
+    private readonly spaceService: SpaceService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -39,6 +41,12 @@ export class StadiumService {
       ToolsService.fail('添加失败，球场名称已存在！');
     }
     const newStadium = new this.stadiumModel(addStadium);
+    const { _id: stadiumId } = newStadium;
+    await this.spaceService.addSpace({
+      stadiumId,
+      unit: 'testName',
+      name: 'testName',
+    });
     return await newStadium.save();
   }
 

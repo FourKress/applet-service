@@ -16,8 +16,6 @@ export class Space implements SpaceInterface {
   @Prop()
   unit: string;
   @Prop()
-  validateDate: string;
-  @Prop()
   createdAt: Date;
   @Prop()
   updatedAt: Date;
