@@ -46,4 +46,9 @@ export class SpaceController {
   ): Promise<any> {
     return await this.spaceService.removeSpace(id);
   }
+
+  @Get('unitEnum')
+  unitEnum() {
+    return this.spaceService.unitEnum();
+  }
 }

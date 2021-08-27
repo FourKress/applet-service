@@ -1,4 +1,10 @@
-import { IsNumber, IsString, IsMongoId, IsOptional } from 'class-validator';
+import {
+  IsNumber,
+  IsString,
+  IsMongoId,
+  IsOptional,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class ModifyMatchDto {
   @IsMongoId({ message: 'id 不是正确的ID类型' })
@@ -38,4 +44,9 @@ export class ModifyMatchDto {
   @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'price 必须是 number 类型' })
   readonly price: number;
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'repeatModel 不能为空' })
+  @IsNumber({ allowNaN: false }, { message: 'price 必须是 number 类型' })
+  readonly repeatModel: number;
 }

@@ -34,4 +34,14 @@ export class MatchController {
   async findOrderMatch(@Body() params): Promise<Match> {
     return await this.matchService.findById(params.matchId);
   }
+
+  @Get('repeatModelEnum')
+  repeatModelEnum() {
+    return this.matchService.repeatModelEnum();
+  }
+
+  @Get('weekEnum')
+  weekEnum() {
+    return this.matchService.weekEnum();
+  }
 }

@@ -7,6 +7,7 @@ import { ModifyMatchDto } from './dto/modify-match.dto';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { SpaceService } from '../space/space.service';
 import { ToolsService } from '../common/utils/tools-service';
+import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -44,14 +45,17 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const { spaceId, startAt, endAt } = addMatch;
+    const { spaceId, startAt, endAt, repeatModel } = addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
       endAt,
+      repeatModel,
     });
     if (hasMatch || !spaceId) {
-      ToolsService.fail('hasMatch、spaceId不能为空！');
+      ToolsService.fail(
+        !spaceId ? 'spaceId不能为空！' : '添加失败，相同场次已存在！',
+      );
     }
 
     const space = await this.spaceService.findById(addMatch.spaceId);
@@ -76,5 +80,13 @@ export class MatchService {
 
   async removeMatch(id: string): Promise<any> {
     await this.matchModel.findByIdAndDelete(id);
+  }
+
+  repeatModelEnum() {
+    return RepeatModel;
+  }
+
+  weekEnum() {
+    return WeekEnum;
   }
 }

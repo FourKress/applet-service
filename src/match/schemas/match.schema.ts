@@ -28,6 +28,8 @@ export class Match implements MatchInterface {
   @Prop()
   price: number;
   @Prop()
+  repeatModel: number;
+  @Prop()
   createdAt: Date;
   @Prop()
   updatedAt: Date;

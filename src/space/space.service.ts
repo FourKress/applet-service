@@ -7,6 +7,7 @@ import { SpaceMatchDto } from './dto/space-match.dto';
 import { MatchService } from '../match/match.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { Space, SpaceDocument } from './schemas/space.schema';
+import { UnitEnum } from '../common/enum/space.enum';
 
 @Injectable()
 export class SpaceService {
@@ -107,5 +108,9 @@ export class SpaceService {
 
   async removeSpace(id: string): Promise<any> {
     await this.spaceModel.findByIdAndDelete(id);
+  }
+
+  unitEnum() {
+    return UnitEnum;
   }
 }
