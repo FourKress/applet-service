@@ -1,4 +1,10 @@
-import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class SpaceDto {
   @IsOptional()
@@ -14,6 +20,6 @@ export class SpaceDto {
   readonly name: string;
 
   @IsNotEmpty({ message: 'unit 不能为空' })
-  @IsString({ message: 'unit 必须是 string 类型' })
+  @IsNumber({ allowNaN: false }, { message: 'unit 必须是 number 类型' })
   readonly unit: string;
 }

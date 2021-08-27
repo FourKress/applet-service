@@ -7,10 +7,10 @@ export const UnitEnum: JsonObject[] = [
   },
   {
     label: '8v8',
-    value: 1,
+    value: 2,
   },
   {
     label: '11v11',
-    value: 1,
+    value: 3,
   },
 ];
