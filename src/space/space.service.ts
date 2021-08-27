@@ -34,6 +34,10 @@ export class SpaceService {
     return coverSpaceList;
   }
 
+  async dropDownList(stadiumId: string): Promise<Space[]> {
+    return await this.spaceModel.find({ stadiumId }).exec();
+  }
+
   async findById(id: string): Promise<Space> {
     return await this.spaceModel
       .findOne({
@@ -89,19 +93,19 @@ export class SpaceService {
 
     const result = await Promise.all(
       spaces.map(async (space) => {
-        const { id = '', ...spaceInfo } = space;
-        if (id) {
-          return await this.spaceModel.findByIdAndUpdate(id, spaceInfo).exec();
-        } else {
-          const newSpace = new this.spaceModel(space);
-          return await newSpace.save();
-        }
+        const { id = Types.ObjectId().toHexString(), ...spaceInfo } = space;
+        return await this.spaceModel
+          .findByIdAndUpdate(id, spaceInfo, {
+            upsert: true,
+            rawResult: false,
+          })
+          .exec();
       }),
     );
     return result;
   }
 
   async removeSpace(id: string): Promise<any> {
-    return this.spaceModel.findByIdAndDelete(id);
+    await this.spaceModel.findByIdAndDelete(id);
   }
 }
