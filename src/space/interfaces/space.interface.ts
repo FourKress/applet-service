@@ -5,7 +5,7 @@ export interface SpaceInterface {
   // 场次名称
   name: string;
   // 5V5
-  unit: string;
+  unit: number;
   createdAt: Date;
   updatedAt: Date;
 }

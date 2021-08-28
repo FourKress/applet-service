@@ -21,5 +21,5 @@ export class ModifySpaceDto {
   @IsOptional()
   @IsNotEmpty({ message: 'unit 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'unit 必须是 number 类型' })
-  unit: string;
+  unit: number;
 }

@@ -14,7 +14,7 @@ export class Space implements SpaceInterface {
   @Prop({ required: true })
   name: string;
   @Prop({ required: true })
-  unit: string;
+  unit: number;
   @Prop()
   createdAt: Date;
   @Prop()
