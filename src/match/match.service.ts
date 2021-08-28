@@ -1,11 +1,10 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { ModifyMatchDto } from './dto/modify-match.dto';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
-import { SpaceService } from '../space/space.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
 
@@ -16,8 +15,6 @@ const Moment = require('moment');
 export class MatchService {
   constructor(
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
-    @Inject(forwardRef(() => SpaceService))
-    private readonly spaceService: SpaceService,
   ) {}
 
   async findBySpaceId(spaceId: string): Promise<MatchSpaceInterface[]> {
@@ -40,6 +37,15 @@ export class MatchService {
     return coverMatchList;
   }
 
+  async findByStadiumId(stadiumId: string): Promise<Match[]> {
+    return await this.matchModel
+      .find({
+        stadiumId,
+      })
+      .populate('Space', { name: 1 })
+      .exec();
+  }
+
   async findById(id: string): Promise<Match> {
     return await this.matchModel.findById(id).exec();
   }
@@ -57,23 +63,23 @@ export class MatchService {
         !spaceId ? 'spaceId不能为空！' : '添加失败，相同场次已存在！',
       );
     }
+    const repeatName = addMatch.repeatModel
+      ? RepeatModel.find((d) => d.value === addMatch.repeatModel).label
+      : '';
 
-    const space = await this.spaceService.findById(addMatch.spaceId);
-    const nowDate = '';
-
-    const newMatch = new this.matchModel(addMatch);
-    Object.assign(newMatch, {
-      rebate: 1,
-      startAt: `${nowDate} ${addMatch.startAt}`,
-      endAt: `${nowDate} ${addMatch.endAt}`,
-    });
+    const newMatch = new this.matchModel(
+      Object.assign({}, addMatch, {
+        repeatName,
+        spaceName: spaceId,
+      }),
+    );
     return await newMatch.save();
   }
 
   async modifyMatch(modifyMatch: ModifyMatchDto): Promise<Match> {
-    const { id, ...match } = modifyMatch;
-    if (!id) {
-      ToolsService.fail('id不能为空！');
+    const { id, spaceId, ...match } = modifyMatch;
+    if (!id || !spaceId) {
+      ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
     return await this.matchModel.findByIdAndUpdate(id, match).exec();
   }

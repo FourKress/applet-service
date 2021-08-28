@@ -47,17 +47,21 @@ export class SpaceService {
       .exec();
   }
 
-  checkNameRepeat(arr) {
-    const names = arr.map((d) => d.name);
+  checkNameRepeat(spaces) {
+    const names = spaces.map((d) => d.name);
     const filter = [...new Set(names)];
-    return filter.length !== arr.length;
+    return filter.length !== spaces.length;
+  }
+
+  checkStadiumId(spaces) {
+    return spaces.some((d) => !d.stadiumId);
   }
 
   async addSpace(spaces: CreateSpaceDto[]): Promise<any> {
     if (this.checkNameRepeat(spaces)) {
       ToolsService.fail('场地名称不能重复');
     }
-    const notStadiumId = spaces.find((d) => !d.stadiumId);
+    const notStadiumId = this.checkStadiumId(spaces);
     const hasSpace = await this.spaceModel
       .find({
         $or: spaces.map((d) => {
@@ -82,6 +86,9 @@ export class SpaceService {
   async modifySpace(spaces: ModifySpaceDto[]): Promise<Space[]> {
     if (this.checkNameRepeat(spaces)) {
       ToolsService.fail('场地名称不能重复');
+    }
+    if (this.checkStadiumId(spaces)) {
+      ToolsService.fail('stadiumId不能为空！');
     }
     const hasSpace = await this.spaceModel
       .find({

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { MatchInterface } from '../interfaces/match.interface';
 
@@ -9,26 +9,36 @@ export type MatchDocument = Match & Document;
 export class Match implements MatchInterface {
   @Prop()
   id: string;
-  @Prop()
+  @Prop({ require: true })
+  stadiumId: string;
+  @Prop({ require: true })
   spaceId: string;
-  @Prop()
+  @Prop({ require: true })
   duration: number;
   @Prop()
+  runDate: string;
+  @Prop({ require: true })
   startAt: string;
-  @Prop()
+  @Prop({ require: true })
   endAt: string;
-  @Prop()
+  @Prop({ require: true })
   totalPeople: number;
-  @Prop()
+  @Prop({ default: 0 })
   selectPeople: number;
-  @Prop()
+  @Prop({ require: true })
   minPeople: number;
-  @Prop()
+  @Prop({ require: true })
   rebate: number;
-  @Prop()
+  @Prop({ require: true })
+  rebatePrice: number;
+  @Prop({ require: true })
   price: number;
-  @Prop()
+  @Prop({ require: true })
   repeatModel: number;
+  @Prop()
+  repeatName: string;
+  @Prop({ type: Types.ObjectId, ref: 'Space' })
+  spaceName: string;
   @Prop()
   createdAt: Date;
   @Prop()

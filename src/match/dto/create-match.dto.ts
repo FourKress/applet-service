@@ -1,12 +1,25 @@
-import { IsNotEmpty, IsNumber, IsString, IsMongoId } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsMongoId,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateMatchDto {
+  @IsMongoId({ message: 'stadiumId 不是正确的ID类型' })
+  readonly stadiumId: string;
+
   @IsMongoId({ message: 'spaceId 不是正确的ID类型' })
   readonly spaceId: string;
 
   @IsNotEmpty({ message: 'duration 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'duration 必须是 number 类型' })
   readonly duration: number;
+
+  @IsOptional()
+  @IsString({ message: 'runDate 必须是 string 类型' })
+  readonly runDate: string;
 
   @IsNotEmpty({ message: 'startAt 不能为空' })
   @IsString({ message: 'startAt 必须是 string 类型' })
@@ -20,7 +33,7 @@ export class CreateMatchDto {
   @IsNumber({ allowNaN: false }, { message: 'totalPeople 必须是 number 类型' })
   readonly totalPeople: number;
 
-  @IsNotEmpty({ message: 'selectPeople 不能为空' })
+  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'selectPeople 必须是 number 类型' })
   readonly selectPeople: number;
 
