@@ -1,8 +1,15 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Match } from './match.entity';
-import { SpaceService } from '../space/space.service';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Match, MatchDocument } from './schemas/match.schema';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { ModifyMatchDto } from './dto/modify-match.dto';
+import { MatchRunDto } from './dto/match-run.dto';
+import { MatchSpaceInterface } from './interfaces/match-space.interface';
+import { ToolsService } from '../common/utils/tools-service';
+import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
+import { Space } from '../space/schemas/space.schema';
+import * as nzh from 'nzh/cn';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -10,17 +17,16 @@ const Moment = require('moment');
 @Injectable()
 export class MatchService {
   constructor(
-    @InjectRepository(Match)
-    private readonly matchRepository: Repository<Match>,
-    @Inject(forwardRef(() => SpaceService))
-    private readonly spaceService: SpaceService,
+    @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
   ) {}
 
-  async findBySpaceId(spaceId: string): Promise<any[]> {
-    const matchList: Match[] = (
-      await this.matchRepository.find({
-        spaceId,
-      })
+  async findBySpaceId(spaceId: string): Promise<MatchSpaceInterface[]> {
+    const matchList = (
+      await this.matchModel
+        .find({
+          spaceId,
+        })
+        .exec()
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
     const coverMatchList = matchList.map((match) => {
       return {
@@ -34,34 +40,128 @@ export class MatchService {
     return coverMatchList;
   }
 
-  async findById(id: string): Promise<Match> {
-    const match = await this.matchRepository.findOne(id);
-    return match;
+  async findByStadiumId(stadiumId: string, type = 'lt'): Promise<Match[]> {
+    // return await this.matchModel
+    //   .find({
+    //     stadiumId,
+    //   })
+    //   .where('runDate')
+    //   .lte(Moment('2021-08-29').valueOf())
+    //   .populate('space', { name: 1 }, Space.name)
+    //   .exec();
+    const matchList = await this.matchModel
+      .find({
+        stadiumId,
+      })
+      .populate('space', { name: 1 }, Space.name)
+      .exec();
+    return matchList.filter((match) => this.matchFilter(match, type));
   }
 
-  async addMatch(addMatch: Match): Promise<Match> {
-    const space = await this.spaceService.findById(addMatch.spaceId);
-    const nowDate = space.validateDate;
-    const match = await this.matchRepository.save({
-      ...addMatch,
-      rebate: 1,
-      startAt: `${nowDate} ${addMatch.startAt}`,
-      endAt: `${nowDate} ${addMatch.endAt}`,
-    });
-    return match;
-  }
-
-  async modifyMatch(modifyMatch: any): Promise<Match> {
-    const { id, ...info } = modifyMatch;
-    if (!id) {
-      return null;
+  matchFilter(match, type) {
+    const time = Moment().startOf('day').diff(match.runDate);
+    if (type === 'lt') {
+      if (match.repeatModel !== 1 || time < 0) {
+        return true;
+      }
+    } else if (type === 'gt') {
+      if (match.repeatModel === 1 && time > 0) {
+        return true;
+      }
     }
-    await this.matchRepository.update(id, info);
-    const match = await this.matchRepository.findOne(id);
-    return match;
+    return false;
+  }
+
+  async findByRunData(params: MatchRunDto): Promise<Match[]> {
+    return await this.matchModel
+      .find(params)
+      .populate('space', { name: 1 }, Space.name)
+      .exec();
+  }
+
+  async findById(id: string): Promise<Match> {
+    return await this.matchModel.findById(id).exec();
+  }
+
+  async addMatch(addMatch: CreateMatchDto): Promise<Match> {
+    const {
+      spaceId,
+      startAt,
+      endAt,
+      repeatModel,
+      repeatWeek,
+      runDate,
+    } = addMatch;
+    const hasMatch = await this.matchModel.findOne({
+      spaceId,
+      startAt,
+      endAt,
+      repeatModel,
+    });
+    if (hasMatch || !spaceId) {
+      ToolsService.fail(
+        !spaceId ? 'spaceId不能为空！' : '添加失败，相同场次已存在！',
+      );
+    }
+    const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
+
+    const newMatch = new this.matchModel(
+      Object.assign({}, addMatch, {
+        repeatName,
+        space: spaceId,
+      }),
+    );
+    return await newMatch.save();
+  }
+
+  setRepeatName(repeatModel, repeatWeek, runDate) {
+    let repeatName;
+    switch (repeatModel) {
+      case 1:
+        repeatName = runDate;
+        break;
+      case 2:
+        const weekNames = repeatWeek
+          .sort()
+          .map((d) => {
+            return nzh.encodeS(d);
+          })
+          .join('、');
+        repeatName = `每周${weekNames}`;
+        break;
+      case 3:
+        repeatName = '每天';
+        break;
+      default:
+        break;
+    }
+    return repeatName;
+  }
+
+  async modifyMatch(modifyMatch: ModifyMatchDto): Promise<Match> {
+    const { id, spaceId, ...match } = modifyMatch;
+    if (!id || !spaceId) {
+      ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
+    }
+    const { repeatModel, repeatWeek, runDate } = match;
+    const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
+    return await this.matchModel
+      .findByIdAndUpdate(id, {
+        ...match,
+        repeatName,
+      })
+      .exec();
   }
 
   async removeMatch(id: string): Promise<any> {
-    await this.matchRepository.delete(id);
+    await this.matchModel.findByIdAndDelete(id);
+  }
+
+  repeatModelEnum() {
+    return RepeatModel;
+  }
+
+  weekEnum() {
+    return WeekEnum;
   }
 }

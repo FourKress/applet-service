@@ -4,128 +4,64 @@ import {
   Post,
   Body,
   Query,
-  UseGuards,
   HttpCode,
   Request,
+  HttpStatus,
 } from '@nestjs/common';
-import { Order } from './order.entity';
 import { OrderService } from './order.service';
-import { AuthGuard } from '@nestjs/passport';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { CreateOderDto } from './dto/create-oder.dto';
+import { ModifyOderDto } from './dto/modify-oder.dto';
+import { OrderCountInterface } from './interfaces/order-count.interface';
+import { OrderInfoInterface } from './interfaces/order-info.interface';
+import { Order } from './schemas/order.schema';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
-  async findAll(): Promise<any> {
-    const orders = await this.orderService.findAll();
-    if (!orders) {
-      return {
-        msg: '获取订单列表失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+  async findAll(): Promise<Order[]> {
+    return await this.orderService.findAll();
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('listCount')
-  async orderCount(@Request() req): Promise<any> {
-    const {
-      user: { userId },
-    } = req;
-    const counts = await this.orderService.orderCount(userId);
-    if (!counts) {
-      return {
-        msg: '获取订单数量失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: counts,
-      code: 10000,
-    };
+  async orderCount(@Request() req): Promise<OrderCountInterface> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.orderService.orderCount(tokenInfo.userId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('info')
-  async info(@Query() params) {
-    const orders = await this.orderService.findOrderById(params.id);
-    if (!orders) {
-      return {
-        msg: '订单信息获取失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+  async info(
+    @Query('id', new ValidationIDPipe()) id: string,
+  ): Promise<OrderInfoInterface> {
+    return await this.orderService.findOrderById(id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Post('listByStatus')
-  async listByStatus(@Request() req, @Body() params: Order) {
-    const {
-      user: { userId },
-    } = req;
-    const orders = await this.orderService.findOrderByStatus({
-      ...params,
-      userId,
-    });
-    if (!orders) {
-      return {
-        msg: '订单列表获取失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: orders,
-      code: 10000,
-    };
+  async listByStatus(
+    @Request() req,
+    @Body('status') status: string,
+  ): Promise<Order[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.orderService.findOrderByStatus(status, tokenInfo.userId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
-  @HttpCode(200)
-  async add(@Request() req, @Body() addOrder: Order) {
-    const { userId } = req.user;
-    const result = await this.orderService.addOrder({
+  @HttpCode(HttpStatus.OK)
+  async add(@Request() req, @Body() addOrder: CreateOderDto): Promise<string> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.orderService.addOrder({
       ...addOrder,
-      userId,
+      userId: tokenInfo.userId,
     });
-    return result;
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('pay')
-  @HttpCode(200)
-  async pay(@Body() payInfo: Order) {
-    const result = await this.orderService.orderPay(payInfo);
-    if (!result) {
-      return {
-        msg: '订单支付失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: result,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async pay(@Body('id', new ValidationIDPipe()) id: string): Promise<boolean> {
+    return await this.orderService.orderPay(id);
   }
 }

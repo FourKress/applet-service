@@ -1,98 +1,58 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
   HttpCode,
+  HttpStatus,
+  Post,
+  Query,
   Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { User } from './schemas/user.schema';
+import { ModifyUserDto } from './dto/modify-user.dto';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('findAll')
-  async findAll(): Promise<any> {
-    const users = await this.usersService.findAll();
-    if (!users) {
-      return {
-        msg: '获取用户信息失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: users,
-      code: 10000,
-    };
+  async findAll(): Promise<User[]> {
+    return await this.usersService.findAll();
   }
 
+  @NoAuth()
   @Get('findOneByOpenId')
-  async findOneByOpenId(@Query() userInfo: any): Promise<any> {
-    console.log(userInfo, '查询');
-    const user = await this.usersService.findOneByOpenId(userInfo.openId);
-    if (!user) {
-      return {
-        msg: '',
-        data: null,
-        code: 10000,
-      };
-    }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+  async findOneByOpenId(@Query('openId') openId: string): Promise<User> {
+    return await this.usersService.findOneByOpenId(openId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<any> {
-    const {
-      user: { userId },
-    } = req;
-    const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      return {
-        msg: '获取用户信息失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+  async findOneById(@Request() req): Promise<User> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.usersService.findOneById(tokenInfo.userId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('modify')
-  @HttpCode(200)
-  async modify(@Request() req, @Body() modifyUser: User) {
-    const { userId } = req.user;
-    const user = await this.usersService.modify({
-      ...modifyUser,
-      id: userId,
-    });
-    if (!user) {
-      return {
-        msg: '用户信息修改失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: user,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async modify(
+    @Request() req,
+    @Body() modifyUser: ModifyUserDto,
+  ): Promise<User> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.usersService.modify(
+      Object.assign({}, modifyUser, {
+        id: tokenInfo.userId,
+      }),
+    );
+  }
+
+  @Post('setBoss')
+  @HttpCode(HttpStatus.OK)
+  async setBoss(@Body('id', new ValidationIDPipe()) id: string): Promise<User> {
+    return await this.usersService.setBoss(id);
   }
 }

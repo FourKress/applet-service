@@ -5,87 +5,49 @@ import {
   HttpCode,
   Post,
   Query,
-  UseGuards,
+  HttpStatus,
   Request,
 } from '@nestjs/common';
 import { StadiumService } from './stadium.service';
-import { Stadium } from './stadium.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { Stadium } from './schemas/stadium.schema';
+import { CreateStadiumDto } from './dto/create-stadium.dto';
+import { ModifyStadiumDto } from './dto/modify-stadium.dto';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('stadium')
 export class StadiumController {
   constructor(private readonly stadiumService: StadiumService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
-  async findAll(): Promise<any> {
-    const stadium = await this.stadiumService.findAll();
-    if (!stadium) {
-      return {
-        msg: '获取球场信息列表失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+  async findAll(): Promise<Stadium[]> {
+    return await this.stadiumService.findAll();
   }
 
+  @NoAuth()
   @Get('info')
-  async info(@Query() params: any) {
-    const stadium = await this.stadiumService.findById(params.id);
-    if (!stadium) {
-      return {
-        msg: '球场信息获取失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+  async info(
+    @Query('id', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Stadium> {
+    return await this.stadiumService.findById(stadiumId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('modify')
-  @HttpCode(200)
-  async modify(@Body() modifyStadium: Stadium) {
-    const stadium = await this.stadiumService.modify(modifyStadium);
-    if (!stadium) {
-      return {
-        msg: '球场信息修改失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async modify(@Body() modifyStadium: ModifyStadiumDto): Promise<Stadium> {
+    return await this.stadiumService.modify(modifyStadium);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
-  @HttpCode(200)
-  async add(@Body() addStadium: Stadium) {
-    const stadium = await this.stadiumService.add(addStadium);
-    if (!stadium) {
-      return {
-        msg: '球场添加失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: stadium,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async add(@Body() addStadium: CreateStadiumDto): Promise<Stadium> {
+    return await this.stadiumService.add(addStadium);
+  }
+
+  @Get('stadiumList')
+  async stadiumList(@Request() req): Promise<Stadium[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.stadiumService.findByBossId(tokenInfo.bossId);
   }
 }

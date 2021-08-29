@@ -4,66 +4,74 @@ import {
   Post,
   Body,
   Query,
-  UseGuards,
   HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
-import { AuthGuard } from '@nestjs/passport';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { ModifyMatchDto } from './dto/modify-match.dto';
+import { MatchRunDto } from './dto/match-run.dto';
+import { Match } from './schemas/match.schema';
+import { MatchSpaceInterface } from './interfaces/match-space.interface';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 
 @Controller('match')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get('info')
-  async findById(@Query() params) {
-    const matchList = await this.matchService.findBySpaceId(params.spaceId);
-    if (!matchList) {
-      return {
-        msg: '场次信息获取失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: matchList,
-      code: 10000,
-    };
+  async findBySpaceId(
+    @Query('spaceId', new ValidationIDPipe()) spaceId: string,
+  ): Promise<MatchSpaceInterface[]> {
+    return await this.matchService.findBySpaceId(spaceId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @Get('list')
+  async findByStadium(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Match[]> {
+    return await this.matchService.findByStadiumId(stadiumId);
+  }
+
+  @Get('failList')
+  async findByStadiumFail(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Match[]> {
+    return await this.matchService.findByStadiumId(stadiumId, 'gt');
+  }
+
+  @Post('runList')
+  @HttpCode(HttpStatus.OK)
+  async findByRunData(@Body() params: MatchRunDto): Promise<Match[]> {
+    return await this.matchService.findByRunData(params);
+  }
+
   @Post('add')
-  async addMatch(@Body() params) {
-    const match = await this.matchService.addMatch(params);
-    if (!match) {
-      return {
-        msg: '场次添加失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: match,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async addMatch(@Body() params: CreateMatchDto): Promise<Match> {
+    return await this.matchService.addMatch(params);
   }
 
-  @Post('orderMatchInfo')
-  @HttpCode(200)
-  async findOrderMatch(@Body() params) {
-    const match = await this.matchService.findById(params.matchId);
-    if (!match) {
-      return {
-        msg: '场次信息获取失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: match,
-      code: 10000,
-    };
+  @Post('modify')
+  @HttpCode(HttpStatus.OK)
+  async modify(@Body() params: ModifyMatchDto): Promise<Match> {
+    return await this.matchService.modifyMatch(params);
+  }
+
+  @Get('details')
+  async details(
+    @Query('id', new ValidationIDPipe()) id: string,
+  ): Promise<Match> {
+    return await this.matchService.findById(id);
+  }
+
+  @Get('repeatModelEnum')
+  repeatModelEnum() {
+    return this.matchService.repeatModelEnum();
+  }
+
+  @Get('weekEnum')
+  weekEnum() {
+    return this.matchService.weekEnum();
   }
 }

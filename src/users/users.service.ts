@@ -1,58 +1,73 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
+import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { ModifyUserDto } from './dto/modify-user.dto';
+import { ToolsService } from '../common/utils/tools-service';
+import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async findOneByOpenId(openId: string): Promise<any> {
+  async findOneByOpenId(openId: string): Promise<User> {
     if (!openId) {
-      return null;
+      ToolsService.fail('openId不能为空！');
     }
-    const user = await this.usersRepository.findOne({
-      openId,
-    });
-    return user;
+    return await this.userModel
+      .findOne({
+        openId,
+      })
+      .exec();
   }
 
-  async findOneById(id: string): Promise<any> {
+  async findOneById(id: string): Promise<User> {
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
-    const user = await this.usersRepository.findOne(id);
-    return user;
+    return await this.userModel
+      .findOne({
+        _id: Types.ObjectId(id),
+      })
+      .exec();
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    return this.userModel.find().exec();
   }
 
-  async create(createUser: User): Promise<any> {
-    const data: User = {
-      ...createUser,
+  async create(createUser: CreateUserDto): Promise<User> {
+    const newUser = new this.userModel(createUser);
+    Object.assign(newUser, {
       teamUpCount: 0,
       monthlyCardCount: 0,
       isBoss: false,
-    };
-    const user = await this.usersRepository.save(data);
-    return user;
+    });
+    return await newUser.save();
   }
 
-  async modify(modifyUser: User): Promise<any> {
+  async modify(modifyUser: ModifyUserDto): Promise<User> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
-    await this.usersRepository.update(id, userInfo);
-    const target = await this.findOneById(id);
-    return target;
+
+    return await this.userModel.findByIdAndUpdate(id, userInfo).exec();
+  }
+
+  async setBoss(id: string): Promise<User> {
+    const hasBoss = await this.userModel.findById(id);
+    if (hasBoss.isBoss || hasBoss.bossId) {
+      ToolsService.fail('设置失败，该账号已是场主身份！');
+    }
+    const bossId = Types.ObjectId().toHexString();
+    return await this.userModel
+      .findByIdAndUpdate(id, {
+        isBoss: true,
+        bossId,
+      })
+      .exec();
   }
 }

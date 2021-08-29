@@ -3,52 +3,52 @@ import {
   Post,
   Get,
   Body,
-  Query,
   HttpCode,
-  UseGuards,
+  HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { SpaceService } from './space.service';
-import { Space } from './space.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { SpaceMatchDto } from './dto/space-match.dto';
+import { CreateSpaceDto } from './dto/create-space.dto';
+import { Space } from './schemas/space.schema';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('space')
 export class SpaceController {
   constructor(private readonly spaceService: SpaceService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('add')
-  @HttpCode(200)
-  async addSpace(@Body() params: Space) {
-    const space = await this.spaceService.addSpace(params);
-    if (!space) {
-      return {
-        msg: '添加场次失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: space,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async addSpace(@Body('spaces') spaces: CreateSpaceDto[]): Promise<Space[]> {
+    return await this.spaceService.addSpace(spaces);
   }
 
+  @NoAuth()
   @Post('list')
-  @HttpCode(200)
-  async findByStadium(@Body() params: Space) {
-    const spaces = await this.spaceService.findByStadiumId(params);
-    if (!spaces) {
-      return {
-        msg: '获取球场场次失败!',
-        data: null,
-        code: 11000,
-      };
-    }
-    return {
-      msg: '',
-      data: spaces,
-      code: 10000,
-    };
+  @HttpCode(HttpStatus.OK)
+  async findByStadium(
+    @Body('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<SpaceMatchDto[]> {
+    return await this.spaceService.findByStadiumId(stadiumId);
+  }
+
+  @Get('dropDownList')
+  async dropDownList(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Space[]> {
+    return await this.spaceService.dropDownList(stadiumId);
+  }
+
+  @Get('remove')
+  async removeSpace(
+    @Query('id', new ValidationIDPipe()) id: string,
+  ): Promise<any> {
+    return await this.spaceService.removeSpace(id);
+  }
+
+  @Get('unitEnum')
+  unitEnum() {
+    return this.spaceService.unitEnum();
   }
 }

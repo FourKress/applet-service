@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Stadium, StadiumSchema } from './schemas/stadium.schema';
 import { StadiumController } from './stadium.controller';
 import { StadiumService } from './stadium.service';
-
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Stadium } from './stadium.entity';
-
-import { UserRelationStadiumModule } from '../user-relation-stadium/user-relation-stadium.module';
+import { SpaceModule } from '../space/space.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Stadium]), UserRelationStadiumModule],
+  imports: [
+    MongooseModule.forFeature([{ name: Stadium.name, schema: StadiumSchema }]),
+    SpaceModule,
+  ],
   controllers: [StadiumController],
   providers: [StadiumService],
   exports: [StadiumService],

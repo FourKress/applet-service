@@ -1,22 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Order } from './order.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { OrderInterface } from './interfaces/order.interface';
+import { CreateOderDto } from './dto/create-oder.dto';
+import { ModifyOderDto } from './dto/modify-oder.dto';
+import { OrderInfoInterface } from './interfaces/order-info.interface';
+import { OrderCountInterface } from './interfaces/order-count.interface';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { StadiumService } from '../stadium/stadium.service';
 import { SpaceService } from '../space/space.service';
 import { MatchService } from '../match/match.service';
-import { UserRMatchService } from '../user-r-match/user-r-match.service';
+import { UserRMatchService } from '../userRMatch/userRMatch.service';
+import { Order, OrderDocument } from './schemas/order.schema';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 import * as utils from './utils';
+import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
     private readonly monthlyCardService: MonthlyCardService,
     private readonly stadiumService: StadiumService,
     private readonly spaceService: SpaceService,
@@ -24,21 +29,24 @@ export class OrderService {
     private readonly userRMatchService: UserRMatchService,
   ) {}
 
-  async findAll(): Promise<any> {
-    const orders = await this.orderRepository.find();
-    return orders;
+  async findAll(): Promise<Order[]> {
+    return await this.orderModel.find().exec();
   }
 
-  async orderCount(userId: string): Promise<any> {
-    const payCount = await this.orderRepository.find({
-      status: 0,
-      userId,
-    });
-    const startCount = await this.orderRepository.find({
-      status: 1,
-      userId,
-    });
-    const allCount = await this.orderRepository.find({ userId });
+  async orderCount(userId: string): Promise<OrderCountInterface> {
+    const payCount = await this.orderModel
+      .find({
+        status: 0,
+        userId,
+      })
+      .exec();
+    const startCount = await this.orderModel
+      .find({
+        status: 1,
+        userId,
+      })
+      .exec();
+    const allCount = await this.orderModel.find({ userId }).exec();
     return {
       payCount: payCount.length,
       startCount: startCount.length,
@@ -46,11 +54,11 @@ export class OrderService {
     };
   }
 
-  async findOrderById(id: string): Promise<any> {
+  async findOrderById(id: string): Promise<OrderInfoInterface> {
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
-    const order: Order = await this.orderRepository.findOne(id);
+    const order = await this.orderModel.findById(id);
     const { spaceId, matchId, stadiumId, personCount, userId } = order;
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
@@ -60,12 +68,10 @@ export class OrderService {
       stadiumId,
     });
     const price = match.price * (match.rebate / 10);
-    const orderInfo = {
-      ...order,
+    const orderInfo = Object.assign({}, order, {
       stadiumName: stadium.name,
       spaceName: space.name,
       unit: space.unit,
-      validateDate: space.validateDate.replace(/-/g, '.').substring(5, 10),
       runAt: `${utils.getHour(match.startAt)}-${utils.getHour(match.endAt)}`,
       duration: match.duration,
       price,
@@ -76,21 +82,24 @@ export class OrderService {
         utils.countdown(order.createdAt, match.startAt) -
         (Moment() - Moment(order.createdAt)),
       statusName: utils.StatusMap[order.status],
-    };
-    return {
-      ...orderInfo,
-    };
+    });
+    return orderInfo;
   }
 
-  async findOrderByStatus(params: Order): Promise<any> {
-    if (!params.userId) {
-      return null;
+  async findOrderByStatus(status, userId): Promise<Order[]> {
+    if (!userId) {
+      ToolsService.fail('userId不能为空！');
     }
-    const orders = (await this.orderRepository.find({ ...params })).sort(
-      (a: any, b: any) => b.createdAt - a.createdAt,
-    );
+    const orders = (
+      await this.orderModel
+        .find({
+          status,
+          userId,
+        })
+        .exec()
+    ).sort((a: any, b: any) => b.createdAt - a.createdAt);
     const coverOrders = await Promise.all(
-      orders.map(async (order: Order) => {
+      orders.map(async (order: OrderInterface) => {
         const orderInfo = await this.findOrderById(order.id);
         return orderInfo;
       }),
@@ -98,34 +107,24 @@ export class OrderService {
     return coverOrders;
   }
 
-  async addOrder(addOrder: Order): Promise<any> {
+  async addOrder(addOrder: CreateOderDto): Promise<string> {
     const { matchId } = addOrder;
     const match = await this.matchService.findById(matchId);
 
     if (match.selectPeople + addOrder.personCount > match.totalPeople) {
-      return {
-        code: 11000,
-        msg: '当前场次已没有位置可报名，请选择其它场次进行报名',
-        data: null,
-      };
+      ToolsService.fail('当前场次已没有位置可报名，请选择其它场次进行报名！');
     }
     if (Moment().diff(match.endAt) > 0) {
-      return {
-        code: 11000,
-        msg: '当前场次已结束，请选择其它场次进行报名。',
-        data: null,
-      };
+      ToolsService.fail('当前场次已结束，请选择其它场次进行报名。');
     }
 
     if (
       Moment().diff(match.startAt) > 0 &&
       match.selectPeople < match.minPeople
     ) {
-      return {
-        code: 11000,
-        msg: '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
-        data: null,
-      };
+      ToolsService.fail(
+        '当前场次因未达最低人数组队不成功，请选择其它场次进行报名。',
+      );
     }
 
     const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
@@ -142,41 +141,36 @@ export class OrderService {
     };
     await this.userRMatchService.addRelation(relation);
 
-    await this.matchService.modifyMatch({
-      ...match,
-      selectPeople: match.selectPeople + addOrder.personCount,
-    });
-
-    const order = await this.orderRepository.save({
+    await this.matchService.modifyMatch(
+      Object.assign({}, match, {
+        selectPeople: match.selectPeople + addOrder.personCount,
+      }),
+    );
+    const newOrder = new this.orderModel({
       ...addOrder,
       isMonthlyCard: !!isMonthlyCard,
       status: 0,
     });
+    await newOrder.save();
 
-    return {
-      code: 10000,
-      data: order.id,
-      msg: '',
-    };
+    return newOrder.id;
   }
 
-  async modifyOrder(modifyOrder: Order): Promise<any> {
-    const { id, ...info } = modifyOrder;
+  async modifyOrder(modifyOrder: ModifyOderDto): Promise<Order> {
+    const { id, ...order } = modifyOrder;
     if (!id) {
-      return null;
+      ToolsService.fail('id不能为空！');
     }
-    await this.orderRepository.update(id, info);
-    const order = await this.orderRepository.findOne(id);
-    return order;
+    return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(payInfo: Order): Promise<any> {
-    if (!payInfo.id) {
-      return false;
+  async orderPay(id: string): Promise<boolean> {
+    if (!id) {
+      ToolsService.fail('id不能为空！');
     }
-    const order = await this.orderRepository.findOne(payInfo.id);
+    const order = await this.orderModel.findById(id);
     if (!order) {
-      return false;
+      ToolsService.fail('支付失败，未找到对应的订单！');
     }
     const match = await this.matchService.findById(order.matchId);
     if (
@@ -184,13 +178,13 @@ export class OrderService {
         (Moment() - Moment(order.createdAt)) <
       0
     ) {
-      return false;
+      ToolsService.fail('支付失败，订单已超时！');
     }
-
-    await this.orderRepository.save({
-      ...order,
-      status: 1,
-    });
+    await this.orderModel
+      .findByIdAndUpdate(id, {
+        status: 1,
+      })
+      .exec();
     return true;
   }
 
@@ -199,14 +193,14 @@ export class OrderService {
     let list = [];
     switch (type) {
       case 0:
-        list = await this.orderRepository.find({
+        list = await this.orderModel.find({
           where: {
             createdAt: { $gte: Moment().startOf('day').toDate() },
           },
         });
         break;
       case 1:
-        list = await this.orderRepository.find({
+        list = await this.orderModel.find({
           where: {
             createdAt: {
               $lte: Moment().startOf('day').toDate(),

@@ -1,27 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { Space } from './space.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { CreateSpaceDto } from './dto/create-space.dto';
+import { ModifySpaceDto } from './dto/modify-space.dto';
+import { SpaceMatchDto } from './dto/space-match.dto';
 import { MatchService } from '../match/match.service';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Moment = require('moment');
+import { ToolsService } from '../common/utils/tools-service';
+import { Space, SpaceDocument } from './schemas/space.schema';
+import { UnitEnum } from '../common/enum/space.enum';
 
 @Injectable()
 export class SpaceService {
   constructor(
-    @InjectRepository(Space) public readonly spaceRepository: Repository<Space>,
+    @InjectModel(Space.name) private readonly spaceModel: Model<SpaceDocument>,
     private readonly matchService: MatchService,
   ) {}
 
-  async findByStadiumId(space: Space): Promise<any[]> {
-    const spaceList = (await this.spaceRepository.find({ ...space })).filter(
-      (space) =>
-        Moment().startOf('day').valueOf() - Moment(space.validateDate) <= 0,
-    );
+  async findByStadiumId(stadiumId: string): Promise<SpaceMatchDto[]> {
+    const spaceList = await this.spaceModel.find({ stadiumId }).exec();
     const coverSpaceList = await Promise.all(
-      spaceList.map(async (space: Space) => {
+      spaceList.map(async (space) => {
         const match = await this.matchService.findBySpaceId(
           space.id.toString(),
         );
@@ -37,31 +35,89 @@ export class SpaceService {
     return coverSpaceList;
   }
 
+  async dropDownList(stadiumId: string): Promise<Space[]> {
+    return await this.spaceModel.find({ stadiumId }).exec();
+  }
+
   async findById(id: string): Promise<Space> {
-    const space = this.spaceRepository.findOne(id);
-    return space;
+    return await this.spaceModel
+      .findOne({
+        _id: Types.ObjectId(id),
+      })
+      .exec();
   }
 
-  async addSpace(info: Space): Promise<Space> {
-    const { stadiumId } = info;
-    if (!stadiumId) {
-      return null;
-    }
-    const space = await this.spaceRepository.save(info);
-    return space;
+  checkNameRepeat(spaces) {
+    const names = spaces.map((d) => d.name);
+    const filter = [...new Set(names)];
+    return filter.length !== spaces.length;
   }
 
-  async modifySpace(info: Space): Promise<Space> {
-    const { id = '' } = info;
-    if (!id) {
-      return null;
+  checkStadiumId(spaces) {
+    return spaces.some((d) => !d.stadiumId);
+  }
+
+  async addSpace(spaces: CreateSpaceDto[]): Promise<any> {
+    if (this.checkNameRepeat(spaces)) {
+      ToolsService.fail('场地名称不能重复');
     }
-    await this.spaceRepository.update(id, info);
-    const space = await this.findById(id);
-    return space;
+    const notStadiumId = this.checkStadiumId(spaces);
+    const hasSpace = await this.spaceModel
+      .find({
+        $or: spaces.map((d) => {
+          return {
+            name: d.name,
+            stadiumId: d.stadiumId,
+          };
+        }),
+      })
+      .exec();
+    if (hasSpace?.length || notStadiumId) {
+      ToolsService.fail(
+        notStadiumId ? 'stadiumId不能为空！' : '添加失败，场地名称已存在！',
+      );
+    }
+    return await this.spaceModel.insertMany(spaces, {
+      ordered: true,
+      rawResult: false,
+    });
+  }
+
+  async modifySpace(spaces: ModifySpaceDto[]): Promise<Space[]> {
+    if (this.checkNameRepeat(spaces)) {
+      ToolsService.fail('场地名称不能重复');
+    }
+    if (this.checkStadiumId(spaces)) {
+      ToolsService.fail('stadiumId不能为空！');
+    }
+    const hasSpace = await this.spaceModel
+      .find({
+        $or: spaces,
+      })
+      .exec();
+    if (hasSpace?.length) {
+      ToolsService.fail('修改失败，场地名称已存在！');
+    }
+
+    const result = await Promise.all(
+      spaces.map(async (space) => {
+        const { id = Types.ObjectId().toHexString(), ...spaceInfo } = space;
+        return await this.spaceModel
+          .findByIdAndUpdate(id, spaceInfo, {
+            upsert: true,
+            rawResult: false,
+          })
+          .exec();
+      }),
+    );
+    return result;
   }
 
   async removeSpace(id: string): Promise<any> {
-    return this.spaceRepository.delete(id);
+    await this.spaceModel.findByIdAndDelete(id);
+  }
+
+  unitEnum() {
+    return UnitEnum;
   }
 }
