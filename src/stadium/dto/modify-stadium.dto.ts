@@ -71,8 +71,9 @@ export class ModifyStadiumDto {
   readonly monthlyCardPrice: number;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'spaces 不能为空' })
-  @ValidateNested({ each: true })
+  @ValidateNested({
+    message: (constraints) => constraints['isString'],
+  })
   @Type(() => SpaceDto)
   readonly spaces: SpaceDto[];
 }

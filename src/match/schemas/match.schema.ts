@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { MatchInterface } from '../interfaces/match.interface';
+import { Space } from '../../space/schemas/space.schema';
 
 export type MatchDocument = Match & Document;
 
@@ -37,8 +38,10 @@ export class Match implements MatchInterface {
   repeatModel: number;
   @Prop()
   repeatName: string;
-  @Prop({ type: Types.ObjectId, ref: 'Space' })
-  spaceName: string;
+  @Prop()
+  repeatWeek: number[];
+  @Prop({ type: Types.ObjectId, ref: Space.name })
+  space: string;
   @Prop()
   createdAt: Date;
   @Prop()

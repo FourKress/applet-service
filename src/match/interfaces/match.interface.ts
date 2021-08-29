@@ -13,8 +13,9 @@ export interface MatchInterface {
   rebatePrice: number;
   price: number;
   repeatModel: number;
-  readonly spaceName: string;
-  readonly repeatName: string;
+  space: string;
+  repeatName: string;
+  repeatWeek: number[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -17,7 +17,8 @@ export class MatchSpaceInterface implements MatchInterface {
   readonly rebatePrice: number;
   readonly price: number;
   readonly repeatModel: number;
-  readonly spaceName: string;
+  readonly repeatWeek: number[];
+  readonly space: string;
   readonly repeatName: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;

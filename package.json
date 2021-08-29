@@ -43,6 +43,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^3.6.9",
+    "nzh": "^1.0.5",
     "passport": "^0.4.1",
     "passport-custom": "^1.1.1",
     "passport-jwt": "^4.0.0",

@@ -10,6 +10,7 @@ import {
 import { MatchService } from './match.service';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { ModifyMatchDto } from './dto/modify-match.dto';
+import { MatchRunDto } from './dto/match-run.dto';
 import { Match } from './schemas/match.schema';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
@@ -19,7 +20,7 @@ export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get('info')
-  async findById(
+  async findBySpaceId(
     @Query('spaceId', new ValidationIDPipe()) spaceId: string,
   ): Promise<MatchSpaceInterface[]> {
     return await this.matchService.findBySpaceId(spaceId);
@@ -30,6 +31,19 @@ export class MatchController {
     @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
   ): Promise<Match[]> {
     return await this.matchService.findByStadiumId(stadiumId);
+  }
+
+  @Get('failList')
+  async findByStadiumFail(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Match[]> {
+    return await this.matchService.findByStadiumId(stadiumId, 'gt');
+  }
+
+  @Post('runList')
+  @HttpCode(HttpStatus.OK)
+  async findByRunData(@Body() params: MatchRunDto): Promise<Match[]> {
+    return await this.matchService.findByRunData(params);
   }
 
   @Post('add')
@@ -44,10 +58,11 @@ export class MatchController {
     return await this.matchService.modifyMatch(params);
   }
 
-  @Post('orderMatchInfo')
-  @HttpCode(HttpStatus.OK)
-  async findOrderMatch(@Body() params): Promise<Match> {
-    return await this.matchService.findById(params.matchId);
+  @Get('details')
+  async details(
+    @Query('id', new ValidationIDPipe()) id: string,
+  ): Promise<Match> {
+    return await this.matchService.findById(id);
   }
 
   @Get('repeatModelEnum')

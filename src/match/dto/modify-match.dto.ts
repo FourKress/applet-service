@@ -53,7 +53,10 @@ export class ModifyMatchDto {
   readonly price: number;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'repeatModel 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'price 必须是 number 类型' })
   readonly repeatModel: number;
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'repeatWeek 不能为空' })
+  readonly repeatWeek: number[];
 }

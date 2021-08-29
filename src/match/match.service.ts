@@ -4,9 +4,12 @@ import { Model } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { ModifyMatchDto } from './dto/modify-match.dto';
+import { MatchRunDto } from './dto/match-run.dto';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ToolsService } from '../common/utils/tools-service';
 import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
+import { Space } from '../space/schemas/space.schema';
+import * as nzh from 'nzh/cn';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -37,12 +40,42 @@ export class MatchService {
     return coverMatchList;
   }
 
-  async findByStadiumId(stadiumId: string): Promise<Match[]> {
-    return await this.matchModel
+  async findByStadiumId(stadiumId: string, type = 'lt'): Promise<Match[]> {
+    // return await this.matchModel
+    //   .find({
+    //     stadiumId,
+    //   })
+    //   .where('runDate')
+    //   .lte(Moment('2021-08-29').valueOf())
+    //   .populate('space', { name: 1 }, Space.name)
+    //   .exec();
+    const matchList = await this.matchModel
       .find({
         stadiumId,
       })
-      .populate('Space', { name: 1 })
+      .populate('space', { name: 1 }, Space.name)
+      .exec();
+    return matchList.filter((match) => this.matchFilter(match, type));
+  }
+
+  matchFilter(match, type) {
+    const time = Moment().startOf('day').diff(match.runDate);
+    if (type === 'lt') {
+      if (match.repeatModel !== 1 || time < 0) {
+        return true;
+      }
+    } else if (type === 'gt') {
+      if (match.repeatModel === 1 && time > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async findByRunData(params: MatchRunDto): Promise<Match[]> {
+    return await this.matchModel
+      .find(params)
+      .populate('space', { name: 1 }, Space.name)
       .exec();
   }
 
@@ -51,7 +84,14 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const { spaceId, startAt, endAt, repeatModel } = addMatch;
+    const {
+      spaceId,
+      startAt,
+      endAt,
+      repeatModel,
+      repeatWeek,
+      runDate,
+    } = addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
@@ -63,17 +103,39 @@ export class MatchService {
         !spaceId ? 'spaceId不能为空！' : '添加失败，相同场次已存在！',
       );
     }
-    const repeatName = addMatch.repeatModel
-      ? RepeatModel.find((d) => d.value === addMatch.repeatModel).label
-      : '';
+    const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
 
     const newMatch = new this.matchModel(
       Object.assign({}, addMatch, {
         repeatName,
-        spaceName: spaceId,
+        space: spaceId,
       }),
     );
     return await newMatch.save();
+  }
+
+  setRepeatName(repeatModel, repeatWeek, runDate) {
+    let repeatName;
+    switch (repeatModel) {
+      case 1:
+        repeatName = runDate;
+        break;
+      case 2:
+        const weekNames = repeatWeek
+          .sort()
+          .map((d) => {
+            return nzh.encodeS(d);
+          })
+          .join('、');
+        repeatName = `每周${weekNames}`;
+        break;
+      case 3:
+        repeatName = '每天';
+        break;
+      default:
+        break;
+    }
+    return repeatName;
   }
 
   async modifyMatch(modifyMatch: ModifyMatchDto): Promise<Match> {
@@ -81,7 +143,14 @@ export class MatchService {
     if (!id || !spaceId) {
       ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
-    return await this.matchModel.findByIdAndUpdate(id, match).exec();
+    const { repeatModel, repeatWeek, runDate } = match;
+    const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
+    return await this.matchModel
+      .findByIdAndUpdate(id, {
+        ...match,
+        repeatName,
+      })
+      .exec();
   }
 
   async removeMatch(id: string): Promise<any> {
