@@ -17,12 +17,12 @@ export class AuthService {
 
   async login(user: CreateUserDto): Promise<AuthInterface> {
     const { openId } = user;
-    let userFromDb = await this.usersService.findOneByOpenId(openId);
+    let userFromDb: any = await this.usersService.findOneByOpenId(openId);
     if (!userFromDb) {
       userFromDb = await this.usersService.create(user);
     }
     const token = await this.jwtService.createToken({
-      userId: userFromDb.id,
+      userId: userFromDb._id,
       openId: userFromDb.openId,
       bossId: userFromDb.bossId,
     });

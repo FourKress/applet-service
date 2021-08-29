@@ -19,11 +19,10 @@ import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
-  @Get('info')
-  async findBySpaceId(
-    @Query('spaceId', new ValidationIDPipe()) spaceId: string,
-  ): Promise<MatchSpaceInterface[]> {
-    return await this.matchService.findBySpaceId(spaceId);
+  @Post('info')
+  @HttpCode(HttpStatus.OK)
+  async findBySpaceId(@Body() params: any): Promise<MatchSpaceInterface[]> {
+    return await this.matchService.findBySpaceId(params);
   }
 
   @Get('list')

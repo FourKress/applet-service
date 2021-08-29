@@ -20,35 +20,21 @@ export class MatchService {
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
   ) {}
 
-  async findBySpaceId(spaceId: string): Promise<MatchSpaceInterface[]> {
-    const matchList = (
-      await this.matchModel
-        .find({
-          spaceId,
-        })
-        .exec()
-    ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
+  async findBySpaceId(params): Promise<MatchSpaceInterface[]> {
+    const matchList = (await this.matchModel.find(params).exec()).sort(
+      (a: any, b: any) => Moment(a.endAt) - Moment(b.endAt),
+    );
     const coverMatchList = matchList.map((match) => {
-      return {
-        ...match,
-        isDone: Moment().diff(match.endAt) > 0,
-        isCancel:
-          Moment().diff(match.startAt) > 0 &&
-          match.selectPeople < match.minPeople,
-      };
+      match.isDone = Moment().diff(match.endAt) > 0;
+      match.isCancel =
+        Moment().diff(match.startAt) > 0 &&
+        match.selectPeople < match.minPeople;
+      return match;
     });
     return coverMatchList;
   }
 
   async findByStadiumId(stadiumId: string, type = 'lt'): Promise<Match[]> {
-    // return await this.matchModel
-    //   .find({
-    //     stadiumId,
-    //   })
-    //   .where('runDate')
-    //   .lte(Moment('2021-08-29').valueOf())
-    //   .populate('space', { name: 1 }, Space.name)
-    //   .exec();
     const matchList = await this.matchModel
       .find({
         stadiumId,

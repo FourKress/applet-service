@@ -27,10 +27,8 @@ export class SpaceController {
   @NoAuth()
   @Post('list')
   @HttpCode(HttpStatus.OK)
-  async findByStadium(
-    @Body('stadiumId', new ValidationIDPipe()) stadiumId: string,
-  ): Promise<SpaceMatchDto[]> {
-    return await this.spaceService.findByStadiumId(stadiumId);
+  async findByStadium(@Body() params: any): Promise<SpaceMatchDto[]> {
+    return await this.spaceService.findByStadiumId(params);
   }
 
   @Get('dropDownList')

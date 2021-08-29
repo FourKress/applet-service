@@ -16,22 +16,28 @@ export class SpaceService {
     private readonly matchService: MatchService,
   ) {}
 
-  async findByStadiumId(stadiumId: string): Promise<SpaceMatchDto[]> {
+  async findByStadiumId(params: any): Promise<SpaceMatchDto[]> {
+    const { stadiumId } = params;
     const spaceList = await this.spaceModel.find({ stadiumId }).exec();
-    const coverSpaceList = await Promise.all(
-      spaceList.map(async (space) => {
-        const match = await this.matchService.findBySpaceId(
-          space.id.toString(),
+    const matchList = await this.matchService.findByRunData(params);
+
+    const coverSpaceList = spaceList
+      .map((space) => {
+        const hasMatchList = matchList.filter(
+          (d) => d.spaceId === space._id.toHexString(),
         );
-        const full = match.some((m) => m.selectPeople === m.totalPeople);
-        const rebate = match.some((m) => m.rebate);
-        return {
-          ...space,
-          full,
-          rebate,
-        };
-      }),
-    );
+        if (hasMatchList?.length) {
+          const full = hasMatchList.some(
+            (m) => m.selectPeople === m.totalPeople,
+          );
+          const rebate = hasMatchList.some((m) => m.rebate);
+          space.full = full;
+          space.rebate = rebate;
+          return space;
+        }
+        return null;
+      })
+      .filter((d) => d);
     return coverSpaceList;
   }
 

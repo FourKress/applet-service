@@ -9,9 +9,11 @@ import {
 } from 'class-validator';
 
 export class ModifyUserDto {
+  @IsOptional()
   @IsMongoId({ message: 'id 不是正确的ID类型' })
   readonly id: string;
 
+  @IsOptional()
   @IsMongoId({ message: 'openId 不是正确的ID类型' })
   readonly openId: string;
 
