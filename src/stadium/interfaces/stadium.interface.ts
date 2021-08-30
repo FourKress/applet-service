@@ -24,6 +24,6 @@ export interface StadiumInterface {
   readonly monthlyCardStatus: boolean;
   // 月卡价格
   readonly monthlyCardPrice: number;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  readonly createdAt: number;
+  readonly updatedAt: number;
 }

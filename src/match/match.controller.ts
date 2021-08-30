@@ -73,4 +73,9 @@ export class MatchController {
   weekEnum() {
     return this.matchService.weekEnum();
   }
+
+  @Get('cancel')
+  async cancel(@Query('id', new ValidationIDPipe()) id: string): Promise<any> {
+    return await this.matchService.cancel(id);
+  }
 }

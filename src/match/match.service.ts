@@ -9,7 +9,7 @@ import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ToolsService } from '../common/utils/tools-service';
 import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
 import { Space } from '../space/schemas/space.schema';
-import * as nzh from 'nzh/cn';
+import * as nzh from 'nzh';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -21,9 +21,14 @@ export class MatchService {
   ) {}
 
   async findBySpaceId(params: any): Promise<MatchSpaceInterface[]> {
-    const matchList = (await this.matchModel.find(params).exec()).sort(
-      (a: any, b: any) => Moment(a.endAt) - Moment(b.endAt),
-    );
+    const matchList = (
+      await this.matchModel
+        .find({
+          ...params,
+          status: true,
+        })
+        .exec()
+    ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
     const coverMatchList = matchList.map((match) => {
       match.isDone = Moment().diff(`${match.runDate} ${match.endAt}`) > 0;
       match.isCancel =
@@ -70,14 +75,8 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const {
-      spaceId,
-      startAt,
-      endAt,
-      repeatModel,
-      repeatWeek,
-      runDate,
-    } = addMatch;
+    const { spaceId, startAt, endAt, repeatModel, repeatWeek, runDate } =
+      addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
@@ -110,7 +109,7 @@ export class MatchService {
         const weekNames = repeatWeek
           .sort()
           .map((d) => {
-            return nzh.encodeS(d);
+            return nzh.cn.encodeS(d);
           })
           .join('、');
         repeatName = `每周${weekNames}`;
@@ -149,5 +148,11 @@ export class MatchService {
 
   weekEnum() {
     return WeekEnum;
+  }
+
+  async cancel(id: string): Promise<any> {
+    await this.matchModel.findByIdAndUpdate(id, {
+      status: false,
+    });
   }
 }

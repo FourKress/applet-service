@@ -21,7 +21,8 @@ export class AuthService {
     if (!userFromDb) {
       userFromDb = await this.usersService.create(user);
     }
-    const userInfo = userFromDb.toObject();
+    const userInfo = userFromDb.toJSON();
+    console.log(userInfo.id);
     const token = await this.jwtService.createToken({
       userId: userInfo.id,
       openId: userInfo.openId,

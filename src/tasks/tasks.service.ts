@@ -22,7 +22,7 @@ export class TasksService {
     this.logger.log('function 10s loop');
     const orderList: any[] = await this.orderService.findAll();
     for (const item of orderList) {
-      const order = item.toObject();
+      const order = item.toJSON();
       const { createdAt, status, matchId } = order;
       const match = await this.matchService.findById(matchId);
 

@@ -33,10 +33,10 @@ export class Stadium implements StadiumInterface {
   monthlyCardStatus: boolean;
   @Prop({ default: 0 })
   monthlyCardPrice: number;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const StadiumSchema = SchemaFactory.createForClass(Stadium);

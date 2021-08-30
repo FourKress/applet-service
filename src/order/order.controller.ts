@@ -61,4 +61,15 @@ export class OrderController {
   async pay(@Body('id', new ValidationIDPipe()) id: string): Promise<boolean> {
     return await this.orderService.orderPay(id);
   }
+
+  @Post('listByMatch')
+  @HttpCode(HttpStatus.OK)
+  async findUserByStadiumOrder(@Body() params: any) {
+    return this.orderService.findUserByStadiumOrder(params);
+  }
+
+  @Get('monthAndAayStatistics')
+  async findOrderByDate(@Query('type') type: number) {
+    return this.orderService.findOrderByDate(type);
+  }
 }

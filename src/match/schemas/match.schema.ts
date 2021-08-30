@@ -46,6 +46,8 @@ export class Match implements MatchInterface {
   isDone: boolean;
   @Prop({ default: false })
   isCancel: boolean;
+  @Prop({ default: true })
+  status: boolean;
   @Prop()
   createdAt: Date;
   @Prop()

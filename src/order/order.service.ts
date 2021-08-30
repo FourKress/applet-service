@@ -69,7 +69,7 @@ export class OrderService {
       stadiumId,
     });
     const price = match.price * (match.rebate / 10);
-    let orderInfo = order.toObject();
+    let orderInfo = order.toJSON();
     orderInfo = Object.assign({}, orderInfo, {
       stadiumName: stadium.name,
       spaceName: space.name,
@@ -205,6 +205,26 @@ export class OrderService {
     return true;
   }
 
+  async findUserByStadiumOrder(params: any) {
+    const { matchId, stadiumId } = params;
+    const relationList = await this.userRMatchService.findAllByMatchId(matchId);
+    const userByStadiumList = await Promise.all(
+      relationList.map(async (item: any) => {
+        const order = item.toJSON();
+        const orderList = await this.orderModel.find({
+          userId: order.id,
+          matchId,
+          stadiumId,
+        });
+        console.log(orderList.find((d) => d.matchId === matchId));
+        order.stadiumTempCount = orderList.length;
+        order.orderStatus = utils.StatusMap[orderList[0].status];
+        return order;
+      }),
+    );
+    return userByStadiumList;
+  }
+
   async findOrderByDate(type = 0): Promise<Order[]> {
     console.log(type);
     let list = [];
@@ -217,14 +237,11 @@ export class OrderService {
         });
         break;
       case 1:
-        list = await this.orderModel.find({
-          where: {
-            createdAt: {
-              $lte: Moment().startOf('day').toDate(),
-              $gte: Moment().startOf('month').toDate(),
-            },
-          },
-        });
+        list = await this.orderModel
+          .find()
+          .where('createdAt')
+          .gte(Moment().startOf('month').toDate())
+          .lte(Moment().startOf('day').toDate());
     }
     return list;
   }
