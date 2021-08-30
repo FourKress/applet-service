@@ -2,20 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateMonthlyCardDto } from './dto/create.monthlyCard.dto';
 import { ModifyMonthlyCardDto } from './dto/modify.monthlyCard.dto';
-import { StadiumService } from '../stadium/stadium.service';
 import { Model } from 'mongoose';
 import { MonthlyCard, MonthlyCardDocument } from './schemas/monthlyCard.schema';
+import { Stadium } from '../stadium/schemas/stadium.schema';
 
 @Injectable()
 export class MonthlyCardService {
   constructor(
     @InjectModel(MonthlyCard.name)
     private readonly monthlyCardModel: Model<MonthlyCardDocument>,
-    private readonly stadiumService: StadiumService,
   ) {}
 
   async addMonthlyCard(info: CreateMonthlyCardDto): Promise<MonthlyCard> {
-    const newMonthlyCard = new this.monthlyCardModel(info);
+    const newMonthlyCard = new this.monthlyCardModel(
+      Object.assign({}, info, {
+        stadium: info.stadiumId,
+      }),
+    );
     return await newMonthlyCard.save();
   }
 
@@ -25,24 +28,14 @@ export class MonthlyCardService {
     });
   }
 
-  async findByUserId(userId: string): Promise<any[]> {
-    const relationList = await this.monthlyCardModel.find({
-      userId,
-    });
-    const monthlyCardList = await Promise.all(
-      relationList.map(async (relation) => {
-        const stadiumInfo = await this.stadiumService.findById(
-          relation.stadiumId,
-        );
-        return {
-          ...relation,
-          stadiumName: stadiumInfo.name,
-          monthlyCardPrice: stadiumInfo.monthlyCardPrice,
-        };
-      }),
-    );
-
-    return monthlyCardList;
+  async findByUserId(userId: string): Promise<MonthlyCard[]> {
+    const relationList = await this.monthlyCardModel
+      .find({
+        userId,
+      })
+      .populate('stadium', { name: 1, monthlyCardPrice: 1 }, Stadium.name)
+      .exec();
+    return relationList;
   }
 
   async checkMonthlyCard(relationInfo: any): Promise<MonthlyCard> {

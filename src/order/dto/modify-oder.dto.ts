@@ -10,9 +10,6 @@ export class ModifyOderDto {
   @IsMongoId({ message: 'id 不是正确的ID类型' })
   id: string;
 
-  @IsMongoId({ message: 'userId 不是正确的ID类型' })
-  userId: string;
-
   @IsMongoId({ message: 'stadiumId 不是正确的ID类型' })
   stadiumId: string;
 

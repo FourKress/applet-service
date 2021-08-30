@@ -30,7 +30,7 @@ export class MonthlyCardController {
 
   @Post('list')
   @HttpCode(HttpStatus.OK)
-  async findById(@Request() req): Promise<any> {
+  async findById(@Request() req): Promise<MonthlyCard[]> {
     const tokenInfo: UserEntity = req.user;
     return await this.monthlyCardService.findByUserId(tokenInfo.userId);
   }

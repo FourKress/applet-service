@@ -13,9 +13,6 @@ export const StatusMap = {
   2: '已完成',
   6: '已取消',
 };
-export const getHour = (date) => {
-  return date.split(' ')[1];
-};
 
 export const countdown = (createdAt, startAt): number => {
   let awaitTime: number = CONSTANT.orderMinAwaitTime;

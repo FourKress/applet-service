@@ -8,6 +8,7 @@ export interface MonthlyCardInterface {
   validPeriodStart: string;
   // 有效期结束
   validPeriodEnd: string;
+  stadium: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -43,7 +43,7 @@ export class OrderController {
   @Post('listByStatus')
   async listByStatus(
     @Request() req,
-    @Body('status') status: string,
+    @Body('status') status: number,
   ): Promise<Order[]> {
     const tokenInfo: UserEntity = req.user;
     return await this.orderService.findOrderByStatus(status, tokenInfo.userId);
@@ -53,10 +53,7 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   async add(@Request() req, @Body() addOrder: CreateOderDto): Promise<string> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.addOrder({
-      ...addOrder,
-      userId: tokenInfo.userId,
-    });
+    return await this.orderService.addOrder(addOrder, tokenInfo.userId);
   }
 
   @Post('pay')

@@ -16,6 +16,7 @@ export class OrderInfoInterface implements OrderInterface {
   spaceName: string;
   unit: number;
   runAt: string;
+  runDate: string;
   duration: number;
   price: number;
   totalPrice: number;

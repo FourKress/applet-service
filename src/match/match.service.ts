@@ -20,14 +20,14 @@ export class MatchService {
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
   ) {}
 
-  async findBySpaceId(params): Promise<MatchSpaceInterface[]> {
+  async findBySpaceId(params: any): Promise<MatchSpaceInterface[]> {
     const matchList = (await this.matchModel.find(params).exec()).sort(
       (a: any, b: any) => Moment(a.endAt) - Moment(b.endAt),
     );
     const coverMatchList = matchList.map((match) => {
-      match.isDone = Moment().diff(match.endAt) > 0;
+      match.isDone = Moment().diff(`${match.runDate} ${match.endAt}`) > 0;
       match.isCancel =
-        Moment().diff(match.startAt) > 0 &&
+        Moment().diff(`${match.runDate} ${match.startAt}`) > 0 &&
         match.selectPeople < match.minPeople;
       return match;
     });

@@ -12,6 +12,7 @@ import { SpaceService } from '../space/space.service';
 import { MatchService } from '../match/match.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { Order, OrderDocument } from './schemas/order.schema';
+import { UnitEnum } from '../common/enum/space.enum';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -58,7 +59,7 @@ export class OrderService {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
-    const order = await this.orderModel.findById(id);
+    const order: any = await this.orderModel.findById(id);
     const { spaceId, matchId, stadiumId, personCount, userId } = order;
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
@@ -68,58 +69,66 @@ export class OrderService {
       stadiumId,
     });
     const price = match.price * (match.rebate / 10);
-    const orderInfo = Object.assign({}, order, {
+    let orderInfo = order.toObject();
+    orderInfo = Object.assign({}, orderInfo, {
       stadiumName: stadium.name,
       spaceName: space.name,
-      unit: space.unit,
-      runAt: `${utils.getHour(match.startAt)}-${utils.getHour(match.endAt)}`,
+      unit: UnitEnum.find((d) => d.value === space.unit)?.label,
+      runAt: `${match.startAt}-${match.endAt}`,
+      runDate: match.runDate,
       duration: match.duration,
       price,
       totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
       countdown:
-        utils.countdown(order.createdAt, match.startAt) -
+        utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
         (Moment() - Moment(order.createdAt)),
       statusName: utils.StatusMap[order.status],
     });
     return orderInfo;
   }
 
-  async findOrderByStatus(status, userId): Promise<Order[]> {
+  async findOrderByStatus(status: number, userId: string): Promise<Order[]> {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
-    const orders = (
-      await this.orderModel
-        .find({
-          status,
-          userId,
-        })
-        .exec()
-    ).sort((a: any, b: any) => b.createdAt - a.createdAt);
+    let search;
+    if (typeof status === 'undefined') {
+      search = {
+        userId,
+      };
+    } else {
+      search = {
+        userId,
+        status,
+      };
+    }
+    const orders = (await this.orderModel.find(search).exec()).sort(
+      (a: any, b: any) => b.createdAt - a.createdAt,
+    );
     const coverOrders = await Promise.all(
-      orders.map(async (order: OrderInterface) => {
-        const orderInfo = await this.findOrderById(order.id);
+      orders.map(async (order) => {
+        const orderInfo = await this.findOrderById(order._id);
         return orderInfo;
       }),
     );
     return coverOrders;
   }
 
-  async addOrder(addOrder: CreateOderDto): Promise<string> {
-    const { matchId } = addOrder;
+  async addOrder(addOrder: CreateOderDto, userId): Promise<string> {
+    const { matchId, spaceId, stadiumId, personCount } = addOrder;
     const match = await this.matchService.findById(matchId);
 
-    if (match.selectPeople + addOrder.personCount > match.totalPeople) {
+    if (match.selectPeople + personCount > match.totalPeople) {
       ToolsService.fail('当前场次已没有位置可报名，请选择其它场次进行报名！');
     }
-    if (Moment().diff(match.endAt) > 0) {
+    if (Moment().diff(`${match.runDate} ${match.endAt}`) > 0) {
       ToolsService.fail('当前场次已结束，请选择其它场次进行报名。');
     }
 
     if (
-      Moment().diff(match.startAt) > 0 &&
+      Moment().diff(`${match.runDate} ${match.startAt}`) > 0 &&
       match.selectPeople < match.minPeople
     ) {
       ToolsService.fail(
@@ -128,32 +137,30 @@ export class OrderService {
     }
 
     const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
-      userId: addOrder.userId,
-      stadiumId: addOrder.stadiumId,
+      userId,
+      stadiumId,
     });
 
     const relation = {
-      userId: addOrder.userId,
-      spaceId: addOrder.spaceId,
-      stadiumId: addOrder.stadiumId,
+      userId,
+      spaceId,
+      stadiumId,
       matchId,
-      count: addOrder.personCount,
+      count: personCount,
     };
     await this.userRMatchService.addRelation(relation);
-
-    await this.matchService.modifyMatch(
-      Object.assign({}, match, {
-        selectPeople: match.selectPeople + addOrder.personCount,
-      }),
-    );
+    match.selectPeople = match.selectPeople + personCount;
+    match.id = matchId;
+    await this.matchService.modifyMatch(match);
     const newOrder = new this.orderModel({
       ...addOrder,
+      userId,
       isMonthlyCard: !!isMonthlyCard,
       status: 0,
     });
     await newOrder.save();
 
-    return newOrder.id;
+    return newOrder._id;
   }
 
   async modifyOrder(modifyOrder: ModifyOderDto): Promise<Order> {
@@ -172,14 +179,24 @@ export class OrderService {
     if (!order) {
       ToolsService.fail('支付失败，未找到对应的订单！');
     }
-    const match = await this.matchService.findById(order.matchId);
+    const { matchId, stadiumId, userId } = order;
+
+    const match = await this.matchService.findById(matchId);
     if (
-      utils.countdown(order.createdAt, match.startAt) -
+      utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
         (Moment() - Moment(order.createdAt)) <
       0
     ) {
       ToolsService.fail('支付失败，订单已超时！');
     }
+
+    await this.monthlyCardService.addMonthlyCard({
+      userId,
+      stadiumId,
+      validPeriodStart: Moment().format('YYYY-MM-DD'),
+      validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
+    });
+
     await this.orderModel
       .findByIdAndUpdate(id, {
         status: 1,

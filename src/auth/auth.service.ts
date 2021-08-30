@@ -21,14 +21,15 @@ export class AuthService {
     if (!userFromDb) {
       userFromDb = await this.usersService.create(user);
     }
+    const userInfo = userFromDb.toObject();
     const token = await this.jwtService.createToken({
-      userId: userFromDb._id,
-      openId: userFromDb.openId,
-      bossId: userFromDb.bossId,
+      userId: userInfo.id,
+      openId: userInfo.openId,
+      bossId: userInfo.bossId,
     });
     return {
       token,
-      userInfo: userFromDb,
+      userInfo: userInfo,
     };
   }
 }

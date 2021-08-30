@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { MonthlyCardInterface } from '../interfaces/monthlyCard.interface';
+import { Stadium } from '../../stadium/schemas/stadium.schema';
 
 export type MonthlyCardDocument = MonthlyCard & Document;
 
@@ -17,6 +18,9 @@ export class MonthlyCard implements MonthlyCardInterface {
   validPeriodStart: string;
   @Prop()
   validPeriodEnd: string;
+  @Prop()
+  @Prop({ type: Types.ObjectId, ref: Stadium.name })
+  stadium: string;
   @Prop()
   createdAt: Date;
   @Prop()

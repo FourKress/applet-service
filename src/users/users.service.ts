@@ -27,11 +27,7 @@ export class UsersService {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
-    return await this.userModel
-      .findOne({
-        _id: Types.ObjectId(id),
-      })
-      .exec();
+    return await this.userModel.findById(id).exec();
   }
 
   async findAll(): Promise<User[]> {

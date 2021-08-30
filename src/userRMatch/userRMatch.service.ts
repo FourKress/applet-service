@@ -22,9 +22,7 @@ export class UserRMatchService {
       personList = await Promise.all(
         relationList.map(async (relation) => {
           const user = await this.usersService.findOneById(relation.userId);
-          const userList = new Array(relation.count)
-            .fill('')
-            .map((item) => user);
+          const userList = new Array(relation.count).fill('').map(() => user);
           return userList;
         }),
       );
@@ -44,6 +42,7 @@ export class UserRMatchService {
   }
 
   async addRelation(addRelation: CreateUserRMatchDto): Promise<UserRMatch> {
+    console.log(addRelation);
     const { userId, matchId } = addRelation;
     if (!userId || !matchId) {
       ToolsService.fail('userId、matchId不能为空！');
@@ -54,12 +53,17 @@ export class UserRMatchService {
     });
     if (relation) {
       const count = relation.count + addRelation.count;
-      return this.userRMatchModel.findByIdAndUpdate(relation.id, {
+      console.log(count, {
+        ...addRelation,
+        count,
+      });
+      return this.userRMatchModel.findByIdAndUpdate(relation._id, {
         ...addRelation,
         count,
       });
     }
     const newUserRMatch = new this.userRMatchModel(addRelation);
+    console.log(newUserRMatch);
     return await newUserRMatch.save();
   }
 

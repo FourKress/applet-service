@@ -20,15 +20,16 @@ export class TasksService {
   @Interval(1000 * 10)
   async handleCron() {
     this.logger.log('function 10s loop');
-    const orderList = await this.orderService.findAll();
-    for (const order of orderList) {
+    const orderList: any[] = await this.orderService.findAll();
+    for (const item of orderList) {
+      const order = item.toObject();
       const { createdAt, status, matchId } = order;
       const match = await this.matchService.findById(matchId);
 
       if (
         status === 0 &&
         Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >=
-          utils.countdown(order.createdAt, match.endAt)
+          utils.countdown(createdAt, `${match.runDate} ${match.endAt}`)
       ) {
         this.logger.log('取消订单');
         await this.changeOrder({
@@ -40,8 +41,15 @@ export class TasksService {
       if (status === 1) {
         const nowTime = Moment.now();
         const isStart =
-          Moment(nowTime).diff(Moment(match.startAt), 'minutes') >= 0;
-        const isEnd = Moment(nowTime).diff(Moment(match.endAt), 'minutes') >= 0;
+          Moment(nowTime).diff(
+            Moment(`${match.runDate} ${match.startAt}`),
+            'minutes',
+          ) >= 0;
+        const isEnd =
+          Moment(nowTime).diff(
+            Moment(`${match.runDate} ${match.endAt}`),
+            'minutes',
+          ) >= 0;
         if (isEnd) {
           this.logger.log('组队成功 已结束 订单已完成');
           await this.changeOrder({
