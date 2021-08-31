@@ -19,10 +19,10 @@ export class UserRMatch implements UserRMatchInterface {
   spaceId: string;
   @Prop()
   stadiumId: string;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const UserRMatchSchema = SchemaFactory.createForClass(UserRMatch);

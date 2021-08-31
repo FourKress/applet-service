@@ -12,6 +12,8 @@ export class Order implements OrderInterface {
   @Prop()
   userId: string;
   @Prop()
+  bossId: string;
+  @Prop()
   stadiumId: string;
   @Prop()
   spaceId: string;
@@ -25,10 +27,10 @@ export class Order implements OrderInterface {
   personCount: number;
   @Prop()
   status: number;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

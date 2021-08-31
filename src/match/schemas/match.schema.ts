@@ -48,10 +48,10 @@ export class Match implements MatchInterface {
   isCancel: boolean;
   @Prop({ default: true })
   status: boolean;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

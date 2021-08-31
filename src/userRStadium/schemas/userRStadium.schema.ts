@@ -17,10 +17,10 @@ export class UserRStadium implements UserRStadiumInterface {
   stadiumName: string;
   @Prop()
   isWatch: boolean;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const UserRStadiumSchema = SchemaFactory.createForClass(UserRStadium);

@@ -19,10 +19,10 @@ export class Space implements SpaceInterface {
   full: boolean;
   @Prop({ default: false })
   rebate: boolean;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const SpaceSchema = SchemaFactory.createForClass(Space);

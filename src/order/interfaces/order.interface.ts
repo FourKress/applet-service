@@ -2,6 +2,8 @@ export interface OrderInterface {
   id: string;
   // 用户ID
   userId: string;
+  // 用户ID
+  bossId: string;
   // 球场ID
   stadiumId: string;
   // 场地ID
@@ -16,6 +18,6 @@ export interface OrderInterface {
   personCount: number;
   // 状态
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }

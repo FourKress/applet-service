@@ -21,6 +21,6 @@ export class MatchSpaceInterface implements MatchInterface {
   readonly space: string;
   readonly repeatName: string;
   readonly status: boolean;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  readonly createdAt: number;
+  readonly updatedAt: number;
 }

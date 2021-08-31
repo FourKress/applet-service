@@ -10,6 +10,6 @@ export interface UserRMatchInterface {
   spaceId: string;
   // 球场Id
   stadiumId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }

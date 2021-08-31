@@ -1,6 +1,9 @@
 import { IsNotEmpty, IsNumber, IsMongoId } from 'class-validator';
 
 export class CreateOderDto {
+  @IsMongoId({ message: 'bossId 不是正确的ID类型' })
+  bossId: string;
+
   @IsMongoId({ message: 'stadiumId 不是正确的ID类型' })
   stadiumId: string;
 

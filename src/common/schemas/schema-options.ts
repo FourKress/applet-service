@@ -9,6 +9,6 @@ export const SchemaOptions = {
   timestamps: {
     createdAt: true,
     updatedAt: true,
-    currentTime: () => Math.floor(Date.now() / 1000),
+    currentTime: () => Date.now(),
   },
 };

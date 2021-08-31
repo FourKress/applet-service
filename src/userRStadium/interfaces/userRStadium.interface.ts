@@ -8,6 +8,6 @@ export interface UserRStadiumInterface {
   stadiumName: string;
   // 是否关注
   isWatch: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }

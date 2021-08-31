@@ -17,6 +17,6 @@ export interface MatchInterface {
   repeatName: string;
   repeatWeek: number[];
   status: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }

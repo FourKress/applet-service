@@ -225,10 +225,9 @@ export class OrderService {
     return userByStadiumList;
   }
 
-  async findOrderByDate(type = 0): Promise<Order[]> {
-    console.log(type);
+  async findOrderByDate(type = 0, bossId: string): Promise<Order[]> {
     let list = [];
-    switch (type) {
+    switch (Number(type)) {
       case 0:
         list = await this.orderModel.find({
           where: {
@@ -238,10 +237,11 @@ export class OrderService {
         break;
       case 1:
         list = await this.orderModel
-          .find()
+          .find({ bossId })
           .where('createdAt')
-          .gte(Moment().startOf('month').toDate())
-          .lte(Moment().startOf('day').toDate());
+          .gte(Moment().startOf('month').valueOf())
+          .lte(Moment().startOf('day').add(1, 'day').valueOf())
+          .exec();
     }
     return list;
   }

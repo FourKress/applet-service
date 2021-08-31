@@ -2,6 +2,7 @@ import { OrderInterface } from './order.interface';
 
 export class OrderInfoInterface implements OrderInterface {
   id: string;
+  bossId: string;
   userId: string;
   stadiumId: string;
   spaceId: string;
@@ -10,8 +11,8 @@ export class OrderInfoInterface implements OrderInterface {
   isMonthlyCard: boolean;
   personCount: number;
   status: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
   stadiumName: string;
   spaceName: string;
   unit: number;

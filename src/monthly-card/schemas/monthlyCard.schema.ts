@@ -21,10 +21,10 @@ export class MonthlyCard implements MonthlyCardInterface {
   @Prop()
   @Prop({ type: Types.ObjectId, ref: Stadium.name })
   stadium: string;
-  @Prop()
-  createdAt: Date;
-  @Prop()
-  updatedAt: Date;
+  @Prop({ default: new Date().getTime() })
+  createdAt: number;
+  @Prop({ default: new Date().getTime() })
+  updatedAt: number;
 }
 
 export const MonthlyCardSchema = SchemaFactory.createForClass(MonthlyCard);

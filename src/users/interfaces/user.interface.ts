@@ -24,6 +24,6 @@ export interface UserInterface {
   bossId: string;
   // 月卡数量
   monthlyCardCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 }
