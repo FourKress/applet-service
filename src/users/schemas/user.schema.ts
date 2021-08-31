@@ -35,11 +35,11 @@ export class User implements UserInterface {
   monthlyCardCount: number;
   @Prop({ default: 0 })
   balanceAmt: number;
-  @Prop({ default: new Date().getTime(), select: false })
+  @Prop({ select: false })
   withdrawAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

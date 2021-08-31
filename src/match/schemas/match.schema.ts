@@ -48,9 +48,9 @@ export class Match implements MatchInterface {
   isCancel: boolean;
   @Prop({ default: true })
   status: boolean;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

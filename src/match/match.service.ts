@@ -138,6 +138,16 @@ export class MatchService {
       .exec();
   }
 
+  async changeMatchSelectPeople(params: any): Promise<any> {
+    const { id, ...match } = params;
+    console.log(params, '@@@@');
+    return await this.matchModel
+      .findByIdAndUpdate(id, {
+        ...match,
+      })
+      .exec();
+  }
+
   async removeMatch(id: string): Promise<any> {
     await this.matchModel.findByIdAndDelete(id);
   }

@@ -21,9 +21,9 @@ export class MonthlyCard implements MonthlyCardInterface {
   @Prop()
   @Prop({ type: Types.ObjectId, ref: Stadium.name })
   stadium: string;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

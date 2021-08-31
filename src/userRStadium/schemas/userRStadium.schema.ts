@@ -17,9 +17,9 @@ export class UserRStadium implements UserRStadiumInterface {
   stadiumName: string;
   @Prop()
   isWatch: boolean;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

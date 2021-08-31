@@ -233,7 +233,9 @@ export class OrderService {
   }
 
   async findOrderByDate(type = 0, bossId: string): Promise<Order[]> {
-    const baseSearch = this.orderModel.find({ bossId }).where('createdAt');
+    const baseSearch = this.orderModel
+      .find({ bossId, status: 2 })
+      .where('createdAt');
     let statisticsList = [];
     switch (Number(type)) {
       case 0:

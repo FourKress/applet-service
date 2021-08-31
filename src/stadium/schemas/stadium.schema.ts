@@ -33,9 +33,9 @@ export class Stadium implements StadiumInterface {
   monthlyCardStatus: boolean;
   @Prop({ default: 0 })
   monthlyCardPrice: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

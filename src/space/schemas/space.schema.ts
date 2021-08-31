@@ -19,9 +19,9 @@ export class Space implements SpaceInterface {
   full: boolean;
   @Prop({ default: false })
   rebate: boolean;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

@@ -19,9 +19,9 @@ export class UserRMatch implements UserRMatchInterface {
   spaceId: string;
   @Prop()
   stadiumId: string;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

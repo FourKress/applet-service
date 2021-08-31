@@ -27,9 +27,9 @@ export class Order implements OrderInterface {
   personCount: number;
   @Prop()
   status: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   createdAt: number;
-  @Prop({ default: new Date().getTime() })
+  @Prop()
   updatedAt: number;
 }
 

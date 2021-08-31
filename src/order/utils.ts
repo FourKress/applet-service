@@ -22,14 +22,10 @@ export const countdown = (createdAt, startAt, type = 'unix'): number => {
   ) {
     awaitTime = CONSTANT.orderMaxAwaitTime;
   }
-  if (type === 'unix') {
-    return awaitTime * 60 * 1000;
-  } else if (type === 'seconds') {
-    return awaitTime * 60;
-  }
   const millisecondMap = {
-    unix: 1000,
-    seconds: 1,
+    unix: 60 * 1000,
+    seconds: 60,
+    minutes: 1,
   };
-  return awaitTime * 60 * millisecondMap[type];
+  return awaitTime * millisecondMap[type];
 };
