@@ -20,7 +20,7 @@ export class Order implements OrderInterface {
   @Prop()
   matchId: string;
   @Prop()
-  payAmount: string;
+  payAmount: number;
   @Prop()
   isMonthlyCard: boolean;
   @Prop()

@@ -14,7 +14,7 @@ export const StatusMap = {
   6: '已取消',
 };
 
-export const countdown = (createdAt, startAt): number => {
+export const countdown = (createdAt, startAt, type = 'unix'): number => {
   let awaitTime: number = CONSTANT.orderMinAwaitTime;
   if (
     Moment(startAt).diff(Moment(createdAt), 'minutes') >=
@@ -22,5 +22,14 @@ export const countdown = (createdAt, startAt): number => {
   ) {
     awaitTime = CONSTANT.orderMaxAwaitTime;
   }
-  return awaitTime * 60 * 1000;
+  if (type === 'unix') {
+    return awaitTime * 60 * 1000;
+  } else if (type === 'seconds') {
+    return awaitTime * 60;
+  }
+  const millisecondMap = {
+    unix: 1000,
+    seconds: 1,
+  };
+  return awaitTime * 60 * millisecondMap[type];
 };

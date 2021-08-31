@@ -11,7 +11,7 @@ export interface OrderInterface {
   // 场次ID
   matchId: string;
   // 支付金额
-  payAmount: string;
+  payAmount: number;
   // 是否月卡
   isMonthlyCard: boolean;
   // 人数

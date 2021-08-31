@@ -3,6 +3,7 @@ import { Interval } from '@nestjs/schedule';
 
 import { OrderService } from '../order/order.service';
 import { MatchService } from '../match/match.service';
+import { UsersService } from '../users/users.service';
 import * as utils from '../order/utils';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -14,6 +15,7 @@ export class TasksService {
   constructor(
     private readonly orderService: OrderService,
     private readonly matchService: MatchService,
+    private readonly userService: UsersService,
   ) {}
 
   // @Cron('0 * * * * *')
@@ -29,7 +31,11 @@ export class TasksService {
       if (
         status === 0 &&
         Moment(Moment.now()).diff(Moment(createdAt), 'minutes') >=
-          utils.countdown(createdAt, `${match.runDate} ${match.endAt}`)
+          utils.countdown(
+            createdAt,
+            `${match.runDate} ${match.endAt}`,
+            'seconds',
+          )
       ) {
         this.logger.log('取消订单');
         await this.changeOrder({
@@ -56,6 +62,7 @@ export class TasksService {
             ...order,
             status: 2,
           });
+          // TODO 计算提现余额
         } else if (isStart && !isEnd) {
           if (match.selectPeople <= match.minPeople) {
             this.logger.log('组队失败 触发退款 取消订单');
@@ -63,6 +70,7 @@ export class TasksService {
               ...order,
               status: 4,
             });
+            // TODO 处理退款
           } else {
             this.logger.log('组队成功 进行中');
             await this.changeOrder({

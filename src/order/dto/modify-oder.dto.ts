@@ -25,7 +25,7 @@ export class ModifyOderDto {
   @IsOptional()
   @IsNotEmpty({ message: 'payAmount 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'payAmount 必须是 number 类型' })
-  payAmount: string;
+  payAmount: number;
 
   @IsOptional()
   @IsNotEmpty({ message: 'isMonthlyCard 不能为空' })

@@ -66,4 +66,11 @@ export class UsersService {
       })
       .exec();
   }
+
+  async findByBossId(bossId: string): Promise<User> {
+    if (!bossId) {
+      ToolsService.fail('bossId不能为空！');
+    }
+    return await this.userModel.findOne({ bossId }).exec();
+  }
 }

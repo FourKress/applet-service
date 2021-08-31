@@ -13,6 +13,7 @@ import { MatchService } from '../match/match.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { UnitEnum } from '../common/enum/space.enum';
+import { UsersService } from '../users/users.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -21,6 +22,9 @@ import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class OrderService {
+  private nowDayEndTime = Moment().startOf('day').add(1, 'day').valueOf();
+  private nowDayStartTime = Moment().startOf('day').valueOf();
+  private nowMonthTime = Moment().startOf('month').valueOf();
   constructor(
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
     private readonly monthlyCardService: MonthlyCardService,
@@ -28,6 +32,7 @@ export class OrderService {
     private readonly spaceService: SpaceService,
     private readonly matchService: MatchService,
     private readonly userRMatchService: UserRMatchService,
+    private readonly userService: UsersService,
   ) {}
 
   async findAll(): Promise<Order[]> {
@@ -69,6 +74,11 @@ export class OrderService {
       stadiumId,
     });
     const price = match.price * (match.rebate / 10);
+
+    const countdown =
+      utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
+      (Moment() - Moment(order.createdAt));
+
     let orderInfo = order.toJSON();
     orderInfo = Object.assign({}, orderInfo, {
       stadiumName: stadium.name,
@@ -81,9 +91,7 @@ export class OrderService {
       totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
-      countdown:
-        utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
-        (Moment() - Moment(order.createdAt)),
+      countdown: countdown > 0 ? countdown : 0,
       statusName: utils.StatusMap[order.status],
     });
     return orderInfo;
@@ -216,7 +224,6 @@ export class OrderService {
           matchId,
           stadiumId,
         });
-        console.log(orderList.find((d) => d.matchId === matchId));
         order.stadiumTempCount = orderList.length;
         order.orderStatus = utils.StatusMap[orderList[0].status];
         return order;
@@ -226,23 +233,46 @@ export class OrderService {
   }
 
   async findOrderByDate(type = 0, bossId: string): Promise<Order[]> {
-    let list = [];
+    const baseSearch = this.orderModel.find({ bossId }).where('createdAt');
+    let statisticsList = [];
     switch (Number(type)) {
       case 0:
-        list = await this.orderModel.find({
-          where: {
-            createdAt: { $gte: Moment().startOf('day').toDate() },
-          },
-        });
+        statisticsList = await baseSearch
+          .gte(this.nowDayStartTime)
+          .lte(this.nowDayEndTime)
+          .exec();
         break;
       case 1:
-        list = await this.orderModel
-          .find({ bossId })
-          .where('createdAt')
-          .gte(Moment().startOf('month').valueOf())
-          .lte(Moment().startOf('day').add(1, 'day').valueOf())
+        statisticsList = await baseSearch
+          .gte(this.nowMonthTime)
+          .lte(this.nowDayEndTime)
           .exec();
+        break;
+      default:
+        break;
     }
-    return list;
+    return statisticsList;
+  }
+
+  async monthAndAayStatistics(bossId: string): Promise<any> {
+    const statisticsList = await this.findOrderByDate(1, bossId);
+    const balanceAmt = (await this.userService.findByBossId(bossId)).balanceAmt;
+    const sum = {
+      dayCount: 0,
+      monthCount: 0,
+      balanceAmt,
+    };
+    statisticsList.forEach((order) => {
+      const { payAmount } = order;
+      const price = Number(payAmount);
+      sum.monthCount += price;
+      if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime)) > 0) {
+        sum.dayCount += price;
+      }
+    });
+    Object.keys(sum).forEach((d) => {
+      sum[d] = parseFloat(sum[d]).toFixed(2);
+    });
+    return sum;
   }
 }

@@ -8,6 +8,7 @@ import { SpaceModule } from '../space/space.module';
 import { MatchModule } from '../match/match.module';
 import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 import { Order, OrderSchema } from './schemas/order.schema';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Order, OrderSchema } from './schemas/order.schema';
     SpaceModule,
     MatchModule,
     UserRMatchModule,
+    UsersModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

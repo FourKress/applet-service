@@ -27,12 +27,16 @@ export class User implements UserInterface {
   gender: number;
   @Prop()
   avatarUrl: string;
-  @Prop()
+  @Prop({ default: 0 })
   teamUpCount: number;
   @Prop()
   isBoss: boolean;
-  @Prop()
+  @Prop({ default: 0 })
   monthlyCardCount: number;
+  @Prop({ default: 0 })
+  balanceAmt: number;
+  @Prop({ default: new Date().getTime(), select: false })
+  withdrawAt: number;
   @Prop({ default: new Date().getTime() })
   createdAt: number;
   @Prop({ default: new Date().getTime() })

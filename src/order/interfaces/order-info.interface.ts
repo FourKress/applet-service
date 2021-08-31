@@ -7,7 +7,7 @@ export class OrderInfoInterface implements OrderInterface {
   stadiumId: string;
   spaceId: string;
   matchId: string;
-  payAmount: string;
+  payAmount: number;
   isMonthlyCard: boolean;
   personCount: number;
   status: number;

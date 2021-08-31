@@ -69,8 +69,8 @@ export class OrderController {
   }
 
   @Get('monthAndAayStatistics')
-  async findOrderByDate(@Request() req, @Query('type') type: number) {
+  async monthAndAayStatistics(@Request() req): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return this.orderService.findOrderByDate(type, tokenInfo.bossId);
+    return await this.orderService.monthAndAayStatistics(tokenInfo.bossId);
   }
 }
