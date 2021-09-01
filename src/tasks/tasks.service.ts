@@ -24,7 +24,8 @@ export class TasksService {
   @Interval(1000 * 5)
   async handleCron() {
     this.logger.log('function 5s loop');
-    const orderList: any[] = await this.orderService.findAll();
+    const orderList: any[] = await this.orderService.findActiveOrder();
+    console.log(orderList);
 
     for (const item of orderList) {
       const order = item.toJSON();
@@ -32,13 +33,14 @@ export class TasksService {
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
-        .filter((d) => d.matchId === match && d.status === 1)
+        .filter((d) => d.matchId === matchId && d.status !== 0)
         .reduce((sum, current) => sum + current.personCount, 0);
-      const failMatch = selectPeople !== successPeople;
+      const failMatch = successPeople <= minPeople;
       const nowTime = Moment.now();
       const isStart =
         Moment(nowTime).diff(Moment(`${runDate} ${startAt}`), 'minutes') >= 0;
       const realSelectPeople = selectPeople - personCount;
+      console.log(isStart, failMatch, selectPeople, successPeople, minPeople);
 
       if (
         status === 0 &&
@@ -71,7 +73,14 @@ export class TasksService {
             status: 2,
           });
           // TODO 计算提现余额
+          const balanceAmt = order.personCount * match.rebatePrice;
+          await this.changeBossUser({
+            bossId: order.bossId,
+            balanceAmt,
+          });
         } else if (isStart && !isEnd) {
+          console.log(minPeople, selectPeople, successPeople, failMatch);
+
           if (selectPeople < minPeople || failMatch) {
             this.logger.log('组队失败 触发退款 取消订单');
             await this.changeOrder({
@@ -101,5 +110,9 @@ export class TasksService {
 
   async changeUserRMatch(data) {
     await this.userRMatchService.changeRCount(data);
+  }
+
+  async changeBossUser(data) {
+    await this.userService.setBossBalanceAmt(data);
   }
 }

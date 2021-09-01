@@ -39,6 +39,10 @@ export class OrderService {
     return await this.orderModel.find().exec();
   }
 
+  async findActiveOrder(): Promise<Order[]> {
+    return await this.orderModel.find().in('status', [0, 1, 5, 7]).exec();
+  }
+
   async orderCount(userId: string): Promise<OrderCountInterface> {
     const payCount = await this.orderModel
       .find({

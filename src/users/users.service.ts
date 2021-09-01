@@ -73,4 +73,18 @@ export class UsersService {
     }
     return await this.userModel.findOne({ bossId }).exec();
   }
+
+  async setBossBalanceAmt(params): Promise<any> {
+    const { bossId, ...data } = params;
+    await this.userModel
+      .findOneAndUpdate(
+        {
+          bossId,
+        },
+        {
+          $set: data,
+        },
+      )
+      .exec();
+  }
 }
