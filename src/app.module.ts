@@ -9,7 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { WxModule } from './wx/wx.module';
 import { StadiumModule } from './stadium/stadium.module';
-import { UserRStadiumModule } from './userRstadium/userRstadium.module';
+import { UserRStadiumModule } from './userRStadium/userRStadium.module';
 import { SpaceModule } from './space/space.module';
 import { MatchModule } from './match/match.module';
 import { OrderModule } from './order/order.module';
