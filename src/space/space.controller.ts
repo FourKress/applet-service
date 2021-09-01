@@ -45,6 +45,7 @@ export class SpaceController {
     return await this.spaceService.removeSpace(id);
   }
 
+  @NoAuth()
   @Get('unitEnum')
   unitEnum() {
     return this.spaceService.unitEnum();

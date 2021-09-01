@@ -14,6 +14,7 @@ import { MatchRunDto } from './dto/match-run.dto';
 import { Match } from './schemas/match.schema';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('match')
 export class MatchController {
@@ -64,11 +65,13 @@ export class MatchController {
     return await this.matchService.findById(id);
   }
 
+  @NoAuth()
   @Get('repeatModelEnum')
   repeatModelEnum() {
     return this.matchService.repeatModelEnum();
   }
 
+  @NoAuth()
   @Get('weekEnum')
   weekEnum() {
     return this.matchService.weekEnum();
