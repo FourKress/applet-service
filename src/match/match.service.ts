@@ -39,14 +39,15 @@ export class MatchService {
     return coverMatchList;
   }
 
-  async findByStadiumId(stadiumId: string, type = 'lt'): Promise<Match[]> {
+  async findByStadiumId(params: any, type = ''): Promise<Match[]> {
     const matchList = await this.matchModel
-      .find({
-        stadiumId,
-      })
+      .find(params)
       .populate('space', { name: 1 }, Space.name)
       .exec();
-    return matchList.filter((match) => this.matchFilter(match, type));
+    if (type) {
+      return matchList.filter((match) => this.matchFilter(match, type));
+    }
+    return matchList;
   }
 
   matchFilter(match, type) {

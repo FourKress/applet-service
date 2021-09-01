@@ -14,6 +14,7 @@ import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { UnitEnum } from '../common/enum/space.enum';
 import { UsersService } from '../users/users.service';
+import * as currency from 'currency.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -148,11 +149,6 @@ export class OrderService {
       );
     }
 
-    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
-      userId,
-      stadiumId,
-    });
-
     const relation = {
       userId,
       spaceId,
@@ -167,7 +163,6 @@ export class OrderService {
     const newOrder = new this.orderModel({
       ...addOrder,
       userId,
-      isMonthlyCard: !!isMonthlyCard,
       status: 0,
     });
     await newOrder.save();
@@ -183,7 +178,7 @@ export class OrderService {
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(id: string): Promise<boolean> {
+  async orderPay(id: string, payMethod: string): Promise<boolean> {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
@@ -191,7 +186,7 @@ export class OrderService {
     if (!order) {
       ToolsService.fail('支付失败，未找到对应的订单！');
     }
-    const { matchId, stadiumId, userId } = order;
+    const { matchId, stadiumId, userId, isMonthlyCard, personCount } = order;
 
     const match = await this.matchService.findById(matchId);
     if (
@@ -202,16 +197,36 @@ export class OrderService {
       ToolsService.fail('支付失败，订单已超时！');
     }
 
-    await this.monthlyCardService.addMonthlyCard({
-      userId,
-      stadiumId,
-      validPeriodStart: Moment().format('YYYY-MM-DD'),
-      validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
-    });
+    let amount = 0;
+    let realMonthlyCard = isMonthlyCard;
+    if (payMethod === 'wechat') {
+      realMonthlyCard = false;
+      amount = personCount * match.rebatePrice;
+    } else if (payMethod === 'monthlyCard') {
+      if (!isMonthlyCard) {
+        await this.monthlyCardService.addMonthlyCard({
+          userId,
+          stadiumId,
+          validPeriodStart: Moment().format('YYYY-MM-DD'),
+          validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
+        });
+        const stadium = await this.stadiumService.findById(stadiumId);
+        if (!stadium.monthlyCardStatus) {
+          ToolsService.fail('不支持月卡支付，请选择其他支付方式');
+        }
+        amount = stadium.monthlyCardPrice;
+      } else {
+        amount = (personCount - 1) * match.rebatePrice;
+      }
+
+      realMonthlyCard = true;
+    }
 
     await this.orderModel
       .findByIdAndUpdate(id, {
         status: 1,
+        amount,
+        isMonthlyCard: realMonthlyCard,
       })
       .exec();
     return true;
@@ -271,14 +286,53 @@ export class OrderService {
     statisticsList.forEach((order) => {
       const { payAmount } = order;
       const price = Number(payAmount);
-      sum.monthCount += price;
+      sum.monthCount = currency(sum.monthCount).add(price).value;
       if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime)) > 0) {
-        sum.dayCount += price;
+        sum.dayCount = currency(sum.dayCount).add(price).value;
       }
     });
     Object.keys(sum).forEach((d) => {
       sum[d] = parseFloat(sum[d]).toFixed(2);
     });
     return sum;
+  }
+
+  async findOrderByStadiumId(params: any): Promise<any> {
+    const { stadiumId, runDate } = params;
+    const stadium = await this.stadiumService.findById(stadiumId);
+    const { name, id } = stadium;
+    const matchList = (await this.matchService.findByStadiumId(params)).filter(
+      (d) => Moment(Moment.now()).diff(Moment(`${d.runDate} ${d.endAt}`)) >= 0,
+    );
+    const matchCoverOrderList = await Promise.all(
+      matchList.map(async (item: any) => {
+        const match = item.toJSON();
+        const { id } = match;
+        const orderList = await this.orderModel.find({ matchId: id });
+        const monthlyCardCount = orderList.filter(
+          (d) => d.isMonthlyCard,
+        ).length;
+        const sumPayAmount = orderList
+          .filter((d) => d.status === 2)
+          .reduce((sum, curr) => currency(sum).add(curr.payAmount).value, 0);
+        return {
+          ...match,
+          sumPayAmount,
+          monthlyCardCount,
+          ordinaryCount: orderList.length - monthlyCardCount,
+        };
+      }),
+    );
+    const stadiumSumAmount = matchCoverOrderList.reduce(
+      (sum, curr) => currency(sum).add(curr.sumPayAmount).value,
+      0,
+    );
+    return {
+      matchCoverOrderList,
+      stadiumName: name,
+      stadiumId: id,
+      stadiumSumAmount,
+      runDate,
+    };
   }
 }

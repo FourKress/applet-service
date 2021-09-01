@@ -21,7 +21,7 @@ export class Order implements OrderInterface {
   matchId: string;
   @Prop()
   payAmount: number;
-  @Prop()
+  @Prop({ default: false })
   isMonthlyCard: boolean;
   @Prop()
   personCount: number;

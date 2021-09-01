@@ -30,14 +30,24 @@ export class MatchController {
   async findByStadium(
     @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
   ): Promise<Match[]> {
-    return await this.matchService.findByStadiumId(stadiumId);
+    return await this.matchService.findByStadiumId(
+      {
+        stadiumId,
+      },
+      'lt',
+    );
   }
 
   @Get('failList')
   async findByStadiumFail(
     @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
   ): Promise<Match[]> {
-    return await this.matchService.findByStadiumId(stadiumId, 'gt');
+    return await this.matchService.findByStadiumId(
+      {
+        stadiumId,
+      },
+      'gt',
+    );
   }
 
   @Post('runList')

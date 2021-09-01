@@ -58,8 +58,11 @@ export class OrderController {
 
   @Post('pay')
   @HttpCode(HttpStatus.OK)
-  async pay(@Body('id', new ValidationIDPipe()) id: string): Promise<boolean> {
-    return await this.orderService.orderPay(id);
+  async pay(
+    @Body('id', new ValidationIDPipe()) id: string,
+    @Body('payMethod') payMethod: string,
+  ): Promise<boolean> {
+    return await this.orderService.orderPay(id, payMethod);
   }
 
   @Post('listByMatch')
@@ -72,5 +75,11 @@ export class OrderController {
   async monthAndAayStatistics(@Request() req): Promise<any> {
     const tokenInfo: UserEntity = req.user;
     return await this.orderService.monthAndAayStatistics(tokenInfo.bossId);
+  }
+
+  @Post('revenueInfo')
+  @HttpCode(HttpStatus.OK)
+  async findOrderByStadiumId(@Body() params: any): Promise<any> {
+    return await this.orderService.findOrderByStadiumId(params);
   }
 }
