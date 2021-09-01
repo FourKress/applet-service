@@ -42,7 +42,6 @@ export class UserRMatchService {
   }
 
   async addRelation(addRelation: CreateUserRMatchDto): Promise<UserRMatch> {
-    console.log(addRelation);
     const { userId, matchId } = addRelation;
     if (!userId || !matchId) {
       ToolsService.fail('userId、matchId不能为空！');
@@ -53,17 +52,12 @@ export class UserRMatchService {
     });
     if (relation) {
       const count = relation.count + addRelation.count;
-      console.log(count, {
-        ...addRelation,
-        count,
-      });
       return this.userRMatchModel.findByIdAndUpdate(relation._id, {
         ...addRelation,
         count,
       });
     }
     const newUserRMatch = new this.userRMatchModel(addRelation);
-    console.log(newUserRMatch);
     return await newUserRMatch.save();
   }
 
@@ -74,5 +68,19 @@ export class UserRMatchService {
       modifyRelation.id,
       modifyRelation,
     );
+  }
+
+  async changeRCount(params: any): Promise<any> {
+    const { matchId, ...data } = params;
+    await this.userRMatchModel
+      .findOneAndUpdate(
+        {
+          matchId,
+        },
+        {
+          $set: data,
+        },
+      )
+      .exec();
   }
 }
