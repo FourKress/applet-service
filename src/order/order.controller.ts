@@ -72,9 +72,15 @@ export class OrderController {
   }
 
   @Get('monthAndAayStatistics')
-  async monthAndAayStatistics(@Request() req): Promise<any> {
+  async monthAndAayStatistics(
+    @Request() req,
+    @Query('month') month: string,
+  ): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.monthAndAayStatistics(tokenInfo.bossId);
+    return await this.orderService.monthAndAayStatistics(
+      tokenInfo.bossId,
+      month,
+    );
   }
 
   @Post('revenueInfo')
@@ -88,5 +94,12 @@ export class OrderController {
     @Query('matchId', new ValidationIDPipe()) matchId: string,
   ): Promise<any> {
     return await this.orderService.findOrderByMatchId(matchId);
+  }
+
+  @Get('signUpTop')
+  async signUpTop(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<any> {
+    return await this.orderService.signUpTop(stadiumId);
   }
 }

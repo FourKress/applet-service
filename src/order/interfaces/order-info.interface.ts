@@ -8,10 +8,14 @@ export class OrderInfoInterface implements OrderInterface {
   stadiumId: string;
   spaceId: string;
   matchId: string;
+  payMethod: number;
   payAmount: number;
+  newMonthlyCard: boolean;
   isMonthlyCard: boolean;
   personCount: number;
   status: number;
+  refundType: number;
+  payAt: number;
   createdAt: number;
   updatedAt: number;
   stadiumName: string;

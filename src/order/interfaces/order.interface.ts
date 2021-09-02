@@ -11,14 +11,18 @@ export interface OrderInterface {
   spaceId: string;
   // 场次ID
   matchId: string;
+  payMethod: number;
   // 支付金额
   payAmount: number;
+  newMonthlyCard: boolean;
   // 是否月卡
   isMonthlyCard: boolean;
   // 人数
   personCount: number;
   // 状态
   status: number;
+  refundType: number;
+  payAt: number;
   createdAt: number;
   updatedAt: number;
 }

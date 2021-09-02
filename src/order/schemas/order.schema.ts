@@ -24,12 +24,20 @@ export class Order implements OrderInterface {
   matchId: string;
   @Prop()
   payAmount: number;
+  @Prop()
+  payMethod: number;
+  @Prop({ default: false })
+  newMonthlyCard: boolean;
   @Prop({ default: false })
   isMonthlyCard: boolean;
   @Prop()
   personCount: number;
   @Prop()
   status: number;
+  @Prop()
+  refundType: number;
+  @Prop()
+  payAt: number;
   @Prop()
   createdAt: number;
   @Prop()

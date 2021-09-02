@@ -28,14 +28,8 @@ export class TasksService {
 
     for (const item of orderList) {
       const order = item.toJSON();
-      const {
-        createdAt,
-        status,
-        matchId,
-        personCount,
-        bossId,
-        isMonthlyCard,
-      } = order;
+      const { createdAt, status, matchId, personCount, bossId, isMonthlyCard } =
+        order;
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
@@ -76,6 +70,7 @@ export class TasksService {
             this.logger.log('组队失败 触发退款 取消订单');
             await this.changeOrder({
               ...order,
+              refundType: 1,
               status: 4,
             });
             // TODO 处理退款
@@ -103,6 +98,7 @@ export class TasksService {
           await this.changeBossUser({
             bossId,
             balanceAmt,
+            withdrawAt: Moment.now(),
           });
         }
       }

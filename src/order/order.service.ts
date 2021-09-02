@@ -200,9 +200,8 @@ export class OrderService {
     }
 
     let amount = 0;
-    let realMonthlyCard = isMonthlyCard;
-    if (payMethod === 'wechat') {
-      realMonthlyCard = false;
+    const isWechat = payMethod === 'wechat';
+    if (isWechat) {
       amount = personCount * match.rebatePrice;
     } else if (payMethod === 'monthlyCard') {
       if (!isMonthlyCard) {
@@ -220,15 +219,15 @@ export class OrderService {
       } else {
         amount = (personCount - 1) * match.rebatePrice;
       }
-
-      realMonthlyCard = true;
     }
 
     await this.orderModel
       .findByIdAndUpdate(id, {
         status: 1,
         payAmount: amount,
-        isMonthlyCard: realMonthlyCard,
+        payAt: Moment.now(),
+        payMethod: isWechat ? 1 : 2,
+        newMonthlyCard: !isWechat && !isMonthlyCard,
       })
       .exec();
     return true;
@@ -253,11 +252,18 @@ export class OrderService {
     return userByStadiumList;
   }
 
-  async findOrderByDate(type = 0, bossId: string): Promise<Order[]> {
+  async findOrderByDate(
+    type = 0,
+    bossId: string,
+    month: string,
+  ): Promise<Order[]> {
     const baseSearch = this.orderModel
       .find({ bossId, status: 2 })
       .where('createdAt');
     let statisticsList = [];
+    if (month) {
+      type = 2;
+    }
     switch (Number(type)) {
       case 0:
         statisticsList = await baseSearch
@@ -271,14 +277,20 @@ export class OrderService {
           .lte(this.nowDayEndTime)
           .exec();
         break;
+      case 2:
+        statisticsList = await baseSearch
+          .gte(Moment(month).startOf('month').valueOf())
+          .lte(Moment(month).add(1, 'month').startOf('month').valueOf())
+          .exec();
+        break;
       default:
         break;
     }
     return statisticsList;
   }
 
-  async monthAndAayStatistics(bossId: string): Promise<any> {
-    const statisticsList = await this.findOrderByDate(1, bossId);
+  async monthAndAayStatistics(bossId: string, month: string): Promise<any> {
+    const statisticsList = await this.findOrderByDate(1, bossId, month);
     const balanceAmt = (await this.userService.findByBossId(bossId)).balanceAmt;
     const sum = {
       dayCount: 0,
@@ -313,14 +325,22 @@ export class OrderService {
         const orderList = await this.orderModel
           .find({ matchId: id })
           .in('status', [2]);
-        const monthlyCardCount = orderList.filter((d) => d.isMonthlyCard)
-          .length;
-        const ordinaryCount = orderList
-          .filter((d) => !d.isMonthlyCard)
-          .reduce((sum, curr) => sum + curr.personCount, 0);
-        const sumPayAmount = orderList
-          .filter((d) => !d.isMonthlyCard)
-          .reduce((sum, curr) => currency(sum).add(curr.payAmount).value, 0);
+        const monthlyCardCount = orderList.filter(
+          (d) => d.payMethod === 2,
+        ).length;
+        const isOrdinary = (d) =>
+          d.payMethod === 1 || (d.payMethod === 2 && d.personCount > 1);
+        const filterList = orderList.filter((d) => isOrdinary(d));
+        const ordinaryCount = filterList.reduce(
+          (sum, curr) =>
+            sum +
+            (curr.payMethod === 1 ? curr.personCount : curr.personCount - 1),
+          0,
+        );
+        const sumPayAmount = filterList.reduce(
+          (sum, curr) => currency(sum).add(curr.payAmount).value,
+          0,
+        );
         return {
           ...match,
           sumPayAmount,
@@ -352,21 +372,81 @@ export class OrderService {
       .exec();
     const success = [];
     const cancel = [];
-    const refund = [];
+    const selfRefund = [];
+    const systemRefund = [];
+    let totalAmount = 0;
 
-    orderList.forEach((d) => {
-      if (d.status === 2) {
-        success.push(d);
-      } else if (d.status === 6) {
-        cancel.push(d);
-      } else if (d.status === 3) {
-        refund.push(d);
-      }
-    });
+    await Promise.all(
+      orderList.map(async (order: any) => {
+        const {
+          status,
+          payMethod,
+          newMonthlyCard,
+          userId,
+          stadiumId,
+          refundType,
+        } = order;
+        if (status === 2) {
+          if (payMethod && !newMonthlyCard) {
+            order.monthlyCardValidDate = (
+              await this.monthlyCardService.checkMonthlyCard({
+                userId,
+                stadiumId,
+              })
+            )?.validPeriodEnd;
+          }
+          totalAmount = currency(totalAmount).add(order.payAmount).value;
+          success.push(order);
+        } else if (status === 6) {
+          cancel.push(order);
+        } else if (status === 3) {
+          if (refundType === 1) {
+            systemRefund.push(order);
+          } else {
+            selfRefund.push(order);
+          }
+        }
+      }),
+    );
+
     return {
       success,
       cancel,
-      refund,
+      selfRefund,
+      systemRefund,
+      totalAmount,
     };
+  }
+
+  async signUpTop(stadiumId): Promise<any> {
+    const orderList: any[] = await this.orderModel
+      .find({
+        stadiumId,
+        status: 2,
+      })
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
+    const userIds = [...new Set(orderList.map((d) => d.userId))];
+    console.log(userIds);
+    const coverList = [];
+    userIds.forEach((userId) => {
+      coverList.push(orderList.filter((d) => d.userId === userId));
+    });
+    coverList.sort((a, b) => a.length - b.length);
+    const topList = coverList.map((d: any) => {
+      console.log(d);
+      return {
+        ...d[0].toJSON(),
+        count: d.length,
+        totalPayAmount: d.reduce(
+          (sum, curr) => currency(sum).add(curr.payAmount).value,
+          0,
+        ),
+      };
+    });
+    if (topList.length > 10) {
+      return topList.slice(0, 9);
+    }
+    return topList;
   }
 }
