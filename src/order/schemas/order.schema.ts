@@ -1,7 +1,8 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { OrderInterface } from '../interfaces/order.interface';
+import { User } from '../../users/schemas/user.schema';
 
 export type OrderDocument = Order & Document;
 
@@ -11,6 +12,8 @@ export class Order implements OrderInterface {
   id: string;
   @Prop()
   userId: string;
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  user: string;
   @Prop()
   bossId: string;
   @Prop()

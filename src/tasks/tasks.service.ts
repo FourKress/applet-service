@@ -25,22 +25,29 @@ export class TasksService {
   async handleCron() {
     this.logger.log('function 5s loop');
     const orderList: any[] = await this.orderService.findActiveOrder();
-    console.log(orderList);
 
     for (const item of orderList) {
       const order = item.toJSON();
-      const { createdAt, status, matchId, personCount } = order;
+      const {
+        createdAt,
+        status,
+        matchId,
+        personCount,
+        bossId,
+        isMonthlyCard,
+      } = order;
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
         .reduce((sum, current) => sum + current.personCount, 0);
-      const failMatch = successPeople <= minPeople;
+      const failMatch = successPeople < minPeople;
       const nowTime = Moment.now();
       const isStart =
         Moment(nowTime).diff(Moment(`${runDate} ${startAt}`), 'minutes') >= 0;
+      const isEnd =
+        Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') >= 0;
       const realSelectPeople = selectPeople - personCount;
-      console.log(isStart, failMatch, selectPeople, successPeople, minPeople);
 
       if (
         status === 0 &&
@@ -64,23 +71,7 @@ export class TasksService {
       }
 
       if (status === 1) {
-        const isEnd =
-          Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') >= 0;
-        if (isEnd) {
-          this.logger.log('组队成功 已结束 订单已完成');
-          await this.changeOrder({
-            ...order,
-            status: 2,
-          });
-          // TODO 计算提现余额
-          const balanceAmt = order.personCount * match.rebatePrice;
-          await this.changeBossUser({
-            bossId: order.bossId,
-            balanceAmt,
-          });
-        } else if (isStart && !isEnd) {
-          console.log(minPeople, selectPeople, successPeople, failMatch);
-
+        if (isStart && !isEnd) {
           if (selectPeople < minPeople || failMatch) {
             this.logger.log('组队失败 触发退款 取消订单');
             await this.changeOrder({
@@ -95,6 +86,24 @@ export class TasksService {
               status: 7,
             });
           }
+        }
+      }
+
+      if (status === 7) {
+        if (isEnd) {
+          this.logger.log('组队成功 已结束 订单已完成');
+          await this.changeOrder({
+            ...order,
+            status: 2,
+          });
+          const userInfo = await this.userService.findByBossId(bossId);
+          // TODO 计算提现余额
+          const balanceAmt =
+            userInfo.balanceAmt + (!isMonthlyCard ? order.payAmount : 0);
+          await this.changeBossUser({
+            bossId,
+            balanceAmt,
+          });
         }
       }
     }

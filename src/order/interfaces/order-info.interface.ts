@@ -4,6 +4,7 @@ export class OrderInfoInterface implements OrderInterface {
   id: string;
   bossId: string;
   userId: string;
+  user: string;
   stadiumId: string;
   spaceId: string;
   matchId: string;

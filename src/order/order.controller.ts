@@ -82,4 +82,11 @@ export class OrderController {
   async findOrderByStadiumId(@Body() params: any): Promise<any> {
     return await this.orderService.findOrderByStadiumId(params);
   }
+
+  @Get('findOrderByMatchId')
+  async findOrderByMatchId(
+    @Query('matchId', new ValidationIDPipe()) matchId: string,
+  ): Promise<any> {
+    return await this.orderService.findOrderByMatchId(matchId);
+  }
 }

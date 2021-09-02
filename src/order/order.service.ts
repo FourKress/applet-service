@@ -14,12 +14,13 @@ import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { UnitEnum } from '../common/enum/space.enum';
 import { UsersService } from '../users/users.service';
-import * as currency from 'currency.js';
+import { ToolsService } from '../common/utils/tools-service';
+import { User } from '../users/schemas/user.schema';
 
+import * as currency from 'currency.js';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 import * as utils from './utils';
-import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class OrderService {
@@ -164,6 +165,7 @@ export class OrderService {
       ...addOrder,
       userId,
       status: 0,
+      user: userId,
     });
     await newOrder.save();
 
@@ -225,7 +227,7 @@ export class OrderService {
     await this.orderModel
       .findByIdAndUpdate(id, {
         status: 1,
-        amount,
+        payAmount: amount,
         isMonthlyCard: realMonthlyCard,
       })
       .exec();
@@ -308,18 +310,22 @@ export class OrderService {
       matchList.map(async (item: any) => {
         const match = item.toJSON();
         const { id } = match;
-        const orderList = await this.orderModel.find({ matchId: id });
-        const monthlyCardCount = orderList.filter(
-          (d) => d.isMonthlyCard,
-        ).length;
+        const orderList = await this.orderModel
+          .find({ matchId: id })
+          .in('status', [2]);
+        const monthlyCardCount = orderList.filter((d) => d.isMonthlyCard)
+          .length;
+        const ordinaryCount = orderList
+          .filter((d) => !d.isMonthlyCard)
+          .reduce((sum, curr) => sum + curr.personCount, 0);
         const sumPayAmount = orderList
-          .filter((d) => d.status === 2)
+          .filter((d) => !d.isMonthlyCard)
           .reduce((sum, curr) => currency(sum).add(curr.payAmount).value, 0);
         return {
           ...match,
           sumPayAmount,
           monthlyCardCount,
-          ordinaryCount: orderList.length - monthlyCardCount,
+          ordinaryCount,
         };
       }),
     );
@@ -333,6 +339,34 @@ export class OrderService {
       stadiumId: id,
       stadiumSumAmount,
       runDate,
+    };
+  }
+
+  async findOrderByMatchId(matchId: string): Promise<any> {
+    const orderList = await this.orderModel
+      .find({
+        matchId,
+      })
+      .in('status', [2, 3, 6])
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
+    const success = [];
+    const cancel = [];
+    const refund = [];
+
+    orderList.forEach((d) => {
+      if (d.status === 2) {
+        success.push(d);
+      } else if (d.status === 6) {
+        cancel.push(d);
+      } else if (d.status === 3) {
+        refund.push(d);
+      }
+    });
+    return {
+      success,
+      cancel,
+      refund,
     };
   }
 }

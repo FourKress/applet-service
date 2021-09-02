@@ -2,6 +2,7 @@ export interface OrderInterface {
   id: string;
   // 用户ID
   userId: string;
+  user: string;
   // 用户ID
   bossId: string;
   // 球场ID
