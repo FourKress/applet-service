@@ -55,14 +55,17 @@ export class UsersService {
 
   async setBoss(id: string): Promise<User> {
     const hasBoss = await this.userModel.findById(id);
-    if (hasBoss.isBoss || hasBoss.bossId) {
+    const { isBoss, phoneNum } = hasBoss;
+    if (isBoss || hasBoss.bossId) {
       ToolsService.fail('设置失败，该账号已是场主身份！');
     }
     const bossId = Types.ObjectId().toHexString();
+    const bossPhoneNum = phoneNum || '';
     return await this.userModel
       .findByIdAndUpdate(id, {
         isBoss: true,
         bossId,
+        bossPhoneNum,
       })
       .exec();
   }

@@ -16,6 +16,8 @@ export class User implements UserInterface {
   @Prop()
   phoneNum: string;
   @Prop()
+  bossPhoneNum: string;
+  @Prop()
   nickName: string;
   @Prop()
   city: string;

@@ -1,6 +1,7 @@
 export interface UserInterface {
   id: string;
   openId: string;
+  bossPhoneNum: string;
   phoneNum: string;
   nickName: string;
   city: string;

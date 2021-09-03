@@ -22,7 +22,6 @@ export class ModifyUserDto {
   readonly bossId: string;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'phoneNum 不能为空' })
   @IsMobilePhone(
     'zh-CN',
     { strictMode: false },
@@ -31,7 +30,14 @@ export class ModifyUserDto {
   readonly phoneNum: string;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'nickName 不能为空' })
+  @IsMobilePhone(
+    'zh-CN',
+    { strictMode: false },
+    { message: 'bossPhoneNum 不是正确的手机号' },
+  )
+  readonly bossPhoneNum: string;
+
+  @IsOptional()
   @IsString({ message: 'nickName 必须是 string 类型' })
   readonly nickName: string;
 
