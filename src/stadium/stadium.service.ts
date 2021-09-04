@@ -53,14 +53,16 @@ export class StadiumService {
     const newStadium = new this.stadiumModel(addStadium);
     const { spaces } = addStadium;
     const { _id: stadiumId } = newStadium;
-    await this.spaceService.addSpace(
-      spaces.map((s) => {
-        return {
-          ...s,
-          stadiumId,
-        };
-      }),
-    );
+    if (spaces) {
+      await this.spaceService.addSpace(
+        spaces.map((s) => {
+          return {
+            ...s,
+            stadiumId,
+          };
+        }),
+      );
+    }
     return await newStadium.save();
   }
 

@@ -66,10 +66,6 @@ export class ModifyUserDto {
   readonly teamUpCount: number;
 
   @IsOptional()
-  @IsBoolean({ message: 'isBoss 必须是 boolean 类型' })
-  readonly isBoss: boolean;
-
-  @IsOptional()
   @IsNumber(
     { allowNaN: false },
     { message: 'monthlyCardCount 必须是 number 类型' },

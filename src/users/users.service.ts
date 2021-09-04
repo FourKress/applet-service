@@ -39,7 +39,6 @@ export class UsersService {
     Object.assign(newUser, {
       teamUpCount: 0,
       monthlyCardCount: 0,
-      isBoss: false,
     });
     return await newUser.save();
   }
@@ -55,15 +54,14 @@ export class UsersService {
 
   async setBoss(id: string): Promise<User> {
     const hasBoss = await this.userModel.findById(id);
-    const { isBoss, phoneNum } = hasBoss;
-    if (isBoss || hasBoss.bossId) {
+    const { phoneNum } = hasBoss;
+    if (hasBoss.bossId) {
       ToolsService.fail('设置失败，该账号已是场主身份！');
     }
     const bossId = Types.ObjectId().toHexString();
     const bossPhoneNum = phoneNum || '';
     return await this.userModel
       .findByIdAndUpdate(id, {
-        isBoss: true,
         bossId,
         bossPhoneNum,
       })

@@ -31,8 +31,6 @@ export class User implements UserInterface {
   avatarUrl: string;
   @Prop({ default: 0 })
   teamUpCount: number;
-  @Prop()
-  isBoss: boolean;
   @Prop({ default: 0 })
   monthlyCardCount: number;
   @Prop({ default: 0 })

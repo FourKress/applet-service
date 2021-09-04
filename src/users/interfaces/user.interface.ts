@@ -10,7 +10,6 @@ export interface UserInterface {
   gender: number;
   avatarUrl: string;
   teamUpCount: number;
-  isBoss: boolean;
   bossId: string;
   balanceAmt: number;
   withdrawAt: number;

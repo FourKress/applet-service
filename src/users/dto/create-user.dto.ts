@@ -45,9 +45,6 @@ export class CreateUserDto {
   @IsNumber({ allowNaN: false }, { message: 'teamUpCount 必须是 number 类型' })
   readonly teamUpCount: number;
 
-  @IsBoolean({ message: 'isBoss 必须是 boolean 类型' })
-  readonly isBoss: boolean;
-
   @IsNumber(
     { allowNaN: false },
     { message: 'monthlyCardCount 必须是 number 类型' },

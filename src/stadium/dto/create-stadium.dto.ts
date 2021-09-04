@@ -59,6 +59,7 @@ export class CreateStadiumDto {
   )
   readonly monthlyCardPrice: number;
 
+  @IsOptional()
   @IsNotEmpty({ message: 'spaces 不能为空' })
   @ValidateNested({
     message: (constraints) => constraints['isString'],
