@@ -1,8 +1,6 @@
 import { MatchInterface } from './match.interface';
 
 export class MatchSpaceInterface implements MatchInterface {
-  readonly isDone: boolean;
-  readonly isCancel: boolean;
   readonly id: string;
   readonly stadiumId: string;
   readonly spaceId: string;

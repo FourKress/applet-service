@@ -15,10 +15,6 @@ export class Space implements SpaceInterface {
   name: string;
   @Prop({ required: true })
   unit: number;
-  @Prop({ default: false })
-  full: boolean;
-  @Prop({ default: false })
-  rebate: boolean;
   @Prop()
   createdAt: number;
   @Prop()

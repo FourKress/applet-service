@@ -97,8 +97,11 @@ export class OrderService {
       totalPrice: price * personCount,
       isMonthlyCard: !!isMonthlyCard,
       monthlyCardPrice: stadium.monthlyCardPrice,
+      monthlyCardStatus: stadium.monthlyCardStatus,
       countdown: countdown > 0 ? countdown : 0,
       statusName: utils.StatusMap[order.status],
+      validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
+      validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
     });
     return orderInfo;
   }
@@ -204,6 +207,7 @@ export class OrderService {
     if (isWechat) {
       amount = personCount * match.rebatePrice;
     } else if (payMethod === 'monthlyCard') {
+      const baseAmount = (personCount - 1) * match.rebatePrice;
       if (!isMonthlyCard) {
         await this.monthlyCardService.addMonthlyCard({
           userId,
@@ -215,9 +219,9 @@ export class OrderService {
         if (!stadium.monthlyCardStatus) {
           ToolsService.fail('不支持月卡支付，请选择其他支付方式');
         }
-        amount = stadium.monthlyCardPrice;
+        amount = stadium.monthlyCardPrice + baseAmount;
       } else {
-        amount = (personCount - 1) * match.rebatePrice;
+        amount = baseAmount;
       }
     }
 
@@ -427,14 +431,12 @@ export class OrderService {
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
     const userIds = [...new Set(orderList.map((d) => d.userId))];
-    console.log(userIds);
     const coverList = [];
     userIds.forEach((userId) => {
       coverList.push(orderList.filter((d) => d.userId === userId));
     });
     coverList.sort((a, b) => a.length - b.length);
     const topList = coverList.map((d: any) => {
-      console.log(d);
       return {
         ...d[0].toJSON(),
         count: d.length,

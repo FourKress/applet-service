@@ -34,9 +34,11 @@ export class StadiumService {
   }
 
   async checkName2Id(name: string): Promise<string> {
-    const hasStadium = await this.stadiumModel.findOne({
-      name,
-    });
+    const hasStadium = await this.stadiumModel
+      .findOne({
+        name,
+      })
+      .exec();
     const id = hasStadium?._id;
     if (id) {
       return Types.ObjectId(id).toHexString();
@@ -51,23 +53,11 @@ export class StadiumService {
       return;
     }
     const newStadium = new this.stadiumModel(addStadium);
-    const { spaces } = addStadium;
-    const { _id: stadiumId } = newStadium;
-    if (spaces) {
-      await this.spaceService.addSpace(
-        spaces.map((s) => {
-          return {
-            ...s,
-            stadiumId,
-          };
-        }),
-      );
-    }
     return await newStadium.save();
   }
 
   async modify(modifyStadium: ModifyStadiumDto): Promise<Stadium> {
-    const { id, spaces, ...stadiumInfo } = modifyStadium;
+    const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
@@ -75,7 +65,6 @@ export class StadiumService {
     if (hasStadium !== id) {
       ToolsService.fail('修改失败，球场名称已存在！');
     }
-    await this.spaceService.modifySpace(spaces);
     return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
   }
 }

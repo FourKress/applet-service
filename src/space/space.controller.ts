@@ -13,6 +13,7 @@ import { CreateSpaceDto } from './dto/create-space.dto';
 import { Space } from './schemas/space.schema';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { ModifySpaceDto } from './dto/modify-space.dto';
 
 @Controller('space')
 export class SpaceController {
@@ -20,8 +21,14 @@ export class SpaceController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async addSpace(@Body('spaces') spaces: CreateSpaceDto[]): Promise<Space[]> {
-    return await this.spaceService.addSpace(spaces);
+  async addSpace(@Body() space: CreateSpaceDto): Promise<Space> {
+    return await this.spaceService.addSpace(space);
+  }
+
+  @Post('modify')
+  @HttpCode(HttpStatus.OK)
+  async modifySpace(@Body() space: ModifySpaceDto): Promise<Space> {
+    return await this.spaceService.modifySpace(space);
   }
 
   @NoAuth()

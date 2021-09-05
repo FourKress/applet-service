@@ -14,6 +14,8 @@ export class Match implements MatchInterface {
   stadiumId: string;
   @Prop({ require: true })
   spaceId: string;
+  @Prop()
+  parentId: string;
   @Prop({ require: true })
   duration: number;
   @Prop()
@@ -42,10 +44,6 @@ export class Match implements MatchInterface {
   repeatWeek: number[];
   @Prop({ type: Types.ObjectId, ref: Space.name })
   space: string;
-  @Prop({ default: false })
-  isDone: boolean;
-  @Prop({ default: false })
-  isCancel: boolean;
   @Prop({ default: true })
   status: boolean;
   @Prop()

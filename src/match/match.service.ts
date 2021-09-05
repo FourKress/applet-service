@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { ModifyMatchDto } from './dto/modify-match.dto';
@@ -29,7 +29,8 @@ export class MatchService {
         })
         .exec()
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
-    const coverMatchList = matchList.map((match) => {
+    const coverMatchList = matchList.map((item: any) => {
+      const match = item.toJSON();
       match.isDone = Moment().diff(`${match.runDate} ${match.endAt}`) > 0;
       match.isCancel =
         Moment().diff(`${match.runDate} ${match.startAt}`) > 0 &&
@@ -53,7 +54,7 @@ export class MatchService {
   matchFilter(match, type) {
     const time = Moment().startOf('day').diff(match.runDate);
     if (type === 'lt') {
-      if (match.repeatModel !== 1 || time < 0) {
+      if (match.repeatModel !== 1 || time <= 0) {
         return true;
       }
     } else if (type === 'gt') {
@@ -97,6 +98,11 @@ export class MatchService {
         space: spaceId,
       }),
     );
+
+    if (repeatModel !== 1) {
+      await this.autoAddRepeatMatch(newMatch.toJSON());
+    }
+
     return await newMatch.save();
   }
 
@@ -141,7 +147,6 @@ export class MatchService {
 
   async changeMatchSelectPeople(params: any): Promise<any> {
     const { id, ...match } = params;
-    console.log(params, '@@@@');
     return await this.matchModel
       .findByIdAndUpdate(id, {
         ...match,
@@ -165,5 +170,36 @@ export class MatchService {
     await this.matchModel.findByIdAndUpdate(id, {
       status: false,
     });
+  }
+
+  async autoAddRepeatMatch(match) {
+    const { id, ...info } = match;
+    const { repeatModel, repeatWeek = [] } = info;
+    let day = 1;
+    while (day <= 6) {
+      const runDate = Moment()
+        .startOf('day')
+        .add(day, 'day')
+        .format('YYYY-MM-DD');
+      if (repeatModel == 2) {
+        const week = Moment(runDate).day();
+        if (repeatWeek.includes(week ? week : 7)) {
+          const newMatch = new this.matchModel({
+            ...info,
+            runDate,
+            parentId: id,
+          });
+          await newMatch.save();
+        }
+      } else if (repeatModel === 3) {
+        const newMatch = new this.matchModel({
+          ...info,
+          runDate,
+          parentId: id,
+        });
+        await newMatch.save();
+      }
+      day++;
+    }
   }
 }
