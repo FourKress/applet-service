@@ -71,8 +71,8 @@ export class MatchController {
   @Get('details')
   async details(
     @Query('id', new ValidationIDPipe()) id: string,
-  ): Promise<Match> {
-    return await this.matchService.findById(id);
+  ): Promise<MatchSpaceInterface> {
+    return await this.matchService.details(id);
   }
 
   @NoAuth()

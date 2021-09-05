@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
@@ -10,6 +10,7 @@ import { ToolsService } from '../common/utils/tools-service';
 import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
 import { Space } from '../space/schemas/space.schema';
 import * as nzh from 'nzh';
+import { OrderService } from '../order/order.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -18,7 +19,17 @@ const Moment = require('moment');
 export class MatchService {
   constructor(
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
   ) {}
+
+  async findAllBase(): Promise<Match[]> {
+    return await this.matchModel
+      .find()
+      .exists('parentId', false)
+      .ne('repeatModel', 1)
+      .exec();
+  }
 
   async findBySpaceId(params: any): Promise<MatchSpaceInterface[]> {
     const matchList = (
@@ -31,24 +42,24 @@ export class MatchService {
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
     const coverMatchList = matchList.map((item: any) => {
       const match = item.toJSON();
-      match.isDone = Moment().diff(`${match.runDate} ${match.endAt}`) > 0;
-      match.isCancel =
-        Moment().diff(`${match.runDate} ${match.startAt}`) > 0 &&
-        match.selectPeople < match.minPeople;
-      return match;
+      return {
+        ...match,
+        ...this.getDoneAndCancelStatus(match),
+      };
     });
     return coverMatchList;
   }
 
   async findByStadiumId(params: any, type = ''): Promise<Match[]> {
-    const matchList = await this.matchModel
+    const search = this.matchModel
       .find(params)
-      .populate('space', { name: 1 }, Space.name)
-      .exec();
+      .populate('space', { name: 1 }, Space.name);
     if (type) {
-      return matchList.filter((match) => this.matchFilter(match, type));
+      return (await search.exists('parentId', false).exec()).filter((match) =>
+        this.matchFilter(match, type),
+      );
     }
-    return matchList;
+    return await search.exec();
   }
 
   matchFilter(match, type) {
@@ -66,14 +77,37 @@ export class MatchService {
   }
 
   async findByRunData(params: MatchRunDto): Promise<Match[]> {
-    return await this.matchModel
+    const matchList = await this.matchModel
       .find(params)
       .populate('space', { name: 1 }, Space.name)
       .exec();
+    return matchList.map((item: any) => {
+      const match = item.toJSON();
+      return {
+        ...match,
+        ...this.getDoneAndCancelStatus(match),
+      };
+    });
+  }
+
+  getDoneAndCancelStatus(match) {
+    const { runDate, startAt, endAt, minPeople, selectPeople } = match;
+    const isDone = Moment().diff(`${runDate} ${endAt}`) > 0;
+    const isCancel =
+      Moment().diff(`${runDate} ${startAt}`) > 0 && selectPeople < minPeople;
+    return {
+      isDone,
+      isCancel,
+    };
   }
 
   async findById(id: string): Promise<Match> {
     return await this.matchModel.findById(id).exec();
+  }
+
+  async details(id: string): Promise<MatchSpaceInterface> {
+    const match: any = (await this.matchModel.findById(id).exec()).toJSON();
+    return Object.assign({}, match, this.getDoneAndCancelStatus(match));
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
@@ -100,7 +134,7 @@ export class MatchService {
     );
 
     if (repeatModel !== 1) {
-      await this.autoAddRepeatMatch(newMatch.toJSON());
+      await this.autoAddRepeatMatch(newMatch.toJSON(), 'add');
     }
 
     return await newMatch.save();
@@ -130,19 +164,35 @@ export class MatchService {
     return repeatName;
   }
 
+  async modifyMatchSelectPeople(match: ModifyMatchDto): Promise<Match> {
+    const { id, selectPeople } = match;
+    return await this.matchModel
+      .findByIdAndUpdate(id, {
+        selectPeople,
+      })
+      .exec();
+  }
+
   async modifyMatch(modifyMatch: ModifyMatchDto): Promise<Match> {
     const { id, spaceId, ...match } = modifyMatch;
     if (!id || !spaceId) {
       ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
+
     const { repeatModel, repeatWeek, runDate } = match;
     const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
-    return await this.matchModel
+
+    const matchFromDB = await this.matchModel
       .findByIdAndUpdate(id, {
         ...match,
         repeatName,
       })
       .exec();
+
+    if (repeatModel !== 1) {
+      await this.autoAddRepeatMatch(matchFromDB.toJSON(), 'modify');
+    }
+    return matchFromDB;
   }
 
   async changeMatchSelectPeople(params: any): Promise<any> {
@@ -167,39 +217,61 @@ export class MatchService {
   }
 
   async cancel(id: string): Promise<any> {
+    const match = await this.matchModel.findById(id);
+    const { runDate, endAt } = match;
+    if (Moment().diff(Moment(`${runDate} ${endAt}`), 'minutes') >= 0) {
+      ToolsService.fail('场次已结束，不能取消');
+      return;
+    }
+    // TODO 处理订单相关的状态、退款
     await this.matchModel.findByIdAndUpdate(id, {
       status: false,
     });
   }
 
-  async autoAddRepeatMatch(match) {
+  async autoAddRepeatMatch(match, type) {
     const { id, ...info } = match;
     const { repeatModel, repeatWeek = [] } = info;
-    let day = 1;
-    while (day <= 6) {
-      const runDate = Moment()
-        .startOf('day')
-        .add(day, 'day')
-        .format('YYYY-MM-DD');
-      if (repeatModel == 2) {
-        const week = Moment(runDate).day();
-        if (repeatWeek.includes(week ? week : 7)) {
-          const newMatch = new this.matchModel({
-            ...info,
-            runDate,
-            parentId: id,
-          });
-          await newMatch.save();
+    await this.matchModel.deleteMany({ parentId: id });
+    const dayList = Array(6)
+      .fill(1)
+      .map((d, i) => d + i);
+    await Promise.all(
+      dayList.map(async (day) => {
+        const runDate = Moment()
+          .startOf('day')
+          .add(day, 'day')
+          .format('YYYY-MM-DD');
+        if (repeatModel == 2) {
+          const week = Moment(runDate).day();
+          if (repeatWeek.includes(week ? week : 7)) {
+            await this.changeRepeatMatch(id, info, runDate, type);
+          }
+        } else if (repeatModel === 3) {
+          await this.changeRepeatMatch(id, info, runDate, type);
         }
-      } else if (repeatModel === 3) {
-        const newMatch = new this.matchModel({
-          ...info,
-          runDate,
-          parentId: id,
-        });
-        await newMatch.save();
-      }
-      day++;
+      }),
+    );
+  }
+
+  async changeRepeatMatch(id, match, runDate, type) {
+    let targetId;
+    if (type === 'add') {
+      targetId = Types.ObjectId().toHexString();
+    } else if (type === 'modify') {
+      const target = await this.matchModel
+        .findOne({ parentId: id, runDate })
+        .exec();
+      targetId = target ? target.toJSON().id : Types.ObjectId().toHexString();
     }
+    await this.matchModel
+      .findByIdAndUpdate(
+        targetId,
+        { ...match, runDate, parentId: id },
+        {
+          upsert: true,
+        },
+      )
+      .exec();
   }
 }

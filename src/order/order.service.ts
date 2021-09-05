@@ -135,7 +135,7 @@ export class OrderService {
 
   async addOrder(addOrder: CreateOderDto, userId): Promise<string> {
     const { matchId, spaceId, stadiumId, personCount } = addOrder;
-    const match = await this.matchService.findById(matchId);
+    const match: any = await this.matchService.findById(matchId);
 
     if (match.selectPeople + personCount > match.totalPeople) {
       ToolsService.fail('当前场次已没有位置可报名，请选择其它场次进行报名！');
@@ -162,8 +162,7 @@ export class OrderService {
     };
     await this.userRMatchService.addRelation(relation);
     match.selectPeople = match.selectPeople + personCount;
-    match.id = matchId;
-    await this.matchService.modifyMatch(match);
+    await this.matchService.modifyMatchSelectPeople(match.toJSON());
     const newOrder = new this.orderModel({
       ...addOrder,
       userId,

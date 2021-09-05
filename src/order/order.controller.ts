@@ -86,7 +86,10 @@ export class OrderController {
   @Post('revenueInfo')
   @HttpCode(HttpStatus.OK)
   async findOrderByStadiumId(@Body() params: any): Promise<any> {
-    return await this.orderService.findOrderByStadiumId(params);
+    return await this.orderService.findOrderByStadiumId({
+      ...params,
+      status: true,
+    });
   }
 
   @Get('findOrderByMatchId')

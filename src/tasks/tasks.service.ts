@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Interval, Cron } from '@nestjs/schedule';
 
 import { OrderService } from '../order/order.service';
 import { MatchService } from '../match/match.service';
@@ -20,9 +20,28 @@ export class TasksService {
     private readonly userRMatchService: UserRMatchService,
   ) {}
 
-  // @Cron('0 * * * * *')
+  @Cron('0 1 0 * * 0-7')
+  async handleMatch() {
+    this.logger.log('function Cron loop');
+    const matchList: any[] = await this.matchService.findAllBase();
+    for (const item of matchList) {
+      const match = item.toJSON();
+      const { id, ...info } = match;
+      const { repeatModel, repeatWeek } = info;
+      const runDate = Moment().add(7, 'day').format('YYYY-MM-DD');
+      if (repeatModel === 3) {
+        await this.changeMatchRepeat(id, info, runDate);
+      } else if (repeatModel === 2) {
+        const week = Moment(runDate).day();
+        if (repeatWeek.includes(week ? week : 7)) {
+          await this.changeMatchRepeat(id, info, runDate);
+        }
+      }
+    }
+  }
+
   @Interval(1000 * 5)
-  async handleCron() {
+  async handleOrder() {
     this.logger.log('function 5s loop');
     const orderList: any[] = await this.orderService.findActiveOrder();
 
@@ -119,5 +138,9 @@ export class TasksService {
 
   async changeBossUser(data) {
     await this.userService.setBossBalanceAmt(data);
+  }
+
+  async changeMatchRepeat(id, match, runDate) {
+    await this.matchService.changeRepeatMatch(id, match, runDate, 'add');
   }
 }
