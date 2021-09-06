@@ -22,7 +22,7 @@ export class TasksService {
 
   @Cron('0 1 0 * * 0-7')
   async handleMatch() {
-    this.logger.log('function Cron loop');
+    this.logger.log('match day loop');
     const matchList: any[] = await this.matchService.findAllBase();
     for (const item of matchList) {
       const match = item.toJSON();
@@ -42,7 +42,7 @@ export class TasksService {
 
   @Interval(1000 * 5)
   async handleOrder() {
-    this.logger.log('function 5s loop');
+    this.logger.log('match 5s loop');
     const orderList: any[] = await this.orderService.findActiveOrder();
 
     for (const item of orderList) {
