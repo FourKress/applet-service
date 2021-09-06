@@ -28,7 +28,7 @@ export class TasksService {
       const match = item.toJSON();
       const { id, ...info } = match;
       const { repeatModel, repeatWeek } = info;
-      const runDate = Moment().add(7, 'day').format('YYYY-MM-DD');
+      const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
       if (repeatModel === 3) {
         await this.changeMatchRepeat(id, info, runDate);
       } else if (repeatModel === 2) {
@@ -47,8 +47,14 @@ export class TasksService {
 
     for (const item of orderList) {
       const order = item.toJSON();
-      const { createdAt, status, matchId, personCount, bossId, isMonthlyCard } =
-        order;
+      const {
+        createdAt,
+        status,
+        matchId,
+        personCount,
+        bossId,
+        isMonthlyCard,
+      } = order;
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
