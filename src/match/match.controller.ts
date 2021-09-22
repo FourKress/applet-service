@@ -6,6 +6,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { CreateMatchDto } from './dto/create-match.dto';
@@ -15,6 +16,7 @@ import { Match } from './schemas/match.schema';
 import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('match')
 export class MatchController {
@@ -90,5 +92,11 @@ export class MatchController {
   @Get('cancel')
   async cancel(@Query('id', new ValidationIDPipe()) id: string): Promise<any> {
     return await this.matchService.cancel(id);
+  }
+
+  @Get('waitStartList')
+  async waitStartList(@Request() req): Promise<any[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.matchService.findWaitStartList(tokenInfo.userId);
   }
 }

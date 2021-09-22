@@ -50,4 +50,11 @@ export class StadiumController {
     const tokenInfo: UserEntity = req.user;
     return await this.stadiumService.findByBossId(tokenInfo.bossId);
   }
+
+  @Post('waitStartList')
+  @HttpCode(HttpStatus.OK)
+  async waitStartList(@Request() req, @Body() search): Promise<Stadium[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.stadiumService.waitStartList(tokenInfo.userId, search);
+  }
 }

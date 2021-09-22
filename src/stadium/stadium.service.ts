@@ -5,14 +5,14 @@ import { CreateStadiumDto } from './dto/create-stadium.dto';
 import { ToolsService } from '../common/utils/tools-service';
 import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
-import { SpaceService } from '../space/space.service';
+import { UserRStadiumService } from '../userRStadium/userRstadium.service';
 
 @Injectable()
 export class StadiumService {
   constructor(
     @InjectModel(Stadium.name)
     private readonly stadiumModel: Model<StadiumDocument>,
-    private readonly spaceService: SpaceService,
+    private readonly userRStadiumService: UserRStadiumService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -66,5 +66,22 @@ export class StadiumService {
       ToolsService.fail('修改失败，球场名称已存在！');
     }
     return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
+  }
+
+  async waitStartList(userId, search): Promise<Stadium[]> {
+    const { type } = search;
+    switch (Number(type)) {
+      case 1:
+        return await this.findAll();
+        break;
+      case 2:
+        const watchList = await this.userRStadiumService.watchListByUserId(
+          userId,
+        );
+        const ids = watchList.map((d: any) => d.stadiumId);
+        return await this.stadiumModel.find().in('_id', ids).exec();
+      default:
+        break;
+    }
   }
 }

@@ -31,11 +31,11 @@ export class UserRMatchService {
     return personList;
   }
 
-  async relationByUserId(userId: string): Promise<UserRMatch[]> {
+  relationByUserId(userId: string): any {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
-    const relation = await this.userRMatchModel.find({
+    const relation = this.userRMatchModel.find({
       userId,
     });
     return relation;

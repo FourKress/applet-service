@@ -3,12 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Stadium, StadiumSchema } from './schemas/stadium.schema';
 import { StadiumController } from './stadium.controller';
 import { StadiumService } from './stadium.service';
-import { SpaceModule } from '../space/space.module';
+import { UserRStadiumModule } from '../userRStadium/userRStadium.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Stadium.name, schema: StadiumSchema }]),
-    SpaceModule,
+    UserRStadiumModule,
   ],
   controllers: [StadiumController],
   providers: [StadiumService],

@@ -11,6 +11,8 @@ import { RepeatModel, WeekEnum } from '../common/enum/match.enum';
 import { Space } from '../space/schemas/space.schema';
 import * as nzh from 'nzh';
 import { OrderService } from '../order/order.service';
+import { UserRMatchService } from '../userRMatch/userRMatch.service';
+import { StadiumService } from '../stadium/stadium.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
@@ -21,6 +23,9 @@ export class MatchService {
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
+    private readonly userRMatchService: UserRMatchService,
+    @Inject(forwardRef(() => StadiumService))
+    private readonly stadiumService: StadiumService,
   ) {}
 
   async findAllBase(): Promise<Match[]> {
@@ -111,8 +116,14 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const { spaceId, startAt, endAt, repeatModel, repeatWeek, runDate } =
-      addMatch;
+    const {
+      spaceId,
+      startAt,
+      endAt,
+      repeatModel,
+      repeatWeek,
+      runDate,
+    } = addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
@@ -273,5 +284,52 @@ export class MatchService {
         },
       )
       .exec();
+  }
+
+  async findWaitStartList(userId: string): Promise<any> {
+    const db = this.userRMatchService.relationByUserId(userId);
+    const relationList = await db
+      .where('createdAt')
+      .gte(Moment().startOf('day').valueOf())
+      .exec();
+    const coverList = [];
+    await Promise.all(
+      relationList.map(async (r) => {
+        const match = (await this.matchModel.findById(r.matchId)).toJSON();
+        const isEnd =
+          Moment().diff(Moment(`${match.runDate} ${match.endAt}`)) > 0;
+        const isMin = match.selectPeople >= match.minPeople;
+        const isCancel =
+          Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0 &&
+          !isMin;
+        if (isEnd || isCancel) {
+          return;
+        }
+
+        const isStart =
+          Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0
+            ? 3
+            : isMin
+            ? 1
+            : 2;
+
+        const stadium: any = await this.stadiumService.findById(r.stadiumId);
+        const { name, stadiumUrl, address } = stadium.toJSON();
+        const data = {
+          ...match,
+          stadiumName: name,
+          stadiumUrl,
+          stadiumAddress: address,
+          isStart,
+        };
+        coverList.push(data);
+      }),
+    );
+
+    return coverList.sort((a: any, b: any) =>
+      Moment(`${a.runDate} ${a.startAt}`).diff(
+        Moment(`${b.runDate} ${b.startAt}`),
+      ),
+    );
   }
 }
