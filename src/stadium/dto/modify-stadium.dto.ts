@@ -31,8 +31,16 @@ export class ModifyStadiumDto {
   readonly province: string;
 
   @IsOptional()
-  @IsString({ message: 'country 必须是 string 类型' })
-  readonly country: string;
+  @IsString({ message: 'district 必须是 string 类型' })
+  readonly district: string;
+
+  @IsOptional()
+  @IsNumber({ allowNaN: false }, { message: 'longitude 必须是 number 类型' })
+  readonly longitude: number;
+
+  @IsOptional()
+  @IsNumber({ allowNaN: false }, { message: 'latitude 必须是 number 类型' })
+  readonly latitude: number;
 
   @IsOptional()
   @IsNotEmpty({ message: 'phoneNum 不能为空' })

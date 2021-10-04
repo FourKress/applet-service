@@ -9,7 +9,9 @@ export interface StadiumInterface {
   // 省
   readonly province: string;
   // 国家
-  readonly country: string;
+  readonly district: string;
+  readonly longitude: number;
+  readonly latitude: number;
   // 球场电话
   readonly phoneNum: string;
   // 球场地址

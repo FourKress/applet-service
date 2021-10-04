@@ -25,8 +25,14 @@ export class CreateStadiumDto {
   @IsString({ message: 'province 必须是 string 类型' })
   readonly province: string;
 
-  @IsString({ message: 'country 必须是 string 类型' })
-  readonly country: string;
+  @IsString({ message: 'district 必须是 string 类型' })
+  readonly district: string;
+
+  @IsNumber({ allowNaN: false }, { message: 'longitude 必须是 number 类型' })
+  readonly longitude: number;
+
+  @IsNumber({ allowNaN: false }, { message: 'latitude 必须是 number 类型' })
+  readonly latitude: number;
 
   @IsNotEmpty({ message: 'phoneNum 不能为空' })
   @IsMobilePhone(

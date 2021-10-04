@@ -16,9 +16,13 @@ export class Stadium implements StadiumInterface {
   @Prop()
   city: string;
   @Prop()
-  country: string;
+  district: string;
   @Prop()
   province: string;
+  @Prop()
+  longitude: number;
+  @Prop()
+  latitude: number;
   @Prop({ required: true })
   phoneNum: string;
   @Prop()

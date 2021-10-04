@@ -293,9 +293,19 @@ export class MatchService {
       .gte(Moment().startOf('day').valueOf())
       .exec();
     const coverList = [];
+    const matchList = await this.matchModel
+      .find()
+      .in(
+        '_id',
+        relationList.map((d) => d.matchId),
+      )
+      .exec();
+
     await Promise.all(
       relationList.map(async (r) => {
-        const match = (await this.matchModel.findById(r.matchId)).toJSON();
+        const match = matchList
+          .find((d) => d.toJSON().id === r.matchId)
+          ?.toJSON();
         const isEnd =
           Moment().diff(Moment(`${match.runDate} ${match.endAt}`)) > 0;
         const isMin = match.selectPeople >= match.minPeople;
