@@ -20,6 +20,8 @@ export class UserRMatch implements UserRMatchInterface {
   @Prop()
   stadiumId: string;
   @Prop()
+  expirationDate: string;
+  @Prop()
   createdAt: number;
   @Prop()
   updatedAt: number;

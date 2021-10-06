@@ -1,4 +1,4 @@
-import { IsMongoId, IsNumber } from 'class-validator';
+import { IsMongoId, IsNumber, IsString } from 'class-validator';
 
 export class CreateUserRMatchDto {
   @IsMongoId({ message: 'userId 不是正确的ID类型' })
@@ -15,4 +15,7 @@ export class CreateUserRMatchDto {
 
   @IsMongoId({ message: 'stadiumId 不是正确的ID类型' })
   stadiumId: string;
+
+  @IsString({ message: 'expirationDate 必须是 string 类型' })
+  expirationDate: string;
 }

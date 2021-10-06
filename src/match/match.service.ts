@@ -289,7 +289,7 @@ export class MatchService {
   async findWaitStartList(userId: string): Promise<any> {
     const db = this.userRMatchService.relationByUserId(userId);
     const relationList = await db
-      .where('createdAt')
+      .where('expirationDate')
       .gte(Moment().startOf('day').valueOf())
       .exec();
     const coverList = [];
@@ -324,11 +324,11 @@ export class MatchService {
             : 2;
 
         const stadium: any = await this.stadiumService.findById(r.stadiumId);
-        const { name, stadiumUrl, address } = stadium.toJSON();
+        const { name, stadiumUrls, address } = stadium.toJSON();
         const data = {
           ...match,
           stadiumName: name,
-          stadiumUrl,
+          stadiumUrls,
           stadiumAddress: address,
           isStart,
         };

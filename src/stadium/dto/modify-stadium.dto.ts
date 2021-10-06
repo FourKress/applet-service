@@ -56,8 +56,8 @@ export class ModifyStadiumDto {
   readonly address: string;
 
   @IsOptional()
-  @IsString({ message: 'stadiumUrl 必须是 string 类型' })
-  readonly stadiumUrl: string;
+  @IsNotEmpty({ message: 'stadiumUrls 不能为空' })
+  readonly stadiumUrls: string[];
 
   @IsOptional()
   @IsString({ message: 'remarks 必须是 string 类型' })

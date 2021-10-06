@@ -159,6 +159,7 @@ export class OrderService {
       stadiumId,
       matchId,
       count: personCount,
+      expirationDate: `${match.runDate} ${match.startAt}`,
     };
     await this.userRMatchService.addRelation(relation);
     match.selectPeople = match.selectPeople + personCount;
@@ -328,9 +329,8 @@ export class OrderService {
         const orderList = await this.orderModel
           .find({ matchId: id })
           .in('status', [2]);
-        const monthlyCardCount = orderList.filter(
-          (d) => d.payMethod === 2,
-        ).length;
+        const monthlyCardCount = orderList.filter((d) => d.payMethod === 2)
+          .length;
         const isOrdinary = (d) =>
           d.payMethod === 1 || (d.payMethod === 2 && d.personCount > 1);
         const filterList = orderList.filter((d) => isOrdinary(d));

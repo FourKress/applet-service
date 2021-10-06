@@ -17,7 +17,7 @@ export interface StadiumInterface {
   // 球场地址
   readonly address: string;
   // 球场图
-  readonly stadiumUrl: string;
+  readonly stadiumUrls: string[];
   // 场地
   readonly remarks: string;
   // 富文本描述
