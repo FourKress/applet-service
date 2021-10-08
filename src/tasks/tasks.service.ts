@@ -7,7 +7,6 @@ import { UsersService } from '../users/users.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import * as utils from '../order/utils';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 
 @Injectable()

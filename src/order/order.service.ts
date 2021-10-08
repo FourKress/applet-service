@@ -18,7 +18,6 @@ import { ToolsService } from '../common/utils/tools-service';
 import { User } from '../users/schemas/user.schema';
 
 import * as currency from 'currency.js';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 import * as utils from './utils';
 

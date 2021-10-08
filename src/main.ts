@@ -12,6 +12,7 @@ import { BadRequestExceptionFilter } from './common/filters/badRequest-exception
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ValidationPipe } from './common/pipe/validation.pipe';
+import { join } from 'path';
 
 import * as mongoose from 'mongoose';
 mongoose.set('returnOriginal', false);
@@ -21,6 +22,11 @@ declare const module: any;
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get<ConfigService>(ConfigService);
+
+  app.useStaticAssets('uploads');
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/static/',
+  });
 
   app.setGlobalPrefix('api');
   app.useGlobalInterceptors(

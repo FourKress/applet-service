@@ -7,7 +7,10 @@ import {
   Query,
   HttpStatus,
   Request,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { StadiumService } from './stadium.service';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
@@ -56,5 +59,14 @@ export class StadiumController {
   @HttpCode(HttpStatus.OK)
   async waitStartList(@Body() params): Promise<Stadium[]> {
     return await this.stadiumService.waitStartList(params?.userId, params);
+  }
+
+  @Post('uploadFile')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FilesInterceptor('files', 5))
+  uploadFile(@UploadedFiles() files): any {
+    console.log(files, 123);
+    // return await this.stadiumService.uploadFile(files);
+    return files;
   }
 }

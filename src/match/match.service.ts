@@ -14,7 +14,6 @@ import { OrderService } from '../order/order.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { StadiumService } from '../stadium/stadium.service';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 
 @Injectable()

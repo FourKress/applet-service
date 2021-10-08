@@ -1,6 +1,5 @@
 import * as CONSTANT from '../constant';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Moment = require('moment');
 
 export const StatusMap = {
