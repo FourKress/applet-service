@@ -105,4 +105,24 @@ export class OrderController {
   ): Promise<any> {
     return await this.orderService.signUpTop(stadiumId);
   }
+
+  @Get('getRefundAmount')
+  async getRefundAmount(
+    @Query('orderId', new ValidationIDPipe()) orderId: string,
+  ): Promise<any> {
+    return await this.orderService.getRefundAmount(orderId);
+  }
+
+  @Get('refund')
+  async orderRefund(
+    @Query('orderId', new ValidationIDPipe()) orderId: string,
+  ): Promise<any> {
+    return await this.orderService.orderRefund(orderId);
+  }
+
+  @Get('userList')
+  async userList(@Request() req, @Query() type: number): Promise<any[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.orderService.userList(tokenInfo.bossId, type);
+  }
 }

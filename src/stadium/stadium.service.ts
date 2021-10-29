@@ -6,6 +6,8 @@ import { ToolsService } from '../common/utils/tools-service';
 import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
 import { UserRStadiumService } from '../userRStadium/userRstadium.service';
+const fs = require('fs');
+const path = require('path');
 
 @Injectable()
 export class StadiumService {
@@ -56,7 +58,7 @@ export class StadiumService {
     return await newStadium.save();
   }
 
-  async modify(modifyStadium: ModifyStadiumDto): Promise<Stadium> {
+  async modify(modifyStadium: ModifyStadiumDto, openId): Promise<Stadium> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -65,6 +67,9 @@ export class StadiumService {
     if (hasStadium !== id) {
       ToolsService.fail('修改失败，球场名称已存在！');
     }
+    // const { stadiumUrls } = stadiumInfo;
+    // const fileIds = stadiumUrls.map((d) => d.fileId);
+    // this.sortOutFileList(openId, fileIds);
     return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
   }
 
@@ -83,5 +88,34 @@ export class StadiumService {
       default:
         break;
     }
+  }
+
+  sortOutFileList(fileName, fileIds) {
+    const filePath = `${path.resolve()}/uploads/${fileName}`;
+    fs.readdir(filePath, function (err, files) {
+      if (err) {
+        console.log('Error', err);
+      } else {
+        const unFiles = files.filter(
+          (f) => !fileIds.includes(f.replace(/.png/g, '')),
+        );
+        unFiles.map((file) => {
+          fs.unlinkSync(`${filePath}/${file}`);
+        });
+      }
+    });
+  }
+
+  async uploadFile(files, openId) {
+    const { filename } = files[0];
+    return {
+      path: `/static/${openId}/${filename}`,
+      fileId: filename.replace(/.png/g, ''),
+    };
+  }
+
+  async findByName(name): Promise<Stadium[]> {
+    const reg = new RegExp(name, 'i');
+    return await this.stadiumModel.find({ name: { $regex: reg } }).exec();
   }
 }

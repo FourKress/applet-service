@@ -23,6 +23,8 @@ export interface OrderInterface {
   status: number;
   refundType: number;
   payAt: number;
+  refundAt: number;
+  refundAmount: number;
   createdAt: number;
   updatedAt: number;
 }

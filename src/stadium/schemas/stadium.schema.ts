@@ -28,7 +28,7 @@ export class Stadium implements StadiumInterface {
   @Prop()
   address: string;
   @Prop()
-  stadiumUrls: string[];
+  stadiumUrls: any[];
   @Prop()
   remarks: string;
   @Prop()

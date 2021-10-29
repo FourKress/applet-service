@@ -46,7 +46,7 @@ export class CreateStadiumDto {
   readonly address: string;
 
   @IsNotEmpty({ message: 'stadiumUrls 不能为空' })
-  readonly stadiumUrls: string[];
+  readonly stadiumUrls: any[];
 
   @IsString({ message: 'remarks 必须是 string 类型' })
   readonly remarks: string;

@@ -8,7 +8,7 @@ import { UserRStadiumModule } from '../userRStadium/userRStadium.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 const Moment = require('moment');
-const { extname, resolve } = require('path');
+const { resolve } = require('path');
 const fs = require('fs');
 
 @Module({
@@ -27,7 +27,6 @@ const fs = require('fs');
           return done(null, resolve(process.cwd(), dir));
         },
         filename: (req, file, cb) => {
-          console.log(file, req.user, 1111);
           return cb(
             null,
             `${Moment().valueOf()}.${file.mimetype.replace(/[\s\S]+\//, '')}`,

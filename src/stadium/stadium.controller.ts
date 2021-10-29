@@ -38,8 +38,12 @@ export class StadiumController {
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
-  async modify(@Body() modifyStadium: ModifyStadiumDto): Promise<Stadium> {
-    return await this.stadiumService.modify(modifyStadium);
+  async modify(
+    @Request() req,
+    @Body() modifyStadium: ModifyStadiumDto,
+  ): Promise<Stadium> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.stadiumService.modify(modifyStadium, tokenInfo.openId);
   }
 
   @Post('add')
@@ -64,9 +68,15 @@ export class StadiumController {
   @Post('uploadFile')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FilesInterceptor('files', 5))
-  uploadFile(@UploadedFiles() files): any {
-    console.log(files, 123);
-    // return await this.stadiumService.uploadFile(files);
-    return files;
+  uploadFile(@Request() req, @UploadedFiles() files): any {
+    const tokenInfo: UserEntity = req.user;
+    return this.stadiumService.uploadFile(files, tokenInfo.openId);
+  }
+
+  @NoAuth()
+  @Post('findByName')
+  @HttpCode(HttpStatus.OK)
+  async findByName(@Body() params): Promise<Stadium[]> {
+    return await this.stadiumService.findByName(params.stadiumName);
   }
 }

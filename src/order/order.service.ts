@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { OrderInterface } from './interfaces/order.interface';
 import { CreateOderDto } from './dto/create-oder.dto';
 import { ModifyOderDto } from './dto/modify-oder.dto';
 import { OrderInfoInterface } from './interfaces/order-info.interface';
@@ -328,8 +327,9 @@ export class OrderService {
         const orderList = await this.orderModel
           .find({ matchId: id })
           .in('status', [2]);
-        const monthlyCardCount = orderList.filter((d) => d.payMethod === 2)
-          .length;
+        const monthlyCardCount = orderList.filter(
+          (d) => d.payMethod === 2,
+        ).length;
         const isOrdinary = (d) =>
           d.payMethod === 1 || (d.payMethod === 2 && d.personCount > 1);
         const filterList = orderList.filter((d) => isOrdinary(d));
@@ -448,5 +448,116 @@ export class OrderService {
       return topList.slice(0, 9);
     }
     return topList;
+  }
+
+  relationByUserIdAndMatchId(userId: string, matchIds: string[]): any {
+    if (!userId || !matchIds?.length) {
+      ToolsService.fail(`${!userId ? 'userId' : 'matchIds'}不能为空！`);
+    }
+    const relationList = this.orderModel
+      .find({
+        userId,
+      })
+      .in('status', [0, 1, 7])
+      .in('matchId', matchIds);
+    return relationList;
+  }
+
+  async getRefundAmount(orderId) {
+    const order = (await this.orderModel.findById(orderId)).toJSON();
+    const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
+    if (status !== 1) {
+      ToolsService.fail('该订单无法退款，请检查订单状态！');
+      return;
+    }
+    const matchDb: any = await this.matchService.findById(matchId);
+    const { startAt, runDate } = matchDb.toJSON();
+    const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'minutes');
+    let refundAmount = 0;
+    if (diffTime < 60) {
+      ToolsService.fail('距开场小于一小时，无法退款！');
+      return;
+    } else if (60 <= diffTime && diffTime < 120) {
+      refundAmount = currency(payAmount).multiply(0.8).value;
+    } else if (diffTime >= 120) {
+      refundAmount = payAmount;
+    }
+    return currency(refundAmount, { precision: 2 }).value;
+  }
+
+  async orderRefund(orderId) {
+    const order: any = (await this.orderModel.findById(orderId)).toJSON();
+    const refundAmount = await this.getRefundAmount(orderId);
+    const { matchId, personCount } = order;
+    const match: any = await this.matchService.findById(matchId);
+    const realSelectPeople = match.selectPeople - personCount;
+    await this.matchService.changeMatchSelectPeople({
+      id: matchId,
+      selectPeople: realSelectPeople,
+    });
+    await this.userRMatchService.changeRCount({
+      matchId,
+      count: realSelectPeople,
+    });
+    // TODO 处理订单退款
+    return await this.modifyOrder({
+      ...order,
+      refundType: 2,
+      status: 4,
+      refundAmount,
+    });
+  }
+
+  setUserInfo(order, orderList) {
+    const filterList = orderList.filter(
+      (f: any) => f.user.id === order.user.id,
+    );
+
+    return {
+      ...order.user,
+      count: filterList.length,
+      lastTime: filterList[0].createdAt,
+      stadiumId: order.stadiumId,
+    };
+  }
+
+  async userList(bossId, type): Promise<any[]> {
+    console.log(type);
+    const orderList = (
+      await this.orderModel
+        .find({
+          bossId,
+        })
+        .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+        .exec()
+    )
+      .reverse()
+      .map((d: any) => d.toJSON());
+
+    const userList = [];
+
+    orderList.forEach((order: any, index) => {
+      if (index === 0) {
+        userList.push(this.setUserInfo(order, orderList));
+      } else {
+        const ids = userList.map((u) => u.id);
+        if (!ids.includes(order.user.id)) {
+          userList.push(this.setUserInfo(order, orderList));
+        }
+      }
+    });
+    const coverUserList = await Promise.all(
+      userList.map(async (user) => {
+        const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
+          userId: user.id,
+          stadiumId: user.stadiumId,
+        });
+        return {
+          ...user,
+          isMonthlyCard: !!isMonthlyCard,
+        };
+      }),
+    );
+    return coverUserList;
   }
 }

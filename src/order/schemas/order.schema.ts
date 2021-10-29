@@ -37,7 +37,11 @@ export class Order implements OrderInterface {
   @Prop()
   refundType: number;
   @Prop()
+  refundAmount: number;
+  @Prop()
   payAt: number;
+  @Prop()
+  refundAt: number;
   @Prop()
   createdAt: number;
   @Prop()

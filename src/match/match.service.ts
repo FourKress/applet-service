@@ -115,14 +115,8 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const {
-      spaceId,
-      startAt,
-      endAt,
-      repeatModel,
-      repeatWeek,
-      runDate,
-    } = addMatch;
+    const { spaceId, startAt, endAt, repeatModel, repeatWeek, runDate } =
+      addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
@@ -292,13 +286,14 @@ export class MatchService {
       .gte(Moment().startOf('day').valueOf())
       .exec();
     const coverList = [];
-    const matchList = await this.matchModel
-      .find()
-      .in(
-        '_id',
-        relationList.map((d) => d.matchId),
-      )
-      .exec();
+    const matchIds = relationList.map((d) => d.matchId);
+    const matchList = await this.matchModel.find().in('_id', matchIds).exec();
+    const orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
+      userId,
+      matchIds,
+    );
+
+    console.log(relationList, orderByMatchList);
 
     await Promise.all(
       relationList.map(async (r) => {
@@ -311,16 +306,22 @@ export class MatchService {
         const isCancel =
           Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0 &&
           !isMin;
-        if (isEnd || isCancel) {
+        const validOrder = orderByMatchList.find(
+          (o) => o.matchId === r.matchId,
+        );
+        if (isEnd || isCancel || !validOrder?.matchId) {
           return;
         }
-
-        const isStart =
+        let isStart =
           Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0
             ? 3
             : isMin
             ? 1
             : 2;
+
+        if (validOrder.status === 0) {
+          isStart = validOrder.status;
+        }
 
         const stadium: any = await this.stadiumService.findById(r.stadiumId);
         const { name, stadiumUrls, address } = stadium.toJSON();

@@ -16,6 +16,8 @@ export class OrderInfoInterface implements OrderInterface {
   status: number;
   refundType: number;
   payAt: number;
+  refundAt: number;
+  refundAmount: number;
   createdAt: number;
   updatedAt: number;
   stadiumName: string;
