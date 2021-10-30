@@ -20,7 +20,7 @@ const fs = require('fs');
         destination: (req, file, done) => {
           if (!file) return done(new Error('Upload file error'), null);
           const user = req.user;
-          const dir = `./uploads/${user.openId}`;
+          const dir = `${resolve()}/uploads/${user.openId}`;
           if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
           }
