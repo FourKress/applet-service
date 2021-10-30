@@ -8,7 +8,7 @@ import { UserRStadiumModule } from '../userRStadium/userRStadium.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 const Moment = require('moment');
-const { resolve } = require('path');
+const { resolve, join } = require('path');
 const fs = require('fs');
 
 @Module({
@@ -20,7 +20,8 @@ const fs = require('fs');
         destination: (req, file, done) => {
           if (!file) return done(new Error('Upload file error'), null);
           const user = req.user;
-          const dir = `${resolve()}/uploads/${user.openId}`;
+          // const dir = `${resolve()}/uploads/${user.openId}`;
+          const dir = join(__dirname, `../../uploads/${user.openId}`);
           if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
           }
