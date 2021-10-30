@@ -109,7 +109,7 @@ export class StadiumService {
   async uploadFile(files, openId) {
     const { filename } = files[0];
     return {
-      path: `/static/${openId}/${filename}`,
+      path: `/${openId}/${filename}`,
       fileId: filename.replace(/.png/g, ''),
     };
   }

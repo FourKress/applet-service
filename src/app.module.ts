@@ -1,6 +1,9 @@
 ﻿import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { appConfig, dbUrl } from './config';
 
@@ -24,11 +27,15 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
     }),
     // 数据库连接
     MongooseModule.forRoot(dbUrl, {
-      // https://mongoosejs.com/docs/connections.html
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useFindAndModify: false,
       useCreateIndex: true,
+    }),
+    // 静态文件
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      exclude: ['/api*'],
     }),
     TasksModule,
     UsersModule,
