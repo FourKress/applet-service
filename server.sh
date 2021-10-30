@@ -2,6 +2,8 @@
 
 echo '---开始执行git pull---'
 git pull
-echo '---git pull执行完毕，开始yarn build---'
+echo '---git pull执行完毕，开始执行yarn build---'
 yarn build
-exho '---yarn build 执行完毕---'
+echo '---yarn build执行完毕 开始执行yarn pm2---'
+yarn pm2
+echo '---yarn pm2执行完毕 服务启动成功---'
