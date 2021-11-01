@@ -287,6 +287,7 @@ export class MatchService {
       .exec();
     const coverList = [];
     const matchIds = relationList.map((d) => d.matchId);
+    if (!matchIds?.length) return;
     const matchList = await this.matchModel.find().in('_id', matchIds).exec();
     const orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
       userId,
