@@ -11,6 +11,7 @@ import { UserRMatchService } from './userRMatch.service';
 import { CreateUserRMatchDto } from './dto/create-userRMatch.dto';
 import { UserRMatch } from './schemas/userRMatch.schema';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
+import { NoAuth } from '../common/decorators/no-auth.decorator';
 
 @Controller('userRMatch')
 export class UserRMatchController {
@@ -22,6 +23,7 @@ export class UserRMatchController {
     return await this.userRMatchService.addRelation(params);
   }
 
+  @NoAuth()
   @Get('findAllByMatchId')
   async findAllByMatchId(
     @Query('matchId', new ValidationIDPipe()) matchId: string,

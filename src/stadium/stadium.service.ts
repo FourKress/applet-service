@@ -42,10 +42,10 @@ export class StadiumService {
       })
       .exec();
     const id = hasStadium?._id;
-    if (id) {
-      return Types.ObjectId(id).toHexString();
+    if (!id) {
+      return '';
     }
-    return '';
+    return Types.ObjectId(id).toHexString();
   }
 
   async add(addStadium: CreateStadiumDto): Promise<Stadium> {

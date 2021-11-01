@@ -22,6 +22,7 @@ import { UserEntity } from '../auth/interfaces/user-entity.interface';
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
+  @NoAuth()
   @Post('info')
   @HttpCode(HttpStatus.OK)
   async findBySpaceId(@Body() params: any): Promise<MatchSpaceInterface[]> {
