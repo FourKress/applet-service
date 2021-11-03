@@ -122,8 +122,15 @@ export class MatchService {
   }
 
   async addMatch(addMatch: CreateMatchDto): Promise<Match> {
-    const { spaceId, startAt, endAt, repeatModel, repeatWeek, runDate } =
-      addMatch;
+    const {
+      spaceId,
+      startAt,
+      endAt,
+      repeatModel,
+      repeatWeek,
+      runDate,
+      stadiumId,
+    } = addMatch;
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,
@@ -141,6 +148,7 @@ export class MatchService {
       Object.assign({}, addMatch, {
         repeatName,
         space: spaceId,
+        stadium: stadiumId,
       }),
     );
 
