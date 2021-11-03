@@ -13,6 +13,7 @@ import * as nzh from 'nzh';
 import { OrderService } from '../order/order.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { StadiumService } from '../stadium/stadium.service';
+import { Stadium } from '../stadium/schemas/stadium.schema';
 
 const Moment = require('moment');
 
@@ -110,7 +111,13 @@ export class MatchService {
   }
 
   async details(id: string): Promise<MatchSpaceInterface> {
-    const match: any = (await this.matchModel.findById(id).exec()).toJSON();
+    const match: any = (
+      await this.matchModel
+        .findById(id)
+        .populate('stadium', { name: 1, _id: 1 }, Stadium.name)
+        .populate('space', { name: 1, _id: 1, unit: 1 }, Space.name)
+        .exec()
+    ).toJSON();
     return Object.assign({}, match, this.getDoneAndCancelStatus(match));
   }
 

@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { MatchInterface } from '../interfaces/match.interface';
 import { Space } from '../../space/schemas/space.schema';
+import { Stadium } from '../../stadium/schemas/stadium.schema';
 
 export type MatchDocument = Match & Document;
 
@@ -12,6 +13,8 @@ export class Match implements MatchInterface {
   id: string;
   @Prop({ require: true })
   stadiumId: string;
+  @Prop({ require: true, type: Types.ObjectId, ref: Stadium.name })
+  stadium: string;
   @Prop({ require: true })
   spaceId: string;
   @Prop()
