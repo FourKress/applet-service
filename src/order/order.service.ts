@@ -522,7 +522,6 @@ export class OrderService {
   }
 
   async userList(bossId, type): Promise<any[]> {
-    console.log(type);
     const orderList = (
       await this.orderModel
         .find({

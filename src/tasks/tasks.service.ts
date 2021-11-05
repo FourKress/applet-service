@@ -21,7 +21,6 @@ export class TasksService {
 
   @Cron('0 1 0 * * 0-7')
   async handleMatch() {
-    this.logger.log('match day loop');
     const matchList: any[] = await this.matchService.findAllBase();
     for (const item of matchList) {
       const match = item.toJSON();
@@ -29,10 +28,12 @@ export class TasksService {
       const { repeatModel, repeatWeek } = info;
       const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
       if (repeatModel === 3) {
+        this.logger.log(`${id} 每天重复场次创建成功`);
         await this.changeMatchRepeat(id, info, runDate);
       } else if (repeatModel === 2) {
         const week = Moment(runDate).day();
         if (repeatWeek.includes(week ? week : 7)) {
+          this.logger.log(`${id} 每周重复场次创建成功`);
           await this.changeMatchRepeat(id, info, runDate);
         }
       }
@@ -41,19 +42,12 @@ export class TasksService {
 
   @Interval(1000 * 5)
   async handleOrder() {
-    this.logger.log('order 5s loop');
     const orderList: any[] = await this.orderService.findActiveOrder();
 
     for (const item of orderList) {
       const order = item.toJSON();
-      const {
-        createdAt,
-        status,
-        matchId,
-        personCount,
-        bossId,
-        isMonthlyCard,
-      } = order;
+      const { createdAt, status, matchId, personCount, bossId, isMonthlyCard } =
+        order;
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
@@ -73,7 +67,7 @@ export class TasksService {
           Moment(nowTime).diff(Moment(createdAt), 'minutes') >=
             utils.countdown(createdAt, `${runDate} ${endAt}`, 'minutes'))
       ) {
-        this.logger.log('取消订单');
+        this.logger.log(`${order.id} 取消订单`);
         await this.changeOrder({
           ...order,
           status: 6,
@@ -91,7 +85,7 @@ export class TasksService {
       if (status === 1) {
         if (isStart && !isEnd) {
           if (selectPeople < minPeople || failMatch) {
-            this.logger.log('组队失败 触发退款 取消订单');
+            this.logger.log(`${order.id} 组队失败 触发退款 取消订单`);
             await this.changeOrder({
               ...order,
               refundType: 1,
@@ -99,7 +93,7 @@ export class TasksService {
             });
             // TODO 处理退款
           } else {
-            this.logger.log('组队成功 进行中');
+            this.logger.log(`${order.id} 组队成功 进行中`);
             await this.changeOrder({
               ...order,
               status: 7,
@@ -110,7 +104,7 @@ export class TasksService {
 
       if (status === 7) {
         if (isEnd) {
-          this.logger.log('组队成功 已结束 订单已完成');
+          this.logger.log(`${order.id} 组队成功 已结束 订单已完成`);
           await this.changeOrder({
             ...order,
             status: 2,

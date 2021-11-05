@@ -1,10 +1,9 @@
-﻿import { MiddlewareConsumer, Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { appConfig, dbUrl } from './config';
 
 import { TasksModule } from './tasks/tasks.module';
@@ -50,8 +49,4 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
     UserRMatchModule,
   ],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware); // 应用中间件
-  }
-}
+export class AppModule {}

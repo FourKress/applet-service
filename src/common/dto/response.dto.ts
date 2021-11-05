@@ -19,24 +19,11 @@ export class ResponseError implements IResponse {
 }
 
 export class ResponseSuccess implements IResponse {
-  constructor(data?: any, infoMessage = '成功', notLog?: boolean) {
+  constructor(data?: any, infoMessage = '成功') {
     this.success = true;
     this.message = infoMessage;
     this.data = data;
     this.code = 10000;
-    if (!notLog) {
-      try {
-        const obfuscateRequest = JSON.parse(JSON.stringify(data));
-        if (obfuscateRequest && obfuscateRequest.token) {
-          obfuscateRequest.token = '*******';
-        }
-        console.log(
-          `${new Date().toString()} - [Response]: ${JSON.stringify(
-            obfuscateRequest,
-          )}`,
-        );
-      } catch (error) {}
-    }
   }
   message: string;
   data: any[];

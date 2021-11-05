@@ -24,6 +24,7 @@ export class ValidationPipe implements PipeTransform {
       } else {
         msg = Object.values(errors[0].constraints)[0];
       }
+      console.log(`参数校验: ${msg}`);
       throw new BadRequestException(`Validation failed: ${msg}`);
     }
     return value;

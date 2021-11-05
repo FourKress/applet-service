@@ -9,7 +9,6 @@ import { AppModule } from './app.module';
 import { AnyExceptionsFilter } from './common/filters/any-exception.filter';
 import { HttpExceptionsFilter } from './common/filters/http-exception.filter';
 import { BadRequestExceptionFilter } from './common/filters/badRequest-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ValidationPipe } from './common/pipe/validation.pipe';
 
@@ -23,10 +22,7 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
 
   app.setGlobalPrefix('api');
-  app.useGlobalInterceptors(
-    new LoggingInterceptor(),
-    new TransformInterceptor(),
-  );
+  app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
   app.useGlobalFilters(
     new AnyExceptionsFilter(),

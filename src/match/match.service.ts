@@ -309,8 +309,6 @@ export class MatchService {
       matchIds,
     );
 
-    console.log(relationList, orderByMatchList);
-
     await Promise.all(
       relationList.map(async (r) => {
         const match = matchList
