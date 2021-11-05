@@ -24,7 +24,7 @@ export class TransformInterceptor implements NestInterceptor {
     console.log(
       `${new Date().toString()} - [Request]: ${method} ${originalUrl} - ${JSON.stringify(
         requestParams,
-      )} - [User]: ${req?.user}`,
+      )} - [User]: ${JSON.stringify(req?.user)}`,
     );
 
     return next.handle().pipe(

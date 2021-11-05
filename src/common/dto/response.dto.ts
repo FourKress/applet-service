@@ -7,7 +7,7 @@ export class ResponseError implements IResponse {
     this.data = data;
     this.code = 10100;
     console.warn(
-      `${new Date().toString()} - [Response]: ${infoMessage}${
+      `${new Date().toString()} - [ResponseError]: ${infoMessage}${
         data ? ` - ${JSON.stringify(data)}` : ''
       }`,
     );
