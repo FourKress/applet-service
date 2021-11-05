@@ -420,36 +420,6 @@ export class OrderService {
     };
   }
 
-  async signUpTop(stadiumId): Promise<any> {
-    const orderList: any[] = await this.orderModel
-      .find({
-        stadiumId,
-        status: 2,
-      })
-      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
-      .exec();
-    const userIds = [...new Set(orderList.map((d) => d.userId))];
-    const coverList = [];
-    userIds.forEach((userId) => {
-      coverList.push(orderList.filter((d) => d.userId === userId));
-    });
-    coverList.sort((a, b) => a.length - b.length);
-    const topList = coverList.map((d: any) => {
-      return {
-        ...d[0].toJSON(),
-        count: d.length,
-        totalPayAmount: d.reduce(
-          (sum, curr) => currency(sum).add(curr.payAmount).value,
-          0,
-        ),
-      };
-    });
-    if (topList.length > 10) {
-      return topList.slice(0, 9);
-    }
-    return topList;
-  }
-
   relationByUserIdAndMatchId(userId: string, matchIds: string[]): any {
     if (!userId || !matchIds?.length) {
       ToolsService.fail(`${!userId ? 'userId' : 'matchIds'}不能为空！`);
@@ -518,6 +488,10 @@ export class OrderService {
       count: filterList.length,
       lastTime: filterList[0].createdAt,
       stadiumId: order.stadiumId,
+      totalPayAmount: filterList.reduce(
+        (sum, curr) => currency(sum).add(curr.payAmount).value,
+        0,
+      ),
     };
   }
 
@@ -526,6 +500,7 @@ export class OrderService {
       await this.orderModel
         .find({
           bossId,
+          status: 2,
         })
         .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
         .exec()

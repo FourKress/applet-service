@@ -86,10 +86,7 @@ export class OrderController {
   @Post('revenueInfo')
   @HttpCode(HttpStatus.OK)
   async findOrderByStadiumId(@Body() params: any): Promise<any> {
-    return await this.orderService.findOrderByStadiumId({
-      ...params,
-      status: true,
-    });
+    return await this.orderService.findOrderByStadiumId(params);
   }
 
   @Get('findOrderByMatchId')
@@ -97,13 +94,6 @@ export class OrderController {
     @Query('matchId', new ValidationIDPipe()) matchId: string,
   ): Promise<any> {
     return await this.orderService.findOrderByMatchId(matchId);
-  }
-
-  @Get('signUpTop')
-  async signUpTop(
-    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
-  ): Promise<any> {
-    return await this.orderService.signUpTop(stadiumId);
   }
 
   @Get('getRefundAmount')
