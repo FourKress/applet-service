@@ -189,7 +189,7 @@ export class OrderService {
     if (!order) {
       ToolsService.fail('支付失败，未找到对应的订单！');
     }
-    const { matchId, stadiumId, userId, isMonthlyCard, personCount } = order;
+    const { matchId, stadiumId, userId, personCount } = order;
 
     const match = await this.matchService.findById(matchId);
     if (
@@ -201,25 +201,31 @@ export class OrderService {
     }
 
     let amount = 0;
+    let isMonthlyCard = false;
     const isWechat = payMethod === 'wechat';
     if (isWechat) {
       amount = personCount * match.rebatePrice;
     } else if (payMethod === 'monthlyCard') {
+      const stadium = await this.stadiumService.findById(stadiumId);
+      if (!stadium.monthlyCardStatus) {
+        ToolsService.fail('不支持月卡支付，请选择其他支付方式');
+      }
       const baseAmount = (personCount - 1) * match.rebatePrice;
-      if (!isMonthlyCard) {
+      const checkMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
+        userId,
+        stadiumId,
+      });
+      isMonthlyCard = !!checkMonthlyCard;
+      if (checkMonthlyCard) {
+        amount = baseAmount;
+      } else {
         await this.monthlyCardService.addMonthlyCard({
           userId,
           stadiumId,
           validPeriodStart: Moment().format('YYYY-MM-DD'),
           validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
         });
-        const stadium = await this.stadiumService.findById(stadiumId);
-        if (!stadium.monthlyCardStatus) {
-          ToolsService.fail('不支持月卡支付，请选择其他支付方式');
-        }
         amount = stadium.monthlyCardPrice + baseAmount;
-      } else {
-        amount = baseAmount;
       }
     }
 
@@ -230,6 +236,7 @@ export class OrderService {
         payAt: Moment.now(),
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
+        isMonthlyCard,
       })
       .exec();
     return true;
@@ -482,10 +489,10 @@ export class OrderService {
     const filterList = orderList.filter(
       (f: any) => f.user.id === order.user.id,
     );
-
     return {
       ...order.user,
       count: filterList.length,
+      monthlyCardCount: filterList.filter((d) => d.isMonthlyCard).length,
       lastTime: filterList[0].createdAt,
       stadiumId: order.stadiumId,
       totalPayAmount: filterList.reduce(
@@ -520,18 +527,28 @@ export class OrderService {
         }
       }
     });
+    let flag = false;
     const coverUserList = await Promise.all(
       userList.map(async (user) => {
         const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
           userId: user.id,
           stadiumId: user.stadiumId,
         });
+        if (!!isMonthlyCard) flag = true;
         return {
           ...user,
           isMonthlyCard: !!isMonthlyCard,
         };
       }),
     );
-    return coverUserList;
+    const sortFn = {
+      0: (a, b) => b.count - a.count,
+      1: (a, b) => b.createdAt - a.createdAt,
+      2: (a, b) => b.count - a.count,
+    };
+    if (flag) {
+      sortFn[2] = (a, b) => b.isMonthlyCard - a.isMonthlyCard;
+    }
+    return coverUserList.sort(sortFn[type] || sortFn[0]);
   }
 }

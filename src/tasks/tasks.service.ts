@@ -46,8 +46,7 @@ export class TasksService {
 
     for (const item of orderList) {
       const order = item.toJSON();
-      const { createdAt, status, matchId, personCount, bossId, isMonthlyCard } =
-        order;
+      const { createdAt, status, matchId, personCount, bossId } = order;
       const match = await this.matchService.findById(matchId);
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
@@ -111,8 +110,7 @@ export class TasksService {
           });
           const userInfo = await this.userService.findByBossId(bossId);
           // TODO 计算提现余额
-          const balanceAmt =
-            userInfo.balanceAmt + (!isMonthlyCard ? order.payAmount : 0);
+          const balanceAmt = userInfo.balanceAmt + order.payAmount;
           await this.changeBossUser({
             bossId,
             balanceAmt,
