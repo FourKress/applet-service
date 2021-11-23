@@ -6,6 +6,9 @@ import { ToolsService } from '../common/utils/tools-service';
 import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
 import { UserRStadiumService } from '../userRStadium/userRstadium.service';
+import { MatchService } from '../match/match.service';
+
+const Moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,6 +18,7 @@ export class StadiumService {
     @InjectModel(Stadium.name)
     private readonly stadiumModel: Model<StadiumDocument>,
     private readonly userRStadiumService: UserRStadiumService,
+    private readonly matchService: MatchService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -77,17 +81,52 @@ export class StadiumService {
     const { type } = search;
     switch (Number(type)) {
       case 1:
-        return await this.findAll();
+        const stadiumList = await this.findAll();
+        return await this.filterStadiumByMatch(stadiumList);
         break;
       case 2:
         const watchList = await this.userRStadiumService.watchListByUserId(
           userId,
         );
         const ids = watchList.map((d: any) => d.stadiumId);
-        return await this.stadiumModel.find().in('_id', ids).exec();
+        const stadiumWatchList = await this.stadiumModel
+          .find()
+          .in('_id', ids)
+          .exec();
+        return await this.filterStadiumByMatch(stadiumWatchList);
+        break;
       default:
         break;
     }
+  }
+
+  async filterStadiumByMatch(stadiumList) {
+    const result = [];
+    await Promise.all(
+      stadiumList.map(async (item: any) => {
+        const stadium = item.toJSON();
+        const match = (
+          await this.matchService.findByStadiumId({
+            stadiumId: stadium.id,
+          })
+        )
+          .filter((item) => {
+            const time = Moment().startOf('day').diff(item.runDate);
+            return item.status && time <= 0;
+          })
+          .sort(
+            (a: any, b: any) =>
+              Moment(a.runDate).valueOf() - Moment(b.runDate).valueOf(),
+          );
+        if (match?.length) {
+          result.push({
+            ...stadium,
+            matchInfo: match[0],
+          });
+        }
+      }),
+    );
+    return result;
   }
 
   sortOutFileList(fileName, fileIds) {
