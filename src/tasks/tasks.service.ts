@@ -116,6 +116,7 @@ export class TasksService {
             balanceAmt,
             withdrawAt: Moment.now(),
           });
+          await this.userService.setUserTeamUpCount(order.userId);
         }
       }
     }

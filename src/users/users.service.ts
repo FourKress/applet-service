@@ -88,4 +88,16 @@ export class UsersService {
       )
       .exec();
   }
+
+  async setUserTeamUpCount(userId: string): Promise<any> {
+    const user = await this.userModel.findById(userId);
+    const { teamUpCount } = user.toJSON();
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        $set: {
+          teamUpCount: teamUpCount + 1,
+        },
+      })
+      .exec();
+  }
 }
