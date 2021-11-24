@@ -44,12 +44,14 @@ export class UserRStadiumService {
       ToolsService.fail('userId、stadiumId不能为空！');
     }
     const { isWatch } = watchStadium;
-    const relation = await this.userRStadium
-      .findOne({
-        userId,
-        stadiumId,
-      })
-      .exec();
+    const relation = (
+      await this.userRStadium
+        .findOne({
+          userId,
+          stadiumId,
+        })
+        .exec()
+    ).toJSON();
     if (!relation) {
       const newWatch = new this.userRStadium({
         ...watchStadium,
