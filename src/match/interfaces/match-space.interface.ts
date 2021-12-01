@@ -18,6 +18,7 @@ export class MatchSpaceInterface implements MatchInterface {
   readonly repeatWeek: number[];
   readonly space: string;
   readonly repeatName: string;
+  readonly repeatFlag: boolean;
   readonly status: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;

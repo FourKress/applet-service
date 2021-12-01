@@ -24,19 +24,14 @@ export class TasksService {
     const matchList: any[] = await this.matchService.findAllBase();
     for (const item of matchList) {
       const match = item.toJSON();
-      const { id, ...info } = match;
-      const { repeatModel, repeatWeek } = info;
-      const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
-      if (repeatModel === 3) {
-        this.logger.log(`${id} 每天重复场次创建成功`);
-        await this.changeMatchRepeat(id, info, runDate);
-      } else if (repeatModel === 2) {
-        const week = Moment(runDate).day();
-        if (repeatWeek.includes(week ? week : 7)) {
-          this.logger.log(`${id} 每周重复场次创建成功`);
-          await this.changeMatchRepeat(id, info, runDate);
-        }
+      const { repeatFlag } = match;
+      if (!repeatFlag) {
+        await this.matchService.autoAddRepeatMatch(match, 'add');
+      } else {
+        const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
+        await this.matchService.handleRepeatDay(match, runDate, 'add');
       }
+      await this.matchService.modifyMatch({ ...match, repeatFlag: true });
     }
   }
 
@@ -136,9 +131,5 @@ export class TasksService {
 
   async changeBossUser(data) {
     await this.userService.setBossBalanceAmt(data);
-  }
-
-  async changeMatchRepeat(id, match, runDate) {
-    await this.matchService.changeRepeatMatch(id, match, runDate, 'add');
   }
 }

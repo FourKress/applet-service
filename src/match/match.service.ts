@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Match, MatchDocument } from './schemas/match.schema';
@@ -19,6 +19,7 @@ const Moment = require('moment');
 
 @Injectable()
 export class MatchService {
+  private readonly logger = new Logger(MatchService.name);
   constructor(
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
     @Inject(forwardRef(() => OrderService))
@@ -149,14 +150,15 @@ export class MatchService {
         repeatName,
         space: spaceId,
         stadium: stadiumId,
+        repeatFlag: repeatModel !== 1,
       }),
     );
-
+    const match = await newMatch.save();
     if (repeatModel !== 1) {
-      await this.autoAddRepeatMatch(newMatch.toJSON(), 'add');
+      await this.autoAddRepeatMatch(match.toJSON(), 'add');
     }
 
-    return await newMatch.save();
+    return match;
   }
 
   setRepeatName(repeatModel, repeatWeek, runDate) {
@@ -197,7 +199,7 @@ export class MatchService {
     if (!id || !spaceId) {
       ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
-
+    // TODO 场次在使用中不允许修改
     const { repeatModel, repeatWeek, runDate } = match;
     const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
 
@@ -205,6 +207,7 @@ export class MatchService {
       .findByIdAndUpdate(id, {
         ...match,
         repeatName,
+        repeatFlag: repeatModel !== 1,
       })
       .exec();
 
@@ -249,8 +252,7 @@ export class MatchService {
   }
 
   async autoAddRepeatMatch(match, type) {
-    const { id, ...info } = match;
-    const { repeatModel, repeatWeek = [] } = info;
+    const { id } = match;
     await this.matchModel.deleteMany({ parentId: id });
     const dayList = Array(6)
       .fill(1)
@@ -261,16 +263,24 @@ export class MatchService {
           .startOf('day')
           .add(day, 'day')
           .format('YYYY-MM-DD');
-        if (repeatModel == 2) {
-          const week = Moment(runDate).day();
-          if (repeatWeek.includes(week ? week : 7)) {
-            await this.changeRepeatMatch(id, info, runDate, type);
-          }
-        } else if (repeatModel === 3) {
-          await this.changeRepeatMatch(id, info, runDate, type);
-        }
+        await this.handleRepeatDay(match, runDate, type);
       }),
     );
+  }
+
+  async handleRepeatDay(match, runDate, type) {
+    const { id, ...info } = match;
+    const { repeatModel, repeatWeek = [] } = info;
+    if (repeatModel == 2) {
+      const week = Moment(runDate).day();
+      if (repeatWeek.includes(week ? week : 7)) {
+        this.logger.log(`${id} 每周重复场次创建成功`);
+        await this.changeRepeatMatch(id, info, runDate, type);
+      }
+    } else if (repeatModel === 3) {
+      this.logger.log(`${id} 每天重复场次创建成功`);
+      await this.changeRepeatMatch(id, info, runDate, type);
+    }
   }
 
   async changeRepeatMatch(id, match, runDate, type) {
@@ -286,7 +296,7 @@ export class MatchService {
     await this.matchModel
       .findByIdAndUpdate(
         targetId,
-        { ...match, runDate, parentId: id },
+        { ...match, runDate, parentId: id, repeatFlag: false },
         {
           upsert: true,
         },

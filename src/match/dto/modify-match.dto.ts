@@ -4,6 +4,7 @@ import {
   IsMongoId,
   IsOptional,
   IsNotEmpty,
+  IsBoolean,
 } from 'class-validator';
 
 export class ModifyMatchDto {
@@ -59,4 +60,9 @@ export class ModifyMatchDto {
   @IsOptional()
   @IsNotEmpty({ message: 'repeatWeek 不能为空' })
   readonly repeatWeek: number[];
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'repeatFlag 不能为空' })
+  @IsBoolean({ message: 'repeatFlag 必须是 boolean 类型' })
+  readonly repeatFlag: boolean;
 }

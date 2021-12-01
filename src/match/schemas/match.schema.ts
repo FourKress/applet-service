@@ -45,6 +45,8 @@ export class Match implements MatchInterface {
   repeatName: string;
   @Prop()
   repeatWeek: number[];
+  @Prop()
+  repeatFlag: boolean;
   @Prop({ type: Types.ObjectId, ref: Space.name })
   space: string;
   @Prop({ default: true })
