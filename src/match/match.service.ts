@@ -293,6 +293,12 @@ export class MatchService {
         .exec();
       targetId = target ? target.toJSON().id : Types.ObjectId().toHexString();
     }
+    const { repeatFlag } = match;
+    if (!repeatFlag) {
+      await this.matchModel.findByIdAndUpdate(id, {
+        repeatFlag: true,
+      });
+    }
     await this.matchModel
       .findByIdAndUpdate(
         targetId,

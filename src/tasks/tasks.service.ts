@@ -31,7 +31,6 @@ export class TasksService {
         const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
         await this.matchService.handleRepeatDay(match, runDate, 'add');
       }
-      await this.matchService.modifyMatch({ ...match, repeatFlag: true });
     }
   }
 
