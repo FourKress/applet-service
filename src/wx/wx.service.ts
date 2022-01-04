@@ -1,6 +1,7 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class WxService {
@@ -42,5 +43,31 @@ export class WxService {
       )
     ).data?.activity_id;
     return activityId;
+  }
+
+  async pay(): Promise<any> {
+    const out_trade_no = Types.ObjectId().toHexString();
+    const wechatPayUrl =
+      'https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi';
+    const payReturn = await lastValueFrom(
+      this.httpService.post(wechatPayUrl, {
+        appid: 'wx8e63001d0409fa13',
+        mchid: '1618816466',
+        description: '重庆动手科技有限公司-球场预定',
+        out_trade_no,
+        notify_url: 'https://wx-test.qiuchangtong.xyz/wx/payReturn',
+        amount: {
+          total: 1,
+        },
+        payer: {
+          openid: 'orIr15QcgshnKROKaY3zyKSdV1XY',
+        },
+      }),
+    );
+    console.log(payReturn);
+  }
+
+  async payReturn(res): Promise<any> {
+    console.log(res);
   }
 }
