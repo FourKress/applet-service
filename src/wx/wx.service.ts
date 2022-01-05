@@ -69,5 +69,6 @@ export class WxService {
 
   async payReturn(res): Promise<any> {
     console.log(res);
+    return 'test';
   }
 }
