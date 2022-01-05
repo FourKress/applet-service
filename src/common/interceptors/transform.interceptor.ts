@@ -29,7 +29,7 @@ export class TransformInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
-        const response = JSON.parse(JSON.stringify(data));
+        const response = JSON.parse(JSON.stringify(data ?? {}));
         console.log(
           `${new Date().toString()} - [Response]: ${statusCode} ${JSON.stringify(
             response,

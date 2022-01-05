@@ -1,4 +1,11 @@
-import { Controller, Get, Query, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Post,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { WxService } from './wx.service';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 
@@ -20,12 +27,14 @@ export class WxController {
 
   @NoAuth()
   @Post('pay')
-  async pay(): Promise<string> {
+  @HttpCode(HttpStatus.OK)
+  async pay(): Promise<any> {
     return await this.wxService.pay();
   }
 
   @NoAuth()
-  @Get('payReturn')
+  @Post('payReturn')
+  @HttpCode(HttpStatus.OK)
   async payReturn(res): Promise<any> {
     return await this.wxService.payReturn(res);
   }
