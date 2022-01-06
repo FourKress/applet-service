@@ -1,12 +1,12 @@
 export const payUrls = {
-  sendTransactions: () => {
+  jsapi: () => {
     return {
       url: `https://api.mch.weixin.qq.com/v3/pay/transactions/jsapi`,
       method: 'POST',
       pathname: `/v3/pay/transactions/jsapi`,
     };
   },
-  getCertificates: () => {
+  certificates: () => {
     return {
       url: `https://api.mch.weixin.qq.com/v3/certificates`,
       method: 'GET',

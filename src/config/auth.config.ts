@@ -10,4 +10,7 @@ export default registerAs('auth', () => ({
   // 微信相关
   wxAppKey: process.env.WX_APP_KEY,
   wxAppSecret: process.env.WX_APP_SECRET,
+  wxMchId: process.env.WX_MCH_ID,
+  wxSerialNo: process.env.WX_SERIAL_NO,
+  wxPayDescription: process.env.WX_PAY_DESCRIPTION,
 }));

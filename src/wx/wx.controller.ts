@@ -5,6 +5,7 @@ import {
   Post,
   HttpCode,
   HttpStatus,
+  Body,
 } from '@nestjs/common';
 import { WxService } from './wx.service';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
@@ -28,8 +29,8 @@ export class WxController {
   @NoAuth()
   @Post('pay')
   @HttpCode(HttpStatus.OK)
-  async pay(): Promise<any> {
-    return await this.wxService.pay();
+  async pay(@Body() order): Promise<any> {
+    return await this.wxService.pay(order);
   }
 
   @NoAuth()

@@ -181,13 +181,13 @@ export class OrderService {
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(id: string, payMethod: string): Promise<boolean> {
+  async orderPay(id: string, payMethod: string): Promise<Order> {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
     const order = await this.orderModel.findById(id);
     if (!order) {
-      ToolsService.fail('支付失败，未找到对应的订单！');
+      ToolsService.fail('不能支付，未找到对应的订单！');
     }
     const { matchId, stadiumId, userId, personCount } = order;
 
@@ -229,9 +229,9 @@ export class OrderService {
       }
     }
 
-    await this.orderModel
+    return await this.orderModel
       .findByIdAndUpdate(id, {
-        status: 1,
+        status: 5,
         payAmount: amount,
         payAt: Moment.now(),
         payMethod: isWechat ? 1 : 2,
@@ -239,7 +239,6 @@ export class OrderService {
         isMonthlyCard,
       })
       .exec();
-    return true;
   }
 
   async findUserByStadiumOrder(params: any) {
@@ -335,7 +334,7 @@ export class OrderService {
           .find({ matchId: id })
           .in('status', [2]);
         const monthlyCardCount = orderList.filter(
-          (d) => d.payMethod === 2,
+          (item) => item.payMethod === 2,
         ).length;
         const isOrdinary = (d) =>
           d.payMethod === 1 || (d.payMethod === 2 && d.personCount > 1);

@@ -61,7 +61,7 @@ export class OrderController {
   async pay(
     @Body('id', new ValidationIDPipe()) id: string,
     @Body('payMethod') payMethod: string,
-  ): Promise<boolean> {
+  ): Promise<Order> {
     return await this.orderService.orderPay(id, payMethod);
   }
 

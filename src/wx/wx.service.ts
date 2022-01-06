@@ -1,8 +1,8 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
-import { Types } from 'mongoose';
 import Payment from './payment';
+import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class WxService {
@@ -12,19 +12,26 @@ export class WxService {
   ) {
     this.appId = this.configService.get<string>('auth.wxAppKey');
     this.appSecret = this.configService.get<string>('auth.wxAppSecret');
-    this.payment = new Payment(
-      {
-        appId: this.appId,
-        mchId: '1618816466',
-        serial_no: '1E88107138AC7EF98DC9741E4CF5AC5A012349A0',
-        notify_url: 'https://wx-test.qiuchangtong.xyz/wx/payReturn',
-      },
-      this.httpService,
+    this.mchId = this.configService.get<string>('auth.wxMchId');
+    this.wxSerialNo = this.configService.get<string>('auth.wxSerialNo');
+    this.wxPayDescription = this.configService.get<string>(
+      'auth.wxPayDescription',
     );
+
+    this.payment = new Payment({
+      appId: this.appId,
+      mchId: this.mchId,
+      serial_no: this.wxSerialNo,
+      description: this.wxPayDescription,
+    });
   }
 
   private readonly appId: string;
   private readonly appSecret: string;
+  private readonly mchId: string;
+  private readonly wxSerialNo: string;
+  private readonly wxPayDescription: string;
+
   private readonly payment: any;
 
   async code2Session(code: string): Promise<string> {
@@ -56,32 +63,27 @@ export class WxService {
     return activityId;
   }
 
-  async pay(): Promise<any> {
-    const payReturn = await lastValueFrom(
-      this.payment.run({
-        bodyParams: {
-          appid: 'wx8e63001d0409fa13',
-          mchid: '1618816466',
-          description: '重庆动手科技有限公司-球场预定',
-          out_trade_no: '123123234432243',
-          notify_url: 'https://wx-test.qiuchangtong.xyz/wx/payReturn',
-          amount: {
-            total: 1,
-          },
-          payer: {
-            openid: 'oY-gU5EPBWTe-ihHnTB7aQe_Azt0',
-          },
-        },
-        type: 'sendTransactions',
-      }),
-    );
-
-    console.log('@@@@@@', payReturn);
-    return payReturn;
+  async pay(order): Promise<any> {
+    const { openId, orderId, payAmount } = order;
+    const { status, ...result } = await this.payment.jsapi({
+      out_trade_no: orderId,
+      notify_url: 'http://2fbe-61-128-134-114.ngrok.io/api/wx/payReturn',
+      amount: {
+        total: payAmount,
+      },
+      payer: {
+        openid: openId,
+      },
+    });
+    if (status === 200) {
+      return result;
+    }
+    ToolsService.fail('统一下单请求失败');
   }
 
   async payReturn(res): Promise<any> {
     console.log(res);
+    return 'test123';
   }
 
   // //获取平台证书列表
