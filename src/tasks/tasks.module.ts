@@ -6,6 +6,7 @@ import { OrderModule } from '../order/order.module';
 import { MatchModule } from '../match/match.module';
 import { UsersModule } from '../users/users.module';
 import { UserRMatchModule } from '../userRMatch/userRMatch.module';
+import { WxModule } from '../wx/wx.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserRMatchModule } from '../userRMatch/userRMatch.module';
     MatchModule,
     UsersModule,
     UserRMatchModule,
+    WxModule,
   ],
   providers: [TasksService],
 })

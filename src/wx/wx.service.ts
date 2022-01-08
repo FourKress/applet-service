@@ -3,17 +3,20 @@ import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 import Payment from './payment';
 import { ToolsService } from '../common/utils/tools-service';
+import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class WxService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly orderService: OrderService,
   ) {
     this.appId = this.configService.get<string>('auth.wxAppKey');
     this.appSecret = this.configService.get<string>('auth.wxAppSecret');
     this.mchId = this.configService.get<string>('auth.wxMchId');
     this.wxSerialNo = this.configService.get<string>('auth.wxSerialNo');
+    this.wxApiV3Key = this.configService.get<string>('auth.wxApiV3Key');
     this.wxPayDescription = this.configService.get<string>(
       'auth.wxPayDescription',
     );
@@ -22,6 +25,7 @@ export class WxService {
       appId: this.appId,
       mchId: this.mchId,
       serial_no: this.wxSerialNo,
+      wxApiV3Key: this.wxApiV3Key,
       description: this.wxPayDescription,
     });
   }
@@ -30,6 +34,7 @@ export class WxService {
   private readonly appSecret: string;
   private readonly mchId: string;
   private readonly wxSerialNo: string;
+  private readonly wxApiV3Key: string;
   private readonly wxPayDescription: string;
 
   private readonly payment: any;
@@ -63,11 +68,15 @@ export class WxService {
     return activityId;
   }
 
+  async updateCertificates() {
+    await this.payment.getCertificates(true);
+  }
+
   async pay(order): Promise<any> {
     const { openId, orderId, payAmount } = order;
-    const { status, ...result } = await this.payment.jsapi({
+    const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
-      notify_url: 'http://2fbe-61-128-134-114.ngrok.io/api/wx/payReturn',
+      notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/payNotice',
       amount: {
         total: payAmount,
       },
@@ -81,63 +90,56 @@ export class WxService {
     ToolsService.fail('统一下单请求失败');
   }
 
-  async payReturn(res): Promise<any> {
-    console.log(res);
-    return 'test123';
-  }
+  async payNotice(body, headers): Promise<any> {
+    const result = {
+      type: 'WX_NOTICE',
+    };
+    let msg = '签名失败';
+    const valid = await this.payment.verifySign({
+      body,
+      headers,
+    });
+    if (valid) {
+      const orderInfo = JSON.parse(
+        this.payment.decode(body.resource, this.wxApiV3Key),
+      );
+      if (orderInfo) {
+        const {
+          out_trade_no,
+          trade_state,
+          mchid,
+          appid,
+          amount: { total },
+        } = orderInfo;
+        if (
+          mchid === this.mchId &&
+          appid === this.appId &&
+          trade_state === 'SUCCESS'
+        ) {
+          const orderFromDB: any = await this.orderService.getOrderById(
+            out_trade_no,
+          );
+          const order = orderFromDB.toJSON();
 
-  // //获取平台证书列表
-  // async getCertificates() {
-  //   const result = await this.run({ type: 'getCertificates' });
-  //   console.log(result);
-  //   return result;
-  // }
-  //
-  // async run({ pathParams = '', queryParams = '', bodyParams = '', type }) {
-  //   const { url, method, pathname } = payUrls[type]({
-  //     pathParams,
-  //     queryParams,
-  //   });
-  //   const timestamp = Math.floor(Date.now() / 1000).toString();
-  //   const nonceStr = generate();
-  //   const bodyParamsStr = '';
-  //   const order = {
-  //     appid: 'wx8e63001d0409fa13',
-  //     mchid: '1618816466',
-  //     description: '重庆动手科技有限公司-球场预定',
-  //     out_trade_no: Types.ObjectId().toHexString(),
-  //     notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/payReturn',
-  //     amount: {
-  //       total: 1,
-  //     },
-  //     payer: {
-  //       openid: 'oY-gU5EPBWTe-ihHnTB7aQe_Azt0',
-  //     },
-  //   };
-  //   const signature = rsaSign(
-  //     `${method}\n${pathname}\n${timestamp}\n${nonceStr}\n${JSON.stringify(
-  //       order,
-  //     )}\n`,
-  //   );
-  //   const Authorization = `WECHATPAY2-SHA256-RSA2048 mchid="1618816466",nonce_str="${nonceStr}",timestamp="${timestamp}",signature="${signature}",serial_no="1E88107138AC7EF98DC9741E4CF5AC5A012349A0"`;
-  //
-  //   const payReturn = await lastValueFrom(
-  //     this.httpService.post(url, order, {
-  //       headers: {
-  //         Authorization,
-  //       },
-  //     }),
-  //   );
-  //   console.log(payReturn);
-  //   const packageStr = `prepay_id=${payReturn.data.prepay_id}`;
-  //
-  //   return {
-  //     package: packageStr,
-  //     paySign: rsaSign(
-  //       `wx8e63001d0409fa13\n${timestamp}\n${nonceStr}\n${packageStr}\n`,
-  //     ),
-  //     nonceStr,
-  //     timestamp,
-  //   };
-  // }
+          if (order.payAmount === total && order.status === 5) {
+            await this.orderService.modifyOrder({
+              ...order,
+              status: 1,
+            });
+          }
+        }
+        return {
+          ...result,
+          return_code: 'SUCCESS',
+          return_msg: 'OK',
+        };
+      }
+      msg = '参数格式校验错误';
+    }
+    return {
+      ...result,
+      return_code: 'FAIL',
+      return_msg: msg,
+    };
+  }
 }

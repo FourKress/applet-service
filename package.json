@@ -32,6 +32,7 @@
     "@nestjs/schedule": "^0.4.3",
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/typeorm": "^8.0.2",
+    "@peculiar/x509": "^1.6.1",
     "@types/express-session": "^1.17.3",
     "@types/mongoose": "^5.11.97",
     "@types/passport-local": "^1.0.33",

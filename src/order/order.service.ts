@@ -64,6 +64,10 @@ export class OrderService {
     };
   }
 
+  async getOrderById(id: string): Promise<Order> {
+    return this.orderModel.findById(id);
+  }
+
   async findOrderById(id: string): Promise<OrderInfoInterface> {
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -232,7 +236,8 @@ export class OrderService {
     return await this.orderModel
       .findByIdAndUpdate(id, {
         status: 5,
-        payAmount: amount,
+        // payAmount: amount,
+        payAmount: 1,
         payAt: Moment.now(),
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,

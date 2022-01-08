@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Interval, Cron } from '@nestjs/schedule';
 
+import * as utils from '../order/utils';
+
 import { OrderService } from '../order/order.service';
 import { MatchService } from '../match/match.service';
 import { UsersService } from '../users/users.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
-import * as utils from '../order/utils';
+import { WxService } from '../wx/wx.service';
 
 const Moment = require('moment');
 
@@ -17,6 +19,7 @@ export class TasksService {
     private readonly matchService: MatchService,
     private readonly userService: UsersService,
     private readonly userRMatchService: UserRMatchService,
+    private readonly wxService: WxService,
   ) {}
 
   @Cron('0 1 0 * * 0-7')
@@ -37,7 +40,8 @@ export class TasksService {
   @Interval(1000 * 5)
   async handleOrder() {
     const orderList: any[] = await this.orderService.findActiveOrder();
-
+    // TODO 处理证书更新
+    // await this.wxService.updateCertificates();
     for (const item of orderList) {
       const order = item.toJSON();
       const { createdAt, status, matchId, personCount, bossId } = order;

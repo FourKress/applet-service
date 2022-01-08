@@ -36,6 +36,14 @@ export class TransformInterceptor implements NestInterceptor {
           )}`,
         );
         console.log(`---After--- ${Date.now() - now}ms`);
+
+        if (data.type === 'WX_NOTICE') {
+          const { return_code, return_msg } = data;
+          return {
+            return_code,
+            return_msg,
+          };
+        }
         return new ResponseSuccess(data);
       }),
     );
