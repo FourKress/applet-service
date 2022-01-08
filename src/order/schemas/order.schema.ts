@@ -46,6 +46,10 @@ export class Order implements OrderInterface {
   createdAt: number;
   @Prop()
   updatedAt: number;
+  @Prop()
+  wxOrderId: string;
+  @Prop()
+  wxOrder: any;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

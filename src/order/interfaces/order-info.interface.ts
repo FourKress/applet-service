@@ -30,4 +30,6 @@ export class OrderInfoInterface implements OrderInterface {
   totalPrice: number;
   monthlyCardPrice: number;
   countdown: number;
+  wxOrder: any;
+  wxOrderId: string;
 }

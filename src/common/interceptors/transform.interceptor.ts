@@ -37,11 +37,11 @@ export class TransformInterceptor implements NestInterceptor {
         );
         console.log(`---After--- ${Date.now() - now}ms`);
 
-        if (data?.type === 'WX_NOTICE') {
-          const { return_code, return_msg } = data;
+        if (data?.type === 'WX_NOTICE_SUCCESS') {
+          const { code, message } = data;
           return {
-            return_code,
-            return_msg,
+            code,
+            message,
           };
         }
         return new ResponseSuccess(data);

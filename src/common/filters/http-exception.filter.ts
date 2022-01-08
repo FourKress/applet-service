@@ -13,9 +13,19 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
+    const errorResponse = exception.getResponse();
+
     let result;
     if (status === 200) {
       result = handleServiceException(exception);
+    } else if (status === 403) {
+      const message = JSON.parse(JSON.stringify(errorResponse)).message;
+      if (message.includes('WX_NOTICE_FAIL')) {
+        result = {
+          code: status,
+          message: message.replace('WX_NOTICE_FAIL--', ''),
+        };
+      }
     } else {
       result = handleHttpException(status, request.url);
     }

@@ -91,9 +91,6 @@ export class WxService {
   }
 
   async payNotice(body, headers): Promise<any> {
-    const result = {
-      type: 'WX_NOTICE',
-    };
     let msg = '签名失败';
     const valid = await this.payment.verifySign({
       body,
@@ -106,10 +103,11 @@ export class WxService {
       if (orderInfo) {
         const {
           out_trade_no,
+          transaction_id,
           trade_state,
           mchid,
           appid,
-          amount: { total },
+          amount: { payer_total },
         } = orderInfo;
         if (
           mchid === this.mchId &&
@@ -121,25 +119,23 @@ export class WxService {
           );
           const order = orderFromDB.toJSON();
 
-          if (order.payAmount === total && order.status === 5) {
+          if (order.payAmount === payer_total && order.status === 5) {
             await this.orderService.modifyOrder({
               ...order,
               status: 1,
+              wxOrderId: transaction_id,
+              wxOrder: orderInfo,
             });
           }
         }
         return {
-          ...result,
-          return_code: 'SUCCESS',
-          return_msg: 'OK',
+          type: 'WX_NOTICE-SUCCESS',
+          code: 'SUCCESS',
+          message: '成功',
         };
       }
       msg = '参数格式校验错误';
     }
-    return {
-      ...result,
-      return_code: 'FAIL',
-      return_msg: msg,
-    };
+    ToolsService.fail(`WX_NOTICE_FAIL--${msg}`, 403);
   }
 }
