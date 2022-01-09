@@ -5,14 +5,21 @@ export const payUrls = {
     return {
       url: `${wxBaseUrl}/pay/transactions/jsapi`,
       method: 'POST',
-      pathname: `/v3/pay/transactions/jsapi`,
+      pathname: '/v3/pay/transactions/jsapi',
     };
   },
   certificates: () => {
     return {
       url: `${wxBaseUrl}/certificates`,
       method: 'GET',
-      pathname: `/v3/certificates`,
+      pathname: '/v3/certificates',
+    };
+  },
+  refund: () => {
+    return {
+      url: `${wxBaseUrl}/refund/domestic/refunds`,
+      method: 'POST',
+      pathname: '/v3/refund/domestic/refunds',
     };
   },
 };

@@ -43,13 +43,15 @@ export class Order implements OrderInterface {
   @Prop()
   refundAt: number;
   @Prop()
+  refundId: string;
+  @Prop()
   createdAt: number;
   @Prop()
   updatedAt: number;
   @Prop()
   wxOrderId: string;
   @Prop()
-  wxOrder: any;
+  wxRefundId: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

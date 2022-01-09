@@ -24,9 +24,10 @@ export interface OrderInterface {
   refundType: number;
   payAt: number;
   refundAt: number;
+  refundId: string;
   refundAmount: number;
   createdAt: number;
   updatedAt: number;
   wxOrderId: string;
-  wxOrder: any;
+  wxRefundId: string;
 }

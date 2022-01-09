@@ -72,6 +72,38 @@ export class WxService {
     await this.payment.getCertificates(true);
   }
 
+  async handleWxNotice(body, headers, type, cb) {
+    let msg = '签名失败';
+    const valid = await this.payment.verifySign({
+      body,
+      headers,
+    });
+    if (valid) {
+      const resource = JSON.parse(
+        this.payment.decode(body.resource, this.wxApiV3Key),
+      );
+      if (resource) {
+        const { mchid } = resource;
+        const status =
+          resource[type === 'pay' ? 'trade_state' : 'refund_status'];
+
+        console.log(mchid, this.mchId, status, type, resource);
+
+        if (mchid === this.mchId && status === 'SUCCESS') {
+          console.log('cb');
+          if (cb) await cb(resource);
+        }
+        return {
+          type: 'WX_NOTICE-SUCCESS',
+          code: 'SUCCESS',
+          message: '成功',
+        };
+      }
+      msg = '参数格式校验错误';
+    }
+    ToolsService.fail(`WX_NOTICE_FAIL--${msg}`, 403);
+  }
+
   async pay(order): Promise<any> {
     const { openId, orderId, payAmount } = order;
     const { status, ...result } = await this.payment.jsApi({
@@ -84,58 +116,78 @@ export class WxService {
         openid: openId,
       },
     });
-    if (status === 200) {
-      return result;
+    if (status !== 200) {
+      ToolsService.fail('统一下单请求失败');
     }
-    ToolsService.fail('统一下单请求失败');
+    return result;
   }
 
   async payNotice(body, headers): Promise<any> {
-    let msg = '签名失败';
+    await this.handleWxNotice(body, headers, 'pay', async (resource) => {
+      const {
+        out_trade_no,
+        transaction_id,
+        amount: { payer_total },
+      } = resource;
+      const orderFromDB: any = await this.orderService.getOrderById(
+        out_trade_no,
+      );
+      const order = orderFromDB.toJSON();
+
+      if (order.payAmount === payer_total && order.status === 5) {
+        await this.orderService.modifyOrder({
+          ...order,
+          status: 1,
+          wxOrderId: transaction_id,
+        });
+      }
+    });
+  }
+
+  async refund(order): Promise<any> {
+    const { orderId, refundAmount, refundId } = order;
+
+    const { status, data, headers } = await this.payment.refund({
+      out_trade_no: orderId,
+      out_refund_no: refundId,
+      notify_url: 'http://2db7-14-109-212-255.ngrok.io/api/wx/refundNotice',
+      amount: {
+        // refund: refundAmount,
+        // total: refundAmount,
+        refund: 1,
+        total: 1,
+        currency: 'CNY',
+      },
+    });
+    if (status !== 200) {
+      ToolsService.fail('申请退款请求失败');
+    }
     const valid = await this.payment.verifySign({
-      body,
+      body: data,
       headers,
     });
-    if (valid) {
-      const orderInfo = JSON.parse(
-        this.payment.decode(body.resource, this.wxApiV3Key),
-      );
-      if (orderInfo) {
-        const {
-          out_trade_no,
-          transaction_id,
-          trade_state,
-          mchid,
-          appid,
-          amount: { payer_total },
-        } = orderInfo;
-        if (
-          mchid === this.mchId &&
-          appid === this.appId &&
-          trade_state === 'SUCCESS'
-        ) {
-          const orderFromDB: any = await this.orderService.getOrderById(
-            out_trade_no,
-          );
-          const order = orderFromDB.toJSON();
-
-          if (order.payAmount === payer_total && order.status === 5) {
-            await this.orderService.modifyOrder({
-              ...order,
-              status: 1,
-              wxOrderId: transaction_id,
-              wxOrder: orderInfo,
-            });
-          }
-        }
-        return {
-          type: 'WX_NOTICE-SUCCESS',
-          code: 'SUCCESS',
-          message: '成功',
-        };
-      }
-      msg = '参数格式校验错误';
+    if (!valid) {
+      ToolsService.fail(`申请退款签名失败`, 403);
     }
-    ToolsService.fail(`WX_NOTICE_FAIL--${msg}`, 403);
+    return data;
+  }
+
+  async refundNotice(body, headers): Promise<any> {
+    await this.handleWxNotice(body, headers, 'refund', async (resource) => {
+      console.log(resource);
+      const {
+        out_trade_no,
+        refund_id,
+        amount: { payer_refund },
+      } = resource;
+      const orderFromDB: any = await this.orderService.getOrderById(
+        out_trade_no,
+      );
+      const order = orderFromDB.toJSON();
+      console.log(order);
+      if (order.refundAmount === payer_refund && order.status === 4) {
+        await this.orderService.orderRefund(out_trade_no, refund_id);
+      }
+    });
   }
 }

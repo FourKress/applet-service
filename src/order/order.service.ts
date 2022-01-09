@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateOderDto } from './dto/create-oder.dto';
 import { ModifyOderDto } from './dto/modify-oder.dto';
 import { OrderInfoInterface } from './interfaces/order-info.interface';
@@ -444,13 +444,14 @@ export class OrderService {
     return relationList;
   }
 
-  async getRefundAmount(orderId) {
+  async getRefundInfo(orderId, refundType): Promise<any> {
     const order = (await this.orderModel.findById(orderId)).toJSON();
     const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
     if (status !== 1) {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
+    // TODO 月卡类型退款金额为0,可直接退款
     const matchDb: any = await this.matchService.findById(matchId);
     const { startAt, runDate } = matchDb.toJSON();
     const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'minutes');
@@ -463,12 +464,22 @@ export class OrderService {
     } else if (diffTime >= 120) {
       refundAmount = payAmount;
     }
-    return currency(refundAmount, { precision: 2 }).value;
+    const refundId = order.refundId || Types.ObjectId().toHexString();
+    await this.orderModel.findByIdAndUpdate(orderId, {
+      refundAmount,
+      refundType,
+      refundId,
+      status: 4,
+    });
+    return {
+      refundAmount: currency(refundAmount, { precision: 2 }).value,
+      refundType,
+      refundId,
+    };
   }
 
-  async orderRefund(orderId) {
+  async orderRefund(orderId, wxRefundId) {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
-    const refundAmount = await this.getRefundAmount(orderId);
     const { matchId, personCount } = order;
     const match: any = await this.matchService.findById(matchId);
     const realSelectPeople = match.selectPeople - personCount;
@@ -480,12 +491,12 @@ export class OrderService {
       matchId,
       count: realSelectPeople,
     });
-    // TODO 处理订单退款
+    console.log('处理订单退款');
+    // TODO 处理订单退款 done
     return await this.modifyOrder({
       ...order,
-      refundType: 2,
-      status: 4,
-      refundAmount,
+      wxRefundId,
+      status: 3,
     });
   }
 

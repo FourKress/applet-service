@@ -17,6 +17,7 @@ export class OrderInfoInterface implements OrderInterface {
   refundType: number;
   payAt: number;
   refundAt: number;
+  refundId: string;
   refundAmount: number;
   createdAt: number;
   updatedAt: number;
@@ -30,6 +31,6 @@ export class OrderInfoInterface implements OrderInterface {
   totalPrice: number;
   monthlyCardPrice: number;
   countdown: number;
-  wxOrder: any;
   wxOrderId: string;
+  wxRefundId: string;
 }

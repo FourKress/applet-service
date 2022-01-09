@@ -96,19 +96,19 @@ export class OrderController {
     return await this.orderService.findOrderByMatchId(matchId);
   }
 
-  @Get('getRefundAmount')
-  async getRefundAmount(
+  @Get('getRefundInfo')
+  async getRefundInfo(
     @Query('orderId', new ValidationIDPipe()) orderId: string,
   ): Promise<any> {
-    return await this.orderService.getRefundAmount(orderId);
+    return await this.orderService.getRefundInfo(orderId, 2);
   }
 
-  @Get('refund')
-  async orderRefund(
-    @Query('orderId', new ValidationIDPipe()) orderId: string,
-  ): Promise<any> {
-    return await this.orderService.orderRefund(orderId);
-  }
+  // @Get('refund')
+  // async orderRefund(
+  //   @Query('orderId', new ValidationIDPipe()) orderId: string,
+  // ): Promise<any> {
+  //   return await this.orderService.orderRefund(orderId);
+  // }
 
   @Get('userList')
   async userList(@Request() req, @Query('type') type: number): Promise<any[]> {

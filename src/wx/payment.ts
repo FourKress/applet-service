@@ -168,4 +168,12 @@ export default class Payment {
     };
     return await this.run({ bodyParams, type: 'jsApi' });
   }
+
+  // 申请退款
+  async refund(params) {
+    const bodyParams = {
+      ...params,
+    };
+    return await this.run({ bodyParams, type: 'refund' });
+  }
 }
