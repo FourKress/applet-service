@@ -236,6 +236,7 @@ export class OrderService {
     return await this.orderModel
       .findByIdAndUpdate(id, {
         status: 5,
+        // TODO 临时设置
         // payAmount: amount,
         payAmount: 1,
         payAt: Moment.now(),
@@ -466,7 +467,9 @@ export class OrderService {
     }
     const refundId = order.refundId || Types.ObjectId().toHexString();
     await this.orderModel.findByIdAndUpdate(orderId, {
-      refundAmount,
+      // TODO 临时设置退款金额
+      // refundAmount,
+      refundAmount: 1,
       refundType,
       refundId,
       status: 4,
@@ -492,7 +495,6 @@ export class OrderService {
       count: realSelectPeople,
     });
     console.log('处理订单退款');
-    // TODO 处理订单退款 done
     return await this.modifyOrder({
       ...order,
       wxRefundId,

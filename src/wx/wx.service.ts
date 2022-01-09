@@ -83,18 +83,15 @@ export class WxService {
         this.payment.decode(body.resource, this.wxApiV3Key),
       );
       if (resource) {
-        const { mchid } = resource;
         const status =
           resource[type === 'pay' ? 'trade_state' : 'refund_status'];
-
-        console.log(mchid, this.mchId, status, type, resource);
-
-        if (mchid === this.mchId && status === 'SUCCESS') {
+        console.log('resource', resource);
+        if (resource.mchid === this.mchId && status === 'SUCCESS') {
           console.log('cb');
           if (cb) await cb(resource);
         }
         return {
-          type: 'WX_NOTICE-SUCCESS',
+          type: 'WX_NOTICE_SUCCESS',
           code: 'SUCCESS',
           message: '成功',
         };
@@ -123,7 +120,7 @@ export class WxService {
   }
 
   async payNotice(body, headers): Promise<any> {
-    await this.handleWxNotice(body, headers, 'pay', async (resource) => {
+    return await this.handleWxNotice(body, headers, 'pay', async (resource) => {
       const {
         out_trade_no,
         transaction_id,
@@ -133,7 +130,6 @@ export class WxService {
         out_trade_no,
       );
       const order = orderFromDB.toJSON();
-
       if (order.payAmount === payer_total && order.status === 5) {
         await this.orderService.modifyOrder({
           ...order,
@@ -150,8 +146,9 @@ export class WxService {
     const { status, data, headers } = await this.payment.refund({
       out_trade_no: orderId,
       out_refund_no: refundId,
-      notify_url: 'http://2db7-14-109-212-255.ngrok.io/api/wx/refundNotice',
+      notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/refundNotice',
       amount: {
+        // TODO 临时设置
         // refund: refundAmount,
         // total: refundAmount,
         refund: 1,
@@ -173,21 +170,25 @@ export class WxService {
   }
 
   async refundNotice(body, headers): Promise<any> {
-    await this.handleWxNotice(body, headers, 'refund', async (resource) => {
-      console.log(resource);
-      const {
-        out_trade_no,
-        refund_id,
-        amount: { payer_refund },
-      } = resource;
-      const orderFromDB: any = await this.orderService.getOrderById(
-        out_trade_no,
-      );
-      const order = orderFromDB.toJSON();
-      console.log(order);
-      if (order.refundAmount === payer_refund && order.status === 4) {
-        await this.orderService.orderRefund(out_trade_no, refund_id);
-      }
-    });
+    return await this.handleWxNotice(
+      body,
+      headers,
+      'refund',
+      async (resource) => {
+        const {
+          out_trade_no,
+          refund_id,
+          amount: { payer_refund },
+        } = resource;
+        const orderFromDB: any = await this.orderService.getOrderById(
+          out_trade_no,
+        );
+        const order = orderFromDB.toJSON();
+        console.log(order.refundAmount === payer_refund, order.status === 4);
+        if (order.refundAmount === payer_refund && order.status === 4) {
+          await this.orderService.orderRefund(out_trade_no, refund_id);
+        }
+      },
+    );
   }
 }

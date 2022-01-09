@@ -103,13 +103,6 @@ export class OrderController {
     return await this.orderService.getRefundInfo(orderId, 2);
   }
 
-  // @Get('refund')
-  // async orderRefund(
-  //   @Query('orderId', new ValidationIDPipe()) orderId: string,
-  // ): Promise<any> {
-  //   return await this.orderService.orderRefund(orderId);
-  // }
-
   @Get('userList')
   async userList(@Request() req, @Query('type') type: number): Promise<any[]> {
     const tokenInfo: UserEntity = req.user;
