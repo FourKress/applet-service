@@ -166,6 +166,9 @@ export class WxService {
     if (!valid) {
       ToolsService.fail(`申请退款签名失败`, 403);
     }
+
+    await this.orderService.orderRefund(orderId);
+
     return data;
   }
 
@@ -186,7 +189,11 @@ export class WxService {
         const order = orderFromDB.toJSON();
         console.log(order.refundAmount === payer_refund, order.status === 4);
         if (order.refundAmount === payer_refund && order.status === 4) {
-          await this.orderService.orderRefund(out_trade_no, refund_id);
+          await this.orderService.modifyOrder({
+            out_trade_no,
+            status: 4,
+            wxRefundId: refund_id,
+          });
         }
       },
     );

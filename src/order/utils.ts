@@ -11,6 +11,9 @@ export const StatusMap = {
   3: '已退款',
   2: '已完成',
   6: '已取消',
+  // TODO 订单状态
+  8: '支付失败',
+  9: '退款失败',
 };
 
 export const countdown = (createdAt, startAt, type = 'unix'): number => {

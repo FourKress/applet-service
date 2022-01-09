@@ -177,7 +177,7 @@ export class OrderService {
     return newOrder._id;
   }
 
-  async modifyOrder(modifyOrder: ModifyOderDto): Promise<Order> {
+  async modifyOrder(modifyOrder: any): Promise<Order> {
     const { id, ...order } = modifyOrder;
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -235,7 +235,6 @@ export class OrderService {
 
     return await this.orderModel
       .findByIdAndUpdate(id, {
-        status: 5,
         // TODO 临时设置
         // payAmount: amount,
         payAmount: 1,
@@ -472,7 +471,6 @@ export class OrderService {
       refundAmount: 1,
       refundType,
       refundId,
-      status: 4,
     });
     return {
       refundAmount: currency(refundAmount, { precision: 2 }).value,
@@ -481,7 +479,7 @@ export class OrderService {
     };
   }
 
-  async orderRefund(orderId, wxRefundId) {
+  async orderRefund(orderId) {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
     const { matchId, personCount } = order;
     const match: any = await this.matchService.findById(matchId);
@@ -494,12 +492,11 @@ export class OrderService {
       matchId,
       count: realSelectPeople,
     });
-    console.log('处理订单退款');
     return await this.modifyOrder({
       ...order,
-      wxRefundId,
-      status: 3,
+      status: 4,
     });
+    ``;
   }
 
   setUserInfo(order, orderList) {

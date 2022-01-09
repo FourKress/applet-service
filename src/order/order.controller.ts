@@ -56,6 +56,12 @@ export class OrderController {
     return await this.orderService.addOrder(addOrder, tokenInfo.userId);
   }
 
+  @Post('modify')
+  @HttpCode(HttpStatus.OK)
+  async modify(@Body() order): Promise<Order> {
+    return await this.orderService.modifyOrder(order);
+  }
+
   @Post('pay')
   @HttpCode(HttpStatus.OK)
   async pay(
