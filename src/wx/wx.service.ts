@@ -116,6 +116,10 @@ export class WxService {
     if (status !== 200) {
       ToolsService.fail('统一下单请求失败');
     }
+    await this.orderService.modifyOrder({
+      id: orderId,
+      status: 5,
+    });
     return result;
   }
 
@@ -190,8 +194,8 @@ export class WxService {
         console.log(order.refundAmount === payer_refund, order.status === 4);
         if (order.refundAmount === payer_refund && order.status === 4) {
           await this.orderService.modifyOrder({
-            out_trade_no,
-            status: 4,
+            id: out_trade_no,
+            status: 3,
             wxRefundId: refund_id,
           });
         }
