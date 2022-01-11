@@ -22,4 +22,11 @@ export const payUrls = {
       pathname: '/v3/refund/domestic/refunds',
     };
   },
+  close: ({ pathParams }) => {
+    return {
+      url: `${wxBaseUrl}/pay/transactions/out-trade-no/${pathParams.out_trade_no}/close`,
+      method: `POST`,
+      pathname: `/v3/pay/transactions/out-trade-no/${pathParams.out_trade_no}/close`,
+    };
+  },
 };

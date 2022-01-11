@@ -22,6 +22,12 @@ export class TasksService {
     private readonly wxService: WxService,
   ) {}
 
+  // @Cron('0 * 8,13,18,23 * * *')
+  @Cron('0 * 3,13,23 * * *')
+  async handleUpdateCertificates() {
+    await this.wxService.updateCertificates();
+  }
+
   @Cron('0 1 0 * * 0-7')
   async handleMatch() {
     const matchList: any[] = await this.matchService.findAllBase();
@@ -40,8 +46,6 @@ export class TasksService {
   @Interval(1000 * 5)
   async handleOrder() {
     const orderList: any[] = await this.orderService.findActiveOrder();
-    // TODO 处理证书更新
-    // await this.wxService.updateCertificates();
     for (const item of orderList) {
       const order = item.toJSON();
       const { createdAt, status, matchId, personCount, bossId } = order;
@@ -64,7 +68,7 @@ export class TasksService {
           Moment(nowTime).diff(Moment(createdAt), 'minutes') >=
             utils.countdown(createdAt, `${runDate} ${endAt}`, 'minutes'))
       ) {
-        this.logger.log(`${order.id} 取消订单`);
+        this.logger.log(`${order.id} 未支付 系统自动取消订单`);
         await this.changeOrder({
           ...order,
           status: 6,
@@ -77,12 +81,26 @@ export class TasksService {
           matchId,
           count: realSelectPeople,
         });
+        // TODO 五分钟之后
+        const { payAt, closeFlag } = order;
+        console.log(
+          !closeFlag,
+          payAt,
+          Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5,
+        );
+        if (
+          !closeFlag &&
+          payAt &&
+          Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5
+        ) {
+          await this.wxService.close(order.id);
+        }
       }
 
       if (status === 1) {
         if (isStart && !isEnd) {
           if (selectPeople < minPeople || failMatch) {
-            this.logger.log(`${order.id} 组队失败 触发退款 取消订单`);
+            this.logger.log(`${order.id} 组队失败 触发退款 系统自动取消订单`);
             await this.changeOrder({
               ...order,
               refundType: 1,

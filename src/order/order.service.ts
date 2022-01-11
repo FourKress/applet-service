@@ -238,7 +238,6 @@ export class OrderService {
         // TODO 临时设置
         // payAmount: amount,
         payAmount: 1,
-        payAt: Moment.now(),
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
         isMonthlyCard,

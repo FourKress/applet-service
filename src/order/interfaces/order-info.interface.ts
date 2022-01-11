@@ -33,4 +33,6 @@ export class OrderInfoInterface implements OrderInterface {
   countdown: number;
   wxOrderId: string;
   wxRefundId: string;
+  prepayInfo: any;
+  closeFlag: boolean;
 }

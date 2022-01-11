@@ -5,6 +5,8 @@ import Payment from './payment';
 import { ToolsService } from '../common/utils/tools-service';
 import { OrderService } from '../order/order.service';
 
+const Moment = require('moment');
+
 @Injectable()
 export class WxService {
   constructor(
@@ -119,6 +121,8 @@ export class WxService {
     await this.orderService.modifyOrder({
       id: orderId,
       status: 5,
+      prepayInfo: result,
+      payAt: Moment.now(),
     });
     return result;
   }
@@ -201,5 +205,30 @@ export class WxService {
         }
       },
     );
+  }
+
+  async close(orderId): Promise<any> {
+    const { status, headers, body } = await this.payment.close({
+      out_trade_no: orderId,
+    });
+
+    if (status !== 204) {
+      ToolsService.fail('关闭订单失败');
+    }
+
+    const valid = await this.payment.verifySign({
+      body,
+      headers,
+    });
+    if (!valid) {
+      ToolsService.fail(`申请退款签名失败`, 403);
+    }
+
+    await this.orderService.modifyOrder({
+      id: orderId,
+      closeFlag: true,
+    });
+
+    return true;
   }
 }

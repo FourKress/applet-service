@@ -52,6 +52,10 @@ export class Order implements OrderInterface {
   wxOrderId: string;
   @Prop()
   wxRefundId: string;
+  @Prop({ type: Types })
+  prepayInfo: any;
+  @Prop()
+  closeFlag: boolean;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

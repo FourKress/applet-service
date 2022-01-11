@@ -34,6 +34,7 @@ export default class Payment {
   }
 
   async run({ pathParams = {}, queryParams = {}, bodyParams = {}, type }) {
+    console.log(type);
     const { url, method, pathname } = payUrls[type]({
       pathParams,
       queryParams,
@@ -175,5 +176,18 @@ export default class Payment {
       ...params,
     };
     return await this.run({ bodyParams, type: 'refund' });
+  }
+
+  // 关闭订单
+  async close(params) {
+    return await this.run({
+      pathParams: {
+        out_trade_no: params.out_trade_no,
+      },
+      bodyParams: {
+        mchid: this.mchId,
+      },
+      type: 'close',
+    });
   }
 }

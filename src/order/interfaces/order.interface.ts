@@ -30,4 +30,6 @@ export interface OrderInterface {
   updatedAt: number;
   wxOrderId: string;
   wxRefundId: string;
+  prepayInfo: any;
+  closeFlag: boolean;
 }
