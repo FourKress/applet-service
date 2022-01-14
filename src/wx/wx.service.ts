@@ -208,20 +208,12 @@ export class WxService {
   }
 
   async close(orderId): Promise<any> {
-    const { status, headers, body } = await this.payment.close({
+    const { status } = await this.payment.close({
       out_trade_no: orderId,
     });
 
     if (status !== 204) {
       ToolsService.fail('关闭订单失败');
-    }
-
-    const valid = await this.payment.verifySign({
-      body,
-      headers,
-    });
-    if (!valid) {
-      ToolsService.fail(`申请退款签名失败`, 403);
     }
 
     await this.orderService.modifyOrder({

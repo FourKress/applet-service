@@ -40,7 +40,21 @@ export class OrderService {
   }
 
   async findActiveOrder(): Promise<Order[]> {
-    return await this.orderModel.find().in('status', [0, 1, 5, 7]).exec();
+    return await this.orderModel.find().in('status', [0, 1, 7]).exec();
+  }
+
+  async findAwaitOrder(): Promise<Order[]> {
+    return await this.orderModel.find().in('status', [4, 5]).exec();
+  }
+
+  async findCancelOrder(): Promise<Order[]> {
+    return await this.orderModel
+      .find({
+        status: 6,
+      })
+      .exists('prepayInfo', true)
+      .ne('closeFlag', true)
+      .exec();
   }
 
   async orderCount(userId: string): Promise<OrderCountInterface> {

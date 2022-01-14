@@ -22,7 +22,6 @@ export class TasksService {
     private readonly wxService: WxService,
   ) {}
 
-  // @Cron('0 * 8,13,18,23 * * *')
   @Cron('0 * 3,13,23 * * *')
   async handleUpdateCertificates() {
     await this.wxService.updateCertificates();
@@ -39,6 +38,35 @@ export class TasksService {
       } else {
         const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
         await this.matchService.handleRepeatDay(match, runDate, 'add');
+      }
+    }
+  }
+
+  @Interval(1000 * 60 * 3)
+  async handleOrderClose() {
+    console.log(Date.now(), '每3分钟');
+  }
+
+  @Interval(1000 * 60 * 1)
+  async handleOrderAwait() {
+    const orderList: any[] = await this.orderService.findCancelOrder();
+    console.log(orderList);
+    for (const item of orderList) {
+      const nowTime = Moment.now();
+      const order = item.toJSON();
+      // TODO 五分钟之后
+      const { payAt, closeFlag } = order;
+      console.log(
+        !closeFlag,
+        payAt,
+        Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5,
+      );
+      if (
+        !closeFlag &&
+        payAt &&
+        Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5
+      ) {
+        await this.wxService.close(order.id);
       }
     }
   }
@@ -81,20 +109,6 @@ export class TasksService {
           matchId,
           count: realSelectPeople,
         });
-        // TODO 五分钟之后
-        const { payAt, closeFlag } = order;
-        console.log(
-          !closeFlag,
-          payAt,
-          Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5,
-        );
-        if (
-          !closeFlag &&
-          payAt &&
-          Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5
-        ) {
-          await this.wxService.close(order.id);
-        }
       }
 
       if (status === 1) {
