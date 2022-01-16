@@ -138,12 +138,14 @@ export class TasksService {
         if (isStart && !isEnd) {
           if (selectPeople < minPeople || failMatch) {
             this.logger.log(`${order.id} 组队失败 触发退款 系统自动取消订单`);
-            await this.changeOrder({
-              ...order,
-              refundType: 1,
-              status: 4,
+            const refundInfo: any = await this.orderService.handleSystemRefund(
+              order.id,
+            );
+            await this.wxService.refund({
+              orderId: order.id,
+              refundAmount: refundInfo.refundAmount,
+              refundId: refundInfo.refundId,
             });
-            // TODO 处理退款
           } else {
             this.logger.log(`${order.id} 组队成功 进行中`);
             await this.changeOrder({

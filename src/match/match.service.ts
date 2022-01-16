@@ -199,7 +199,7 @@ export class MatchService {
     if (!id || !spaceId) {
       ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
-    // TODO 场次在使用中不允许修改
+
     const { repeatModel, repeatWeek, runDate } = match;
     const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
 

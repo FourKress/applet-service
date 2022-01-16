@@ -273,8 +273,8 @@ export class OrderService {
     return await this.orderModel
       .findByIdAndUpdate(id, {
         // TODO 临时设置
-        payAmount: amount,
-        // payAmount: 1,
+        // payAmount: amount,
+        payAmount: 1,
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
         isMonthlyCard,
@@ -487,29 +487,47 @@ export class OrderService {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
-    // TODO 月卡类型退款金额为0,可直接退款
+
     const matchDb: any = await this.matchService.findById(matchId);
+    const stadium = await this.stadiumService.findById(order.stadiumId);
     const { startAt, runDate } = matchDb.toJSON();
     const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'minutes');
     let refundAmount = 0;
-    if (payMethod === 2 && payAmount === 0) {
-      refundAmount = 0;
+
+    if (refundType === 1) {
+      refundAmount = payAmount;
+      if (newMonthlyCard) {
+        refundAmount = payAmount - stadium.monthlyCardPrice;
+      }
     } else {
-      if (diffTime < 60) {
-        ToolsService.fail('距开场小于一小时，无法退款！');
-        return;
-      } else if (60 <= diffTime && diffTime < 120) {
-        refundAmount = currency(payAmount).multiply(0.8).value;
-      } else if (diffTime >= 120) {
-        refundAmount = payAmount;
+      if (payMethod === 2 && payAmount === 0) {
+        refundAmount = 0;
+      } else {
+        if (diffTime < 60) {
+          ToolsService.fail('距开场小于一小时，无法退款！');
+          return;
+        } else if (60 <= diffTime && diffTime < 120) {
+          if (newMonthlyCard) {
+            refundAmount = currency(
+              payAmount - stadium.monthlyCardPrice,
+            ).multiply(0.8).value;
+          } else {
+            refundAmount = currency(payAmount).multiply(0.8).value;
+          }
+        } else if (diffTime >= 120) {
+          refundAmount = payAmount;
+          if (newMonthlyCard) {
+            refundAmount = payAmount - stadium.monthlyCardPrice;
+          }
+        }
       }
     }
 
     const refundId = order.refundId || Types.ObjectId().toHexString();
     await this.orderModel.findByIdAndUpdate(orderId, {
-      // TODO 临时设置退款金额
-      refundAmount,
-      // refundAmount: 1,
+      // TODO 临时设置
+      // refundAmount,
+      refundAmount: 1,
       refundType,
       refundId,
     });
@@ -518,6 +536,10 @@ export class OrderService {
       refundType,
       refundId,
     };
+  }
+
+  async handleSystemRefund(orderId) {
+    return await this.getRefundInfo(orderId, 1);
   }
 
   async orderRefund({ orderId, status }) {
