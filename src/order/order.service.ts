@@ -49,11 +49,11 @@ export class OrderService {
 
   async findCancelOrder(): Promise<Order[]> {
     return await this.orderModel
-      .find({
-        status: 6,
-      })
+      .find()
+      .in('status', [6, 8])
       .exists('prepayInfo', true)
       .ne('closeFlag', true)
+      .ne('payAmount', 0)
       .exec();
   }
 
@@ -95,6 +95,11 @@ export class OrderService {
       userId,
       stadiumId,
     });
+    const checkRelation = await this.userRMatchService.onlyRelationByUserId(
+      matchId,
+      userId,
+    );
+
     const price = match.price * (match.rebate / 10);
 
     const countdown =
@@ -118,6 +123,7 @@ export class OrderService {
       statusName: utils.StatusMap[order.status],
       validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
       validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
+      monthlyCardPayStatus: checkRelation?.count <= 1,
     });
     return orderInfo;
   }
@@ -199,15 +205,18 @@ export class OrderService {
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 
-  async orderPay(id: string, payMethod: string): Promise<Order> {
+  async checkOrderPayFlag(id) {
+    let flag = true;
     if (!id) {
+      flag = false;
       ToolsService.fail('id不能为空！');
     }
     const order = await this.orderModel.findById(id);
     if (!order) {
+      flag = false;
       ToolsService.fail('不能支付，未找到对应的订单！');
     }
-    const { matchId, stadiumId, userId, personCount } = order;
+    const { matchId } = order;
 
     const match = await this.matchService.findById(matchId);
     if (
@@ -215,8 +224,22 @@ export class OrderService {
         (Moment() - Moment(order.createdAt)) <
       0
     ) {
+      flag = false;
       ToolsService.fail('支付失败，订单已超时！');
     }
+
+    return {
+      flag,
+      match: flag ? match : '',
+      order: flag ? order : '',
+    };
+  }
+
+  async orderPay(id: string, payMethod: string): Promise<Order> {
+    const { flag, match, order }: any = await this.checkOrderPayFlag(id);
+    if (!flag) return;
+
+    const { stadiumId, userId, personCount } = order;
 
     let amount = 0;
     let isMonthlyCard = false;
@@ -250,8 +273,8 @@ export class OrderService {
     return await this.orderModel
       .findByIdAndUpdate(id, {
         // TODO 临时设置
-        // payAmount: amount,
-        payAmount: 1,
+        payAmount: amount,
+        // payAmount: 1,
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
         isMonthlyCard,
@@ -460,7 +483,7 @@ export class OrderService {
   async getRefundInfo(orderId, refundType): Promise<any> {
     const order = (await this.orderModel.findById(orderId)).toJSON();
     const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
-    if (status !== 1) {
+    if (![1, 9].includes(status)) {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
@@ -469,19 +492,24 @@ export class OrderService {
     const { startAt, runDate } = matchDb.toJSON();
     const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'minutes');
     let refundAmount = 0;
-    if (diffTime < 60) {
-      ToolsService.fail('距开场小于一小时，无法退款！');
-      return;
-    } else if (60 <= diffTime && diffTime < 120) {
-      refundAmount = currency(payAmount).multiply(0.8).value;
-    } else if (diffTime >= 120) {
-      refundAmount = payAmount;
+    if (payMethod === 2 && payAmount === 0) {
+      refundAmount = 0;
+    } else {
+      if (diffTime < 60) {
+        ToolsService.fail('距开场小于一小时，无法退款！');
+        return;
+      } else if (60 <= diffTime && diffTime < 120) {
+        refundAmount = currency(payAmount).multiply(0.8).value;
+      } else if (diffTime >= 120) {
+        refundAmount = payAmount;
+      }
     }
+
     const refundId = order.refundId || Types.ObjectId().toHexString();
     await this.orderModel.findByIdAndUpdate(orderId, {
       // TODO 临时设置退款金额
-      // refundAmount,
-      refundAmount: 1,
+      refundAmount,
+      // refundAmount: 1,
       refundType,
       refundId,
     });
@@ -492,7 +520,15 @@ export class OrderService {
     };
   }
 
-  async orderRefund(orderId) {
+  async orderRefund({ orderId, status }) {
+    await this.handleMatchRestore(orderId);
+    return await this.modifyOrder({
+      id: orderId,
+      status,
+    });
+  }
+
+  async handleMatchRestore(orderId) {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
     const { matchId, personCount } = order;
     const match: any = await this.matchService.findById(matchId);
@@ -504,10 +540,6 @@ export class OrderService {
     await this.userRMatchService.changeRCount({
       matchId,
       count: realSelectPeople,
-    });
-    return await this.modifyOrder({
-      ...order,
-      status: 4,
     });
   }
 

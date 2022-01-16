@@ -7,10 +7,10 @@ import { Stadium, StadiumDocument } from './schemas/stadium.schema';
 import { ModifyStadiumDto } from './dto/modify-stadium.dto';
 import { UserRStadiumService } from '../userRStadium/userRstadium.service';
 import { MatchService } from '../match/match.service';
+import { UnitEnum } from '../common/enum/space.enum';
+import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 
 const Moment = require('moment');
-const fs = require('fs');
-const path = require('path');
 
 @Injectable()
 export class StadiumService {
@@ -19,6 +19,7 @@ export class StadiumService {
     private readonly stadiumModel: Model<StadiumDocument>,
     private readonly userRStadiumService: UserRStadiumService,
     private readonly matchService: MatchService,
+    private readonly monthlyCardService: MonthlyCardService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -62,7 +63,19 @@ export class StadiumService {
     return await newStadium.save();
   }
 
-  async modify(modifyStadium: ModifyStadiumDto, openId): Promise<Stadium> {
+  async checkActive(id) {
+    const monthlyCardList = await this.monthlyCardService.getMonthlyCardBySId(
+      id,
+    );
+    const validFlag = monthlyCardList.some((d) => !d.validFlag);
+    if (validFlag) {
+      ToolsService.fail('不能修改月卡状态，有订单正在使用！');
+      return false;
+    }
+    return true;
+  }
+
+  async modify(modifyStadium: ModifyStadiumDto): Promise<Stadium> {
     const { id, ...stadiumInfo } = modifyStadium;
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -71,10 +84,24 @@ export class StadiumService {
     if (hasStadium !== id) {
       ToolsService.fail('修改失败，球场名称已存在！');
     }
-    // const { stadiumUrls } = stadiumInfo;
-    // const fileIds = stadiumUrls.map((d) => d.fileId);
-    // this.sortOutFileList(openId, fileIds);
+    const stadiumFromDB = await this.stadiumModel.findById(id);
+    if (stadiumInfo.monthlyCardStatus !== stadiumFromDB.monthlyCardStatus) {
+      await this.checkActive(id);
+    }
+
     return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
+  }
+
+  async modifyRemarks(id, unit): Promise<Stadium> {
+    const stadium = await this.findById(id);
+    const unitLabel: any = UnitEnum.find((d) => d.value === unit).label;
+    const remarks = stadium.remarks ? stadium.remarks.split('，') : [];
+    const newRemarks = [...new Set(remarks.concat(unitLabel))].join('，');
+    return await this.stadiumModel
+      .findByIdAndUpdate(id, {
+        remarks: newRemarks,
+      })
+      .exec();
   }
 
   async waitStartList(userId, search): Promise<Stadium[]> {
@@ -127,22 +154,6 @@ export class StadiumService {
       }),
     );
     return result;
-  }
-
-  sortOutFileList(fileName, fileIds) {
-    const filePath = `${path.resolve()}/uploads/${fileName}`;
-    fs.readdir(filePath, function (err, files) {
-      if (err) {
-        console.log('Error', err);
-      } else {
-        const unFiles = files.filter(
-          (f) => !fileIds.includes(f.replace(/.png/g, '')),
-        );
-        unFiles.map((file) => {
-          fs.unlinkSync(`${filePath}/${file}`);
-        });
-      }
-    });
   }
 
   async uploadFile(files, openId) {

@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import Payment from './payment';
 import { ToolsService } from '../common/utils/tools-service';
 import { OrderService } from '../order/order.service';
+import { Y2FUnit } from '../constant';
 
 const Moment = require('moment');
 
@@ -74,7 +75,7 @@ export class WxService {
     await this.payment.getCertificates(true);
   }
 
-  async handleWxNotice(body, headers, type, cb) {
+  async handleWxNotice(body, headers, type) {
     let msg = '签名失败';
     const valid = await this.payment.verifySign({
       body,
@@ -85,12 +86,25 @@ export class WxService {
         this.payment.decode(body.resource, this.wxApiV3Key),
       );
       if (resource) {
-        const status =
-          resource[type === 'pay' ? 'trade_state' : 'refund_status'];
+        const isPay = type === 'pay';
+        const status = resource[isPay ? 'trade_state' : 'refund_status'];
         console.log('resource', resource);
-        if (resource.mchid === this.mchId && status === 'SUCCESS') {
-          console.log('cb');
-          if (cb) await cb(resource);
+        if (resource.mchid === this.mchId) {
+          if (status === 'SUCCESS') {
+            console.log('cb');
+            if (isPay) {
+              await this.handlePaySuccess(resource);
+            } else {
+              await this.handleRefundSuccess(resource);
+            }
+          } else {
+            console.log('error cb');
+            if (isPay) {
+              await this.handlePayError(resource.out_trade_no);
+            } else {
+              await this.handleRefundError(resource.out_trade_no);
+            }
+          }
         }
         return {
           type: 'WX_NOTICE_SUCCESS',
@@ -103,13 +117,66 @@ export class WxService {
     ToolsService.fail(`WX_NOTICE_FAIL--${msg}`, 403);
   }
 
+  async handleRefundSuccess(resource) {
+    const {
+      out_trade_no,
+      refund_id,
+      amount: { payer_refund },
+    } = resource;
+    const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
+    const order = orderFromDB.toJSON();
+    console.log(
+      order.refundAmount === payer_refund / Y2FUnit,
+      order.status === 4,
+    );
+    if (order.refundAmount === payer_refund / Y2FUnit && order.status === 4) {
+      await this.orderService.modifyOrder({
+        id: out_trade_no,
+        status: 3,
+        wxRefundId: refund_id,
+      });
+    }
+  }
+
+  async handleRefundError(orderId) {
+    await this.orderService.modifyOrder({
+      id: orderId,
+      status: 9,
+    });
+  }
+
+  async handlePaySuccess(resource) {
+    const {
+      out_trade_no,
+      transaction_id,
+      amount: { payer_total },
+    } = resource;
+    const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
+    const order = orderFromDB.toJSON();
+    if (order.payAmount === payer_total / Y2FUnit && order.status === 5) {
+      await this.orderService.modifyOrder({
+        ...order,
+        status: 1,
+        wxOrderId: transaction_id,
+      });
+    }
+  }
+
+  async handlePayError(orderId) {
+    await this.orderService.handleMatchRestore(orderId);
+    await this.orderService.modifyOrder({
+      id: orderId,
+      status: 8,
+    });
+  }
+
   async pay(order): Promise<any> {
     const { openId, orderId, payAmount } = order;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
       notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/payNotice',
       amount: {
-        total: payAmount,
+        total: payAmount * Y2FUnit,
       },
       payer: {
         openid: openId,
@@ -127,27 +194,6 @@ export class WxService {
     return result;
   }
 
-  async payNotice(body, headers): Promise<any> {
-    return await this.handleWxNotice(body, headers, 'pay', async (resource) => {
-      const {
-        out_trade_no,
-        transaction_id,
-        amount: { payer_total },
-      } = resource;
-      const orderFromDB: any = await this.orderService.getOrderById(
-        out_trade_no,
-      );
-      const order = orderFromDB.toJSON();
-      if (order.payAmount === payer_total && order.status === 5) {
-        await this.orderService.modifyOrder({
-          ...order,
-          status: 1,
-          wxOrderId: transaction_id,
-        });
-      }
-    });
-  }
-
   async refund(order): Promise<any> {
     const { orderId, refundAmount, refundId } = order;
 
@@ -157,10 +203,10 @@ export class WxService {
       notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/refundNotice',
       amount: {
         // TODO 临时设置
-        // refund: refundAmount,
-        // total: refundAmount,
-        refund: 1,
-        total: 1,
+        refund: refundAmount * Y2FUnit,
+        total: refundAmount * Y2FUnit,
+        // refund: 1,
+        // total: 1,
         currency: 'CNY',
       },
     });
@@ -175,36 +221,20 @@ export class WxService {
       ToolsService.fail(`申请退款签名失败`, 403);
     }
 
-    await this.orderService.orderRefund(orderId);
+    await this.orderService.orderRefund({
+      orderId,
+      status: 4,
+    });
 
     return data;
   }
 
+  async payNotice(body, headers): Promise<any> {
+    return await this.handleWxNotice(body, headers, 'pay');
+  }
+
   async refundNotice(body, headers): Promise<any> {
-    return await this.handleWxNotice(
-      body,
-      headers,
-      'refund',
-      async (resource) => {
-        const {
-          out_trade_no,
-          refund_id,
-          amount: { payer_refund },
-        } = resource;
-        const orderFromDB: any = await this.orderService.getOrderById(
-          out_trade_no,
-        );
-        const order = orderFromDB.toJSON();
-        console.log(order.refundAmount === payer_refund, order.status === 4);
-        if (order.refundAmount === payer_refund && order.status === 4) {
-          await this.orderService.modifyOrder({
-            id: out_trade_no,
-            status: 3,
-            wxRefundId: refund_id,
-          });
-        }
-      },
-    );
+    return await this.handleWxNotice(body, headers, 'refund');
   }
 
   async close(orderId): Promise<any> {
@@ -222,5 +252,56 @@ export class WxService {
     });
 
     return true;
+  }
+
+  async getPayInfo(out_trade_no): Promise<any> {
+    const { status, data, headers } = await this.payment.getPayInfo({
+      out_trade_no,
+      mchId: this.mchId,
+    });
+
+    if (status !== 200) {
+      ToolsService.fail('查询订单请求失败');
+    }
+    const valid = await this.payment.verifySign({
+      body: data,
+      headers,
+    });
+    if (!valid) {
+      ToolsService.fail(`查询订单请签名失败`, 403);
+    }
+
+    if (data.trade_state === 'SUCCESS') {
+      await this.handlePaySuccess(data);
+    } else {
+      await this.handlePayError(out_trade_no);
+    }
+
+    return data;
+  }
+
+  async getRefund(out_refund_no): Promise<any> {
+    const { status, data, headers } = await this.payment.getRefund({
+      out_refund_no,
+    });
+
+    if (status !== 200) {
+      ToolsService.fail('查询退款请求失败');
+    }
+    const valid = await this.payment.verifySign({
+      body: data,
+      headers,
+    });
+    if (!valid) {
+      ToolsService.fail(`查询退款请签名失败`, 403);
+    }
+
+    if (data.refund_status === 'SUCCESS') {
+      await this.handleRefundSuccess(data);
+    } else {
+      await this.handleRefundError(out_refund_no);
+    }
+
+    return data;
   }
 }

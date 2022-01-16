@@ -22,9 +22,13 @@ export class MonthlyCardService {
     return await newMonthlyCard.save();
   }
 
-  async removeByIds(userId: string): Promise<any> {
-    return this.monthlyCardModel.findOneAndDelete({
-      userId,
+  async findAll(): Promise<MonthlyCard[]> {
+    return await this.monthlyCardModel.find().ne('validFlag', false).exec();
+  }
+
+  async changeCardValid(id: string, validFlag: boolean): Promise<any> {
+    return this.monthlyCardModel.findByIdAndUpdate(id, {
+      validFlag,
     });
   }
 
@@ -41,6 +45,13 @@ export class MonthlyCardService {
   async checkMonthlyCard(relationInfo: any): Promise<MonthlyCard> {
     const monthlyCard = await this.monthlyCardModel.findOne(relationInfo);
     return monthlyCard;
+  }
+
+  async getMonthlyCardBySId(stadiumId: string): Promise<MonthlyCard[]> {
+    const monthlyCardList = await this.monthlyCardModel.find({
+      stadiumId,
+    });
+    return monthlyCardList;
   }
 
   async modifyByIds(modifyInfo: ModifyMonthlyCardDto): Promise<MonthlyCard> {

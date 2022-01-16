@@ -25,6 +25,8 @@ export class MonthlyCard implements MonthlyCardInterface {
   createdAt: number;
   @Prop()
   updatedAt: number;
+  @Prop()
+  validFlag: boolean;
 }
 
 export const MonthlyCardSchema = SchemaFactory.createForClass(MonthlyCard);

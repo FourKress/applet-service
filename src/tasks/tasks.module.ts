@@ -7,6 +7,7 @@ import { MatchModule } from '../match/match.module';
 import { UsersModule } from '../users/users.module';
 import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 import { WxModule } from '../wx/wx.module';
+import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { WxModule } from '../wx/wx.module';
     UsersModule,
     UserRMatchModule,
     WxModule,
+    MonthlyCardModule,
   ],
   providers: [TasksService],
 })

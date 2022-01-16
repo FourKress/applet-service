@@ -95,6 +95,12 @@ export class OrderController {
     return await this.orderService.findOrderByStadiumId(params);
   }
 
+  @Post('refund')
+  @HttpCode(HttpStatus.OK)
+  async orderRefund(@Body() params: any): Promise<any> {
+    return await this.orderService.orderRefund(params);
+  }
+
   @Get('findOrderByMatchId')
   async findOrderByMatchId(
     @Query('matchId', new ValidationIDPipe()) matchId: string,

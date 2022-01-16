@@ -11,4 +11,5 @@ export interface MonthlyCardInterface {
   stadium: string;
   createdAt: number;
   updatedAt: number;
+  validFlag: boolean;
 }

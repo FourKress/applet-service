@@ -41,6 +41,19 @@ export class UserRMatchService {
     return relation;
   }
 
+  onlyRelationByUserId(matchId: string, userId: string): any {
+    if (!userId) {
+      ToolsService.fail('userId不能为空！');
+    }
+    const relation = this.userRMatchModel
+      .findOne({
+        matchId,
+        userId,
+      })
+      .exec();
+    return relation;
+  }
+
   async addRelation(addRelation: CreateUserRMatchDto): Promise<UserRMatch> {
     const { userId, matchId } = addRelation;
     if (!userId || !matchId) {

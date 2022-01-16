@@ -38,12 +38,8 @@ export class StadiumController {
 
   @Post('modify')
   @HttpCode(HttpStatus.OK)
-  async modify(
-    @Request() req,
-    @Body() modifyStadium: ModifyStadiumDto,
-  ): Promise<Stadium> {
-    const tokenInfo: UserEntity = req.user;
-    return await this.stadiumService.modify(modifyStadium, tokenInfo.openId);
+  async modify(@Body() modifyStadium: ModifyStadiumDto): Promise<Stadium> {
+    return await this.stadiumService.modify(modifyStadium);
   }
 
   @Post('add')

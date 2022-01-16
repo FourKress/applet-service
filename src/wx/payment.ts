@@ -190,4 +190,28 @@ export default class Payment {
       type: 'close',
     });
   }
+
+  // 查询订单
+  async getPayInfo(params) {
+    return await this.run({
+      pathParams: {
+        out_trade_no: params.out_trade_no,
+        mchId: this.mchId,
+      },
+      queryParams: {
+        mchid: this.mchId,
+      },
+      type: 'getPayInfo',
+    });
+  }
+
+  // 查询退款
+  async getRefund(params) {
+    return await this.run({
+      pathParams: {
+        out_refund_no: params.out_refund_no,
+      },
+      type: 'getRefund',
+    });
+  }
 }

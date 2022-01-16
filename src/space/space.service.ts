@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateSpaceDto } from './dto/create-space.dto';
@@ -8,12 +8,17 @@ import { MatchService } from '../match/match.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { Space, SpaceDocument } from './schemas/space.schema';
 import { UnitEnum } from '../common/enum/space.enum';
+import { StadiumService } from '../stadium/stadium.service';
+import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class SpaceService {
   constructor(
     @InjectModel(Space.name) private readonly spaceModel: Model<SpaceDocument>,
     private readonly matchService: MatchService,
+    private readonly stadiumService: StadiumService,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
   ) {}
 
   async findByStadiumId(params: any): Promise<SpaceMatchDto[]> {
@@ -68,7 +73,20 @@ export class SpaceService {
       );
     }
     const newSpace = new this.spaceModel(space);
+
+    await this.handleStadiumRemarks(space);
+
     return await newSpace.save();
+  }
+
+  async checkActive(id) {
+    const activeOrder = await this.orderService.findActiveOrder();
+    const checkFlag = activeOrder.some((d) => d.spaceId === id);
+    if (checkFlag) {
+      ToolsService.fail('不能修改规格，有订单正在使用！');
+      return false;
+    }
+    return true;
   }
 
   async modifySpace(space: ModifySpaceDto): Promise<Space> {
@@ -76,15 +94,33 @@ export class SpaceService {
     if (this.checkStadiumId(space)) {
       ToolsService.fail('stadiumId不能为空！');
     }
-    const hasSpace = await this.spaceModel.findOne(data).exec();
-    if (hasSpace) {
+    const hasSpace = await this.spaceModel
+      .findOne({
+        ...data,
+        id: undefined,
+      })
+      .exec();
+    if (hasSpace && hasSpace.toJSON().id !== id) {
       ToolsService.fail('修改失败，场地名称已存在！');
     }
+    const spaceFromDB = await this.spaceModel.findById(id).exec();
+    if (data.unit !== spaceFromDB.unit) {
+      await this.checkActive(id);
+    }
+
+    await this.handleStadiumRemarks(space);
+
     return await this.spaceModel.findByIdAndUpdate(id, data).exec();
   }
 
   async removeSpace(id: string): Promise<any> {
+    await this.checkActive(id);
     await this.spaceModel.findByIdAndDelete(id);
+  }
+
+  async handleStadiumRemarks(space) {
+    const { stadiumId, unit } = space;
+    await this.stadiumService.modifyRemarks(stadiumId, unit);
   }
 
   unitEnum() {

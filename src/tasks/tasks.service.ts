@@ -8,6 +8,7 @@ import { MatchService } from '../match/match.service';
 import { UsersService } from '../users/users.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { WxService } from '../wx/wx.service';
+import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 
 const Moment = require('moment');
 
@@ -20,14 +21,16 @@ export class TasksService {
     private readonly userService: UsersService,
     private readonly userRMatchService: UserRMatchService,
     private readonly wxService: WxService,
+    private readonly monthlyCardService: MonthlyCardService,
   ) {}
 
-  @Cron('0 * 3,13,23 * * *')
+  @Cron('0 0 3,13,23 * * *')
   async handleUpdateCertificates() {
+    console.log('获取证书');
     await this.wxService.updateCertificates();
   }
 
-  @Cron('0 1 0 * * 0-7')
+  @Cron('5 0 0 * * *')
   async handleMatch() {
     const matchList: any[] = await this.matchService.findAllBase();
     for (const item of matchList) {
@@ -42,25 +45,45 @@ export class TasksService {
     }
   }
 
-  @Interval(1000 * 60 * 3)
-  async handleOrderClose() {
-    console.log(Date.now(), '每3分钟');
+  @Cron('2 0 0 * * *')
+  async handleMonthlyCard() {
+    const monthlyCardList: any[] = await this.monthlyCardService.findAll();
+    for (const item of monthlyCardList) {
+      const monthlyCard = item.toJSON();
+      const { validPeriodEnd, id } = monthlyCard;
+      const valid = Moment(validPeriodEnd).add(1, 'day').valueOf();
+      const nowTime = Moment.now();
+      if (nowTime >= valid) {
+        await this.monthlyCardService.changeCardValid(id, false);
+      }
+    }
   }
 
   @Interval(1000 * 60 * 1)
   async handleOrderAwait() {
-    const orderList: any[] = await this.orderService.findCancelOrder();
-    console.log(orderList);
+    const orderList: any[] = await this.orderService.findAwaitOrder();
     for (const item of orderList) {
       const nowTime = Moment.now();
       const order = item.toJSON();
-      // TODO 五分钟之后
+      const { status, payAt, id } = order;
+      const timerFlag = Moment(nowTime).diff(Moment(payAt), 'minutes') >= 1;
+      if (timerFlag) {
+        if (status === 5) {
+          await this.wxService.getPayInfo(id);
+        } else if (status === 4) {
+          await this.wxService.getRefund(order.refundId);
+        }
+      }
+    }
+  }
+
+  @Interval(1000 * 60 * 3)
+  async handleOrderClose() {
+    const orderList: any[] = await this.orderService.findCancelOrder();
+    for (const item of orderList) {
+      const nowTime = Moment.now();
+      const order = item.toJSON();
       const { payAt, closeFlag } = order;
-      console.log(
-        !closeFlag,
-        payAt,
-        Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5,
-      );
       if (
         !closeFlag &&
         payAt &&
