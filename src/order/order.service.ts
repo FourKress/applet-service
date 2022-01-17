@@ -22,9 +22,9 @@ import * as utils from './utils';
 
 @Injectable()
 export class OrderService {
-  private nowDayEndTime = Moment().startOf('day').add(1, 'day').valueOf();
-  private nowDayStartTime = Moment().startOf('day').valueOf();
-  private nowMonthTime = Moment().startOf('month').valueOf();
+  private nowDayEndTime = () => Moment().startOf('day').add(1, 'day').valueOf();
+  private nowDayStartTime = () => Moment().startOf('day').valueOf();
+  private nowMonthTime = () => Moment().startOf('month').valueOf();
   constructor(
     @InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>,
     private readonly monthlyCardService: MonthlyCardService,
@@ -100,7 +100,7 @@ export class OrderService {
       userId,
     );
 
-    const price = match.price * (match.rebate / 10);
+    const price = currency(match.price).multiply(match.rebate / 10).value;
 
     const countdown =
       utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
@@ -288,13 +288,15 @@ export class OrderService {
     const userByStadiumList = await Promise.all(
       relationList.map(async (item: any) => {
         const order = item.toJSON();
-        const orderList = await this.orderModel.find({
-          userId: order.id,
-          matchId,
-          stadiumId,
-        });
+        const orderList = await this.orderModel
+          .find({
+            userId: order.id,
+            matchId,
+            stadiumId,
+          })
+          .in('status', [2, 7]);
         order.stadiumTempCount = orderList.length;
-        order.orderStatus = utils.StatusMap[orderList[0].status];
+        order.orderStatus = utils.StatusMap[orderList[0]?.status];
         return order;
       }),
     );
@@ -307,7 +309,8 @@ export class OrderService {
     month: string,
   ): Promise<Order[]> {
     const baseSearch = this.orderModel
-      .find({ bossId, status: 2 })
+      .find({ bossId })
+      .in('status', [2, 3])
       .where('createdAt');
     let statisticsList = [];
     if (month) {
@@ -316,14 +319,14 @@ export class OrderService {
     switch (Number(type)) {
       case 0:
         statisticsList = await baseSearch
-          .gte(this.nowDayStartTime)
-          .lte(this.nowDayEndTime)
+          .gte(this.nowDayStartTime())
+          .lte(this.nowDayEndTime())
           .exec();
         break;
       case 1:
         statisticsList = await baseSearch
-          .gte(this.nowMonthTime)
-          .lte(this.nowDayEndTime)
+          .gte(this.nowMonthTime())
+          .lte(this.nowDayEndTime())
           .exec();
         break;
       case 2:
@@ -347,10 +350,11 @@ export class OrderService {
       balanceAmt,
     };
     statisticsList.forEach((order) => {
-      const { payAmount } = order;
-      const price = Number(payAmount);
+      const { payAmount, refundAmount = 0 } = order;
+      console.log(order);
+      const price = Number(payAmount - refundAmount);
       sum.monthCount = currency(sum.monthCount).add(price).value;
-      if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime)) > 0) {
+      if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime())) > 0) {
         sum.dayCount = currency(sum.dayCount).add(price).value;
       }
     });
@@ -373,7 +377,7 @@ export class OrderService {
         const { id } = match;
         const orderList = await this.orderModel
           .find({ matchId: id })
-          .in('status', [2]);
+          .in('status', [2, 3]);
         const monthlyCardCount = orderList.filter(
           (item) => item.payMethod === 2,
         ).length;
@@ -387,7 +391,8 @@ export class OrderService {
           0,
         );
         const sumPayAmount = filterList.reduce(
-          (sum, curr) => currency(sum).add(curr.payAmount).value,
+          (sum, curr) =>
+            currency(sum).add(curr.payAmount - (curr.refundAmount || 0)).value,
           0,
         );
         return {
@@ -525,9 +530,7 @@ export class OrderService {
 
     const refundId = order.refundId || Types.ObjectId().toHexString();
     await this.orderModel.findByIdAndUpdate(orderId, {
-      // TODO 临时设置
-      // refundAmount,
-      refundAmount: 10,
+      refundAmount,
       refundType,
       refundId,
     });
@@ -535,6 +538,7 @@ export class OrderService {
       refundAmount: currency(refundAmount, { precision: 2 }).value,
       refundType,
       refundId,
+      payAmount,
     };
   }
 

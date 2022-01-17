@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import Payment from './payment';
 import { ToolsService } from '../common/utils/tools-service';
 import { OrderService } from '../order/order.service';
+import { UsersService } from '../users/users.service';
 import { Y2FUnit } from '../constant';
 
 const Moment = require('moment');
@@ -14,6 +15,7 @@ export class WxService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly orderService: OrderService,
+    private readonly usersService: UsersService,
   ) {
     this.appId = this.configService.get<string>('auth.wxAppKey');
     this.appSecret = this.configService.get<string>('auth.wxAppSecret');
@@ -125,11 +127,20 @@ export class WxService {
     } = resource;
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
-    console.log(
-      order.refundAmount === payer_refund / Y2FUnit,
-      order.status === 4,
-    );
-    if (order.refundAmount === payer_refund / Y2FUnit && order.status === 4) {
+    const { payAmount, refundAmount, status, bossId } = order;
+    console.log(refundAmount === payer_refund / Y2FUnit, status === 4);
+    if (refundAmount === payer_refund / Y2FUnit && status === 4) {
+      const userInfo = await this.usersService.findByBossId(bossId);
+      const addBalanceAmt = payAmount - refundAmount;
+      if (addBalanceAmt > 0) {
+        const balanceAmt = userInfo.balanceAmt + addBalanceAmt;
+        await this.usersService.setBossBalanceAmt({
+          bossId,
+          balanceAmt,
+          withdrawAt: Moment.now(),
+        });
+      }
+
       await this.orderService.modifyOrder({
         id: out_trade_no,
         status: 3,
@@ -195,15 +206,18 @@ export class WxService {
   }
 
   async refund(order): Promise<any> {
-    const { orderId, refundAmount, refundId } = order;
-
+    const { orderId, refundAmount, payAmount, refundId } = order;
+    const orderFromDB = await this.orderService.getOrderById(orderId);
+    if ([4, 3].includes(orderFromDB.status)) {
+      return;
+    }
     const { status, data, headers } = await this.payment.refund({
       out_trade_no: orderId,
       out_refund_no: refundId,
       notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/refundNotice',
       amount: {
         refund: refundAmount * Y2FUnit,
-        total: refundAmount * Y2FUnit,
+        total: payAmount * Y2FUnit,
         currency: 'CNY',
       },
     });
@@ -293,7 +307,9 @@ export class WxService {
       ToolsService.fail(`查询退款请签名失败`, 403);
     }
 
-    if (data.refund_status === 'SUCCESS') {
+    console.log(data);
+
+    if (data.status === 'SUCCESS') {
       await this.handleRefundSuccess(data);
     } else {
       await this.handleRefundError(out_refund_no);

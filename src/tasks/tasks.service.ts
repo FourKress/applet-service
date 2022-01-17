@@ -145,6 +145,7 @@ export class TasksService {
               orderId: order.id,
               refundAmount: refundInfo.refundAmount,
               refundId: refundInfo.refundId,
+              payAmount: refundInfo.payAmount,
             });
           } else {
             this.logger.log(`${order.id} 组队成功 进行中`);
