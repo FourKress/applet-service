@@ -202,11 +202,8 @@ export class WxService {
       out_refund_no: refundId,
       notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/refundNotice',
       amount: {
-        // TODO 临时设置
-        // refund: refundAmount * Y2FUnit,
-        // total: refundAmount * Y2FUnit,
-        refund: 1,
-        total: 1,
+        refund: refundAmount * Y2FUnit,
+        total: refundAmount * Y2FUnit,
         currency: 'CNY',
       },
     });

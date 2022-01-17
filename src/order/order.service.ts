@@ -274,7 +274,7 @@ export class OrderService {
       .findByIdAndUpdate(id, {
         // TODO 临时设置
         // payAmount: amount,
-        payAmount: 1,
+        payAmount: 10,
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
         isMonthlyCard,
@@ -527,7 +527,7 @@ export class OrderService {
     await this.orderModel.findByIdAndUpdate(orderId, {
       // TODO 临时设置
       // refundAmount,
-      refundAmount: 1,
+      refundAmount: 10,
       refundType,
       refundId,
     });
