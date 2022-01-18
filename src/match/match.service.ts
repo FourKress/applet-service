@@ -85,6 +85,7 @@ export class MatchService {
   async findByRunData(params: MatchRunDto): Promise<Match[]> {
     const matchList = await this.matchModel
       .find(params)
+      .populate('stadium', { name: 1 }, Stadium.name)
       .populate('space', { name: 1 }, Space.name)
       .exec();
     return matchList.map((item: any) => {
