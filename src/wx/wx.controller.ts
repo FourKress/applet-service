@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { WxService } from './wx.service';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
-import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('wx')
 export class WxController {
@@ -20,12 +19,6 @@ export class WxController {
   @Get('code2Session')
   async code2Session(@Query() params: any): Promise<string> {
     return await this.wxService.code2Session(params.code);
-  }
-
-  @NoAuth()
-  @Get('getActivityId')
-  async getActivityId(): Promise<string> {
-    return await this.wxService.getActivityId();
   }
 
   @Post('pay')

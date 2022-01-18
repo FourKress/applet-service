@@ -54,25 +54,6 @@ export class WxService {
     return res.data;
   }
 
-  async getActivityId(): Promise<string> {
-    const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
-    const accessToken = (
-      await lastValueFrom(
-        this.httpService.get(
-          `https://api.weixin.qq.com/cgi-bin/token?${params}`,
-        ),
-      )
-    ).data?.access_token;
-    const activityId = (
-      await lastValueFrom(
-        this.httpService.get(
-          `https://api.weixin.qq.com/cgi-bin/message/wxopen/activityid/create?access_token=${accessToken}`,
-        ),
-      )
-    ).data?.activity_id;
-    return activityId;
-  }
-
   async updateCertificates() {
     await this.payment.getCertificates(true);
   }
