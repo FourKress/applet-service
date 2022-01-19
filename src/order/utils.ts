@@ -19,7 +19,7 @@ export const countdown = (createdAt, startAt, type = 'unix'): number => {
   let awaitTime: number = CONSTANT.orderMinAwaitTime;
   if (
     Moment(startAt).diff(Moment(createdAt), 'minutes') >=
-    CONSTANT.orderMaxAwaitTime
+    CONSTANT.triggerAwaitThresholdTime
   ) {
     awaitTime = CONSTANT.orderMaxAwaitTime;
   }

@@ -560,13 +560,14 @@ export class OrderService {
     const { matchId, personCount } = order;
     const match: any = await this.matchService.findById(matchId);
     const realSelectPeople = match.selectPeople - personCount;
+    const selectPeople = realSelectPeople < 0 ? 0 : realSelectPeople;
     await this.matchService.changeMatchSelectPeople({
       id: matchId,
-      selectPeople: realSelectPeople,
+      selectPeople,
     });
     await this.userRMatchService.changeRCount({
       matchId,
-      count: realSelectPeople,
+      count: selectPeople,
     });
   }
 

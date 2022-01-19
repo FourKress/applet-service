@@ -18,11 +18,12 @@ export class UserRMatchService {
   async findAllByMatchId(matchId: string): Promise<UserRMatch[]> {
     const relationList = await this.userRMatchModel.find({ matchId });
     let personList = [];
-    if (relationList.length) {
+    if (relationList?.length) {
       personList = await Promise.all(
         relationList.map(async (relation) => {
           const user = await this.usersService.findOneById(relation.userId);
-          const userList = new Array(relation.count).fill('').map(() => user);
+          const count = relation.count < 0 ? 0 : relation.count;
+          const userList = new Array(count).fill('').map(() => user);
           return userList;
         }),
       );
