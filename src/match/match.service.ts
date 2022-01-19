@@ -255,10 +255,10 @@ export class MatchService {
       ToolsService.fail('场次已结束，不能取消');
       return;
     }
-    // TODO 处理订单相关的状态、退款
     await this.matchModel.findByIdAndUpdate(id, {
       status: false,
     });
+    await this.orderService.handleOrderByMatchCancel(id);
   }
 
   async autoAddRepeatMatch(match, type) {

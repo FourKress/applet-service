@@ -15,6 +15,7 @@ import { UnitEnum } from '../common/enum/space.enum';
 import { UsersService } from '../users/users.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { User } from '../users/schemas/user.schema';
+import { WxService } from '../wx/wx.service';
 
 import * as currency from 'currency.js';
 const Moment = require('moment');
@@ -33,6 +34,7 @@ export class OrderService {
     private readonly matchService: MatchService,
     private readonly userRMatchService: UserRMatchService,
     private readonly userService: UsersService,
+    private readonly wxService: WxService,
   ) {}
 
   async findAll(): Promise<Order[]> {
@@ -351,7 +353,6 @@ export class OrderService {
     };
     statisticsList.forEach((order) => {
       const { payAmount, refundAmount = 0 } = order;
-      console.log(order);
       const price = Number(payAmount - refundAmount);
       sum.monthCount = currency(sum.monthCount).add(price).value;
       if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime())) > 0) {
@@ -634,5 +635,42 @@ export class OrderService {
       sortFn[2] = (a, b) => b.isMonthlyCard - a.isMonthlyCard;
     }
     return coverUserList.sort(sortFn[type] || sortFn[0]);
+  }
+
+  async handleOrderByMatchCancel(matchId: string): Promise<any> {
+    // 5,
+    const orderList = await this.orderModel
+      .find({ matchId })
+      .in('status', [0, 1, 7])
+      .exec();
+
+    if (!orderList?.length) return true;
+
+    await Promise.all(
+      orderList.map(async (order) => {
+        const { status, id } = order.toJSON();
+        if (status === 0) {
+          console.log('取消');
+          await this.modifyOrder({ id, status: 6 });
+        } else {
+          console.log('退款');
+          const refundInfo: any = await this.handleSystemRefund(id);
+          if (refundInfo.refundAmount === 0) {
+            await this.modifyOrder({
+              id,
+              status: 3,
+            });
+          } else {
+            await this.wxService.refund({
+              orderId: id,
+              refundAmount: refundInfo.refundAmount,
+              refundId: refundInfo.refundId,
+              payAmount: refundInfo.payAmount,
+            });
+          }
+        }
+      }),
+    );
+    return true;
   }
 }

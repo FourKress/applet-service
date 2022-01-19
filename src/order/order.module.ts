@@ -9,6 +9,7 @@ import { MatchModule } from '../match/match.module';
 import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 import { Order, OrderSchema } from './schemas/order.schema';
 import { UsersModule } from '../users/users.module';
+import { WxModule } from '../wx/wx.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UsersModule } from '../users/users.module';
     MatchModule,
     UserRMatchModule,
     UsersModule,
+    WxModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

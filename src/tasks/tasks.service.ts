@@ -141,12 +141,19 @@ export class TasksService {
             const refundInfo: any = await this.orderService.handleSystemRefund(
               order.id,
             );
-            await this.wxService.refund({
-              orderId: order.id,
-              refundAmount: refundInfo.refundAmount,
-              refundId: refundInfo.refundId,
-              payAmount: refundInfo.payAmount,
-            });
+            if (refundInfo.refundAmount === 0) {
+              await this.changeOrder({
+                ...order,
+                status: 3,
+              });
+            } else {
+              await this.wxService.refund({
+                orderId: order.id,
+                refundAmount: refundInfo.refundAmount,
+                refundId: refundInfo.refundId,
+                payAmount: refundInfo.payAmount,
+              });
+            }
           } else {
             this.logger.log(`${order.id} 组队成功 进行中`);
             await this.changeOrder({
@@ -165,7 +172,6 @@ export class TasksService {
             status: 2,
           });
           const userInfo = await this.userService.findByBossId(bossId);
-          // TODO 计算提现余额
           const balanceAmt = userInfo.balanceAmt + order.payAmount;
           await this.changeBossUser({
             bossId,
