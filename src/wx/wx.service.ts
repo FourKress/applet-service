@@ -23,6 +23,7 @@ export class WxService {
     this.mchId = this.configService.get<string>('auth.wxMchId');
     this.wxSerialNo = this.configService.get<string>('auth.wxSerialNo');
     this.wxApiV3Key = this.configService.get<string>('auth.wxApiV3Key');
+    this.serverAddress = this.configService.get<string>('auth.audience');
     this.wxPayDescription = this.configService.get<string>(
       'auth.wxPayDescription',
     );
@@ -42,6 +43,7 @@ export class WxService {
   private readonly wxSerialNo: string;
   private readonly wxApiV3Key: string;
   private readonly wxPayDescription: string;
+  private readonly serverAddress: string;
 
   private readonly payment: any;
 
@@ -167,7 +169,7 @@ export class WxService {
     const { openId, orderId, payAmount } = order;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
-      notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/payNotice',
+      notify_url: `${this.serverAddress}/api/wx/payNotice`,
       amount: {
         total: payAmount * Y2FUnit,
       },
@@ -196,7 +198,7 @@ export class WxService {
     const { status, data, headers } = await this.payment.refund({
       out_trade_no: orderId,
       out_refund_no: refundId,
-      notify_url: 'https://wx-test.qiuchangtong.xyz/api/wx/refundNotice',
+      notify_url: `${this.serverAddress}/api/wx/refundNotice`,
       amount: {
         refund: refundAmount * Y2FUnit,
         total: payAmount * Y2FUnit,
