@@ -92,11 +92,13 @@ export class StadiumService {
     return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
   }
 
-  async modifyRemarks(id, unit): Promise<Stadium> {
+  async modifyRemarks(id, unit, oldUnit = ''): Promise<Stadium> {
     const stadium = await this.findById(id);
     const unitLabel: any = UnitEnum.find((d) => d.value === unit).label;
+    const oldUnitLabel: any = UnitEnum.find((d) => d.value === oldUnit).label;
     const remarks = stadium.remarks ? stadium.remarks.split('，') : [];
-    const newRemarks = [...new Set(remarks.concat(unitLabel))].join('，');
+    const realRemarks = remarks.filter((d) => d !== oldUnitLabel);
+    const newRemarks = [...new Set(realRemarks.concat(unitLabel))].join('，');
     return await this.stadiumModel
       .findByIdAndUpdate(id, {
         remarks: newRemarks,

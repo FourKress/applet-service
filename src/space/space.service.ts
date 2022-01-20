@@ -108,7 +108,7 @@ export class SpaceService {
       await this.checkActive(id);
     }
 
-    await this.handleStadiumRemarks(space);
+    await this.handleStadiumRemarks(space, spaceFromDB.unit);
 
     return await this.spaceModel.findByIdAndUpdate(id, data).exec();
   }
@@ -118,9 +118,9 @@ export class SpaceService {
     await this.spaceModel.findByIdAndDelete(id);
   }
 
-  async handleStadiumRemarks(space) {
+  async handleStadiumRemarks(space, oldUnit: any = '') {
     const { stadiumId, unit } = space;
-    await this.stadiumService.modifyRemarks(stadiumId, unit);
+    await this.stadiumService.modifyRemarks(stadiumId, unit, oldUnit);
   }
 
   unitEnum() {

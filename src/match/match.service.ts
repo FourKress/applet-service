@@ -212,12 +212,12 @@ export class MatchService {
       })
       .exec();
 
-    if (
-      Moment(Moment.now()).diff(
-        Moment(`${Moment().format('YYYY-MM-DD')} ${matchFromDB.startAt}`),
-      ) >= 0
-    ) {
-      ToolsService.fail('场次已开始，不能修改');
+    const hasOrder = await this.orderService.findActiveOrderByMatchId(id);
+    const notNextDay =
+      Moment(runDate).endOf('day').valueOf() > Moment.now().valueOf();
+    const hasErrorOrder = hasOrder.some((d) => [8, 9].includes(d.status));
+    if ((hasOrder?.length && notNextDay) || hasErrorOrder) {
+      ToolsService.fail('不能修改，有订单正在使用！');
       return;
     }
 

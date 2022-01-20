@@ -674,4 +674,11 @@ export class OrderService {
     );
     return true;
   }
+
+  async findActiveOrderByMatchId(matchId: string): Promise<Order[]> {
+    return await this.orderModel
+      .find({ matchId })
+      .nin('status', [2, 3, 6])
+      .exec();
+  }
 }
