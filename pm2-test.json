@@ -1,6 +1,6 @@
 {
   "apps": [{
-    "name": "applet-service",
+    "name": "applet-service-test",
     "script": "dist/main.js",
     "watch": true,
     "ignore_watch": [

@@ -7,8 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build:test": "NODE_ENV=test nest build",
-    "build:prod": "NODE_ENV=prod nest build",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "NODE_ENV=dev nest start --watch",
@@ -20,7 +19,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "pm2": "pm2 start pm2.json"
+    "pm2:test": "pm2 start pm2-test.json",
+    "pm2:prod": "pm2 start pm2-prod.json"
   },
   "dependencies": {
     "@nestjs/common": "^7.6.15",
