@@ -1,10 +1,12 @@
 #!/bin/bash
 
+echo '---开始执行git checkout master---'
+git checkout master
 echo '---开始执行git pull---'
 git pull
 echo '---git pull执行完毕，开始执行yarn install---'
 yarn
-echo '---yarn install执行完毕，开始执行yarn build---'
+echo '---yarn install执行完毕，开始执行yarn build:prod---'
 yarn build
 echo '---yarn build执行完毕 开始执行yarn pm2---'
 yarn pm2
