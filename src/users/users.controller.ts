@@ -61,4 +61,16 @@ export class UsersController {
   async findBossList(): Promise<User[]> {
     return await this.usersService.findBossList();
   }
+
+  @Post('findUserList')
+  @HttpCode(HttpStatus.OK)
+  async findUserList(): Promise<User[]> {
+    return await this.usersService.findUserList();
+  }
+
+  @Post('changeBossStatus')
+  @HttpCode(HttpStatus.OK)
+  async changeBossStatus(@Body() params: any): Promise<User> {
+    return await this.usersService.changeBossStatus(params);
+  }
 }

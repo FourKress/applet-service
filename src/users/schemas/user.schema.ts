@@ -45,6 +45,8 @@ export class User implements UserInterface {
   isAdmin: boolean;
   @Prop()
   adminPassword: string;
+  @Prop({ default: false })
+  bossStatus: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

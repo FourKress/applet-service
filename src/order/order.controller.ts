@@ -21,7 +21,8 @@ import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Get('list')
+  @Post('list')
+  @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Order[]> {
     return await this.orderService.findAll();
   }

@@ -25,7 +25,7 @@ export class AuthController {
   @NoAuth()
   @Post('adminLogin')
   @HttpCode(HttpStatus.OK)
-  public async adminLogin(@Body('phoneNum') phoneNum): Promise<AuthInterface> {
-    return await this.authService.adminLogin(phoneNum);
+  public async adminLogin(@Body() params): Promise<AuthInterface> {
+    return await this.authService.adminLogin(params);
   }
 }

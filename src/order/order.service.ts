@@ -38,7 +38,10 @@ export class OrderService {
   ) {}
 
   async findAll(): Promise<Order[]> {
-    return await this.orderModel.find().exec();
+    return await this.orderModel
+      .find()
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
   }
 
   async findActiveOrder(): Promise<Order[]> {

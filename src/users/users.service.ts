@@ -23,13 +23,18 @@ export class UsersService {
       .exec();
   }
 
-  async findOneByPhoneNum(phoneNum): Promise<User> {
+  async findOneByPhoneNum(params): Promise<User> {
+    const { adminPassword, phoneNum } = params;
     if (!phoneNum) {
       ToolsService.fail('手机号不能为空！');
+    }
+    if (!adminPassword) {
+      ToolsService.fail('密码不能为空！');
     }
     return await this.userModel
       .findOne({
         phoneNum,
+        adminPassword,
       })
       .exec();
   }
@@ -114,5 +119,18 @@ export class UsersService {
 
   async findBossList(): Promise<User[]> {
     return await this.userModel.find().exists('bossId', true).exec();
+  }
+
+  async findUserList(): Promise<User[]> {
+    return await this.userModel.find().exists('bossId', false).exec();
+  }
+
+  async changeBossStatus(params): Promise<User> {
+    const { id, bossStatus } = params;
+    return await this.userModel
+      .findByIdAndUpdate(id, {
+        bossStatus,
+      })
+      .exec();
   }
 }

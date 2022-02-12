@@ -6,6 +6,7 @@ import { AuthInterface } from './interfaces/auth.interface';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
+import { ToolsService } from '../common/utils/tools-service';
 
 @Injectable()
 export class AuthService {
@@ -33,9 +34,10 @@ export class AuthService {
     };
   }
 
-  async adminLogin(phoneNum): Promise<AuthInterface> {
-    const userFromDb: any = await this.usersService.findOneByPhoneNum(phoneNum);
+  async adminLogin(params): Promise<AuthInterface> {
+    const userFromDb: any = await this.usersService.findOneByPhoneNum(params);
     if (!userFromDb) {
+      ToolsService.fail('账号或密码错误！');
     }
     const userInfo = userFromDb.toJSON();
     const token = await this.jwtService.createToken({
