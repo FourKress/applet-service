@@ -41,6 +41,10 @@ export class User implements UserInterface {
   createdAt: number;
   @Prop()
   updatedAt: number;
+  @Prop({ default: false })
+  isAdmin: boolean;
+  @Prop()
+  adminPassword: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

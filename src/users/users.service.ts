@@ -23,6 +23,17 @@ export class UsersService {
       .exec();
   }
 
+  async findOneByPhoneNum(phoneNum): Promise<User> {
+    if (!phoneNum) {
+      ToolsService.fail('手机号不能为空！');
+    }
+    return await this.userModel
+      .findOne({
+        phoneNum,
+      })
+      .exec();
+  }
+
   async findOneById(id: string): Promise<User> {
     if (!id) {
       ToolsService.fail('id不能为空！');
@@ -99,5 +110,9 @@ export class UsersService {
         },
       })
       .exec();
+  }
+
+  async findBossList(): Promise<User[]> {
+    return await this.userModel.find().exists('bossId', true).exec();
   }
 }

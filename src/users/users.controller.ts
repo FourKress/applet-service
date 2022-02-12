@@ -55,4 +55,10 @@ export class UsersController {
   async setBoss(@Body('id', new ValidationIDPipe()) id: string): Promise<User> {
     return await this.usersService.setBoss(id);
   }
+
+  @Post('findBossList')
+  @HttpCode(HttpStatus.OK)
+  async findBossList(): Promise<User[]> {
+    return await this.usersService.findBossList();
+  }
 }

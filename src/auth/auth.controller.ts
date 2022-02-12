@@ -18,10 +18,14 @@ export class AuthController {
   @NoAuth()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  public async login(
-    @Request() req,
-    @Body() user: UserInterface,
-  ): Promise<AuthInterface> {
+  public async login(@Body() user: UserInterface): Promise<AuthInterface> {
     return await this.authService.login(user);
+  }
+
+  @NoAuth()
+  @Post('adminLogin')
+  @HttpCode(HttpStatus.OK)
+  public async adminLogin(@Body('phoneNum') phoneNum): Promise<AuthInterface> {
+    return await this.authService.adminLogin(phoneNum);
   }
 }

@@ -32,4 +32,20 @@ export class AuthService {
       userInfo: userInfo,
     };
   }
+
+  async adminLogin(phoneNum): Promise<AuthInterface> {
+    const userFromDb: any = await this.usersService.findOneByPhoneNum(phoneNum);
+    if (!userFromDb) {
+    }
+    const userInfo = userFromDb.toJSON();
+    const token = await this.jwtService.createToken({
+      userId: userInfo.id,
+      openId: userInfo.openId,
+      bossId: userInfo.bossId,
+    });
+    return {
+      token,
+      userInfo: userInfo,
+    };
+  }
 }

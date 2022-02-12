@@ -30,7 +30,8 @@ async function bootstrap() {
     new BadRequestExceptionFilter(),
   );
   app.useGlobalPipes(new ValidationPipe());
-  /* 安全 */
+
+  app.enableCors();
   app.enable('trust proxy');
   app.use(helmet());
 
