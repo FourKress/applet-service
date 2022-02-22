@@ -35,6 +35,7 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       exclude: ['/api*'],
+      serveRoot: '/static',
     }),
     TasksModule,
     UsersModule,
