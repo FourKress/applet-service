@@ -119,7 +119,9 @@ export class StadiumService {
         );
         const ids = watchList.map((d: any) => d.stadiumId);
         const stadiumWatchList = await this.stadiumModel
-          .find()
+          .find({
+            isWatch: true,
+          })
           .in('_id', ids)
           .exec();
         return await this.filterStadiumByMatch(stadiumWatchList);
