@@ -23,6 +23,7 @@ export class UserRStadiumService {
     return await this.userRStadium
       .find({
         userId,
+        isWatch: true,
       })
       .exec();
   }
