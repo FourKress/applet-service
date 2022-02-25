@@ -496,7 +496,7 @@ export class OrderService {
   async getRefundInfo(orderId, refundType): Promise<any> {
     const order = (await this.orderModel.findById(orderId)).toJSON();
     const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
-    if (![1, 9].includes(status)) {
+    if (![0, 1, 9].includes(status)) {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
@@ -513,7 +513,7 @@ export class OrderService {
         refundAmount = payAmount - stadium.monthlyCardPrice;
       }
     } else {
-      if (payMethod === 2 && payAmount === 0) {
+      if ((payMethod === 2 && payAmount === 0) || status === 6) {
         refundAmount = 0;
       } else {
         if (diffTime < 60) {
