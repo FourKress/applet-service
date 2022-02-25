@@ -99,11 +99,13 @@ export class OrderService {
     const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
       userId,
       stadiumId,
+      validFlag: true,
     });
     const checkRelation = await this.userRMatchService.onlyRelationByUserId(
       matchId,
       userId,
     );
+    console.log(!!checkRelation);
 
     const price = currency(match.price).multiply(match.rebate / 10).value;
 
@@ -128,7 +130,7 @@ export class OrderService {
       statusName: utils.StatusMap[order.status],
       validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
       validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
-      monthlyCardPayStatus: checkRelation?.count <= 1,
+      monthlyCardPayStatus: !!checkRelation,
     });
     return orderInfo;
   }
@@ -260,6 +262,7 @@ export class OrderService {
       const checkMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
         userId,
         stadiumId,
+        validFlag: true,
       });
       isMonthlyCard = !!checkMonthlyCard;
       if (checkMonthlyCard) {
@@ -450,6 +453,7 @@ export class OrderService {
               await this.monthlyCardService.checkMonthlyCard({
                 userId,
                 stadiumId,
+                validFlag: true,
               })
             )?.validPeriodEnd;
           }
@@ -622,6 +626,7 @@ export class OrderService {
         const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
           userId: user.id,
           stadiumId: user.stadiumId,
+          validFlag: true,
         });
         if (!!isMonthlyCard) flag = true;
         return {
