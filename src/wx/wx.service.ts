@@ -154,6 +154,7 @@ export class WxService {
         status: 1,
         wxOrderId: transaction_id,
       });
+      console.log('@@@@@通知机器人');
       this.httpService.post(
         'http://wx.qiuchangtong.xyz:4927/wechaty/sendMiniProgram',
         order,
