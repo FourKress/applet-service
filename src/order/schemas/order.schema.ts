@@ -3,6 +3,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { OrderInterface } from '../interfaces/order.interface';
 import { User } from '../../users/schemas/user.schema';
+import { Stadium } from '../../stadium/schemas/stadium.schema';
+import { Space } from '../../space/schemas/space.schema';
+import { Match } from '../../match/schemas/match.schema';
 
 export type OrderDocument = Order & Document;
 
@@ -16,11 +19,11 @@ export class Order implements OrderInterface {
   user: string;
   @Prop()
   bossId: string;
-  @Prop()
+  @Prop({ type: Types.ObjectId, ref: Stadium.name })
   stadiumId: string;
-  @Prop()
+  @Prop({ type: Types.ObjectId, ref: Space.name })
   spaceId: string;
-  @Prop()
+  @Prop({ type: Types.ObjectId, ref: Match.name })
   matchId: string;
   @Prop()
   payAmount: number;

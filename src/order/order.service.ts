@@ -20,6 +20,9 @@ import { WxService } from '../wx/wx.service';
 import * as currency from 'currency.js';
 const Moment = require('moment');
 import * as utils from './utils';
+import { Space } from '../space/schemas/space.schema';
+import { Stadium } from '../stadium/schemas/stadium.schema';
+import { Match } from '../match/schemas/match.schema';
 
 @Injectable()
 export class OrderService {
@@ -84,7 +87,23 @@ export class OrderService {
   }
 
   async getOrderById(id: string): Promise<Order> {
-    return this.orderModel.findById(id);
+    return this.orderModel
+      .findById(id)
+      .populate('stadiumId', { name: 1, _id: 1 }, Stadium.name)
+      .populate('spaceId', { name: 1, _id: 1 }, Space.name)
+      .populate(
+        'matchId',
+        {
+          _id: 1,
+          runDate: 1,
+          startAt: 1,
+          endAt: 1,
+          selectPeople: 1,
+          minPeople: 1,
+          totalPeople: 1,
+        },
+        Match.name,
+      );
   }
 
   async findOrderById(id: string): Promise<OrderInfoInterface> {

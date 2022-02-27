@@ -150,10 +150,14 @@ export class WxService {
     const order = orderFromDB.toJSON();
     if (order.payAmount === payer_total / Y2FUnit && order.status === 5) {
       await this.orderService.modifyOrder({
-        ...order,
+        id: order.id,
         status: 1,
         wxOrderId: transaction_id,
       });
+      this.httpService.post(
+        'https://wx.qiuchangtong.xyz:4927/wechaty/sendMiniProgram',
+        order,
+      );
     }
   }
 
