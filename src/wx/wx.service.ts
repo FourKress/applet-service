@@ -154,9 +154,11 @@ export class WxService {
         status: 1,
         wxOrderId: transaction_id,
       });
-      this.httpService.post(
-        'http://150.158.22.228:4927/wechaty/sendMiniProgram',
-        order,
+      await lastValueFrom(
+        this.httpService.post(
+          'http://150.158.22.228:4927/wechaty/sendMiniProgram',
+          order,
+        ),
       );
     }
   }
@@ -173,7 +175,8 @@ export class WxService {
     const { openId, orderId, payAmount } = order;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
-      notify_url: `${this.serverAddress}/api/wx/payNotice`,
+      // notify_url: `${this.serverAddress}/api/wx/payNotice`,
+      notify_url: `http://2a7b-14-109-211-217.ngrok.io/api/wx/payNotice`,
       amount: {
         total: payAmount * Y2FUnit,
       },
