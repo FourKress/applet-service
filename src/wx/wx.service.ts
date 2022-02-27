@@ -155,7 +155,7 @@ export class WxService {
         wxOrderId: transaction_id,
       });
       this.httpService.post(
-        'https://wx.qiuchangtong.xyz:4927/wechaty/sendMiniProgram',
+        'http://wx.qiuchangtong.xyz:4927/wechaty/sendMiniProgram',
         order,
       );
     }
