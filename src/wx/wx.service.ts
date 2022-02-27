@@ -175,8 +175,7 @@ export class WxService {
     const { openId, orderId, payAmount } = order;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
-      // notify_url: `${this.serverAddress}/api/wx/payNotice`,
-      notify_url: `http://2a7b-14-109-211-217.ngrok.io/api/wx/payNotice`,
+      notify_url: `${this.serverAddress}/api/wx/payNotice`,
       amount: {
         total: payAmount * Y2FUnit,
       },
