@@ -38,6 +38,12 @@ export class Stadium implements StadiumInterface {
   @Prop({ default: 0 })
   monthlyCardPrice: number;
   @Prop()
+  wxGroup: string;
+  @Prop()
+  wxGroupId: string;
+  @Prop()
+  welcomeWords: string;
+  @Prop()
   createdAt: number;
   @Prop()
   updatedAt: number;

@@ -3,6 +3,7 @@ import { OrderInterface } from './order.interface';
 export class OrderInfoInterface implements OrderInterface {
   id: string;
   bossId: string;
+  bossInfo: any;
   userId: string;
   user: string;
   stadiumId: string;

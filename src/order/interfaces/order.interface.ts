@@ -5,6 +5,7 @@ export interface OrderInterface {
   user: string;
   // 用户ID
   bossId: string;
+  bossInfo: any;
   // 球场ID
   stadiumId: string;
   // 场地ID

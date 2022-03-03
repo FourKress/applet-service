@@ -84,4 +84,16 @@ export class ModifyStadiumDto {
   })
   @Type(() => SpaceDto)
   readonly spaces: SpaceDto[];
+
+  @IsOptional()
+  @IsString({ message: 'wxGroup 必须是 string 类型' })
+  readonly wxGroup: string;
+
+  @IsOptional()
+  @IsString({ message: 'wxGroup 必须是 string 类型' })
+  readonly wxGroupId: string;
+
+  @IsOptional()
+  @IsString({ message: 'welcomeWords 必须是 string 类型' })
+  readonly welcomeWords: string;
 }
