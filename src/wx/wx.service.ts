@@ -158,7 +158,7 @@ export class WxService {
       });
 
       const wxGroup = await this.wxGroupService.findByStadiumId(
-        order.stadiumId,
+        order.stadiumId.id,
       );
 
       await lastValueFrom(
