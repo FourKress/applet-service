@@ -17,6 +17,7 @@ import { MatchModule } from './match/match.module';
 import { OrderModule } from './order/order.module';
 import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 import { UserRMatchModule } from './userRMatch/userRMatch.module';
+import { WxGroupModule } from './wxGroup/wxGroup.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
     OrderModule,
     MonthlyCardModule,
     UserRMatchModule,
+    WxGroupModule,
   ],
 })
 export class AppModule {}

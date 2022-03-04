@@ -43,7 +43,25 @@ export class OrderService {
   async findAll(): Promise<Order[]> {
     return await this.orderModel
       .find()
+      .sort({ createdAt: 'desc' })
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .populate('stadiumId', { name: 1, monthlyCardPrice: 1 }, Stadium.name)
+      .populate('spaceId', { name: 1, unit: 1 }, Space.name)
+      .populate(
+        'matchId',
+        {
+          name: 1,
+          runDate: 1,
+          startAt: 1,
+          endAt: 1,
+          rebate: 1,
+          rebatePrice: 1,
+          price: 1,
+          repeatName: 1,
+          repeatWeek: 1,
+        },
+        Match.name,
+      )
       .exec();
   }
 
@@ -124,7 +142,6 @@ export class OrderService {
       matchId,
       userId,
     );
-    console.log(!!checkRelation);
 
     const price = currency(match.price).multiply(match.rebate / 10).value;
 
@@ -212,11 +229,18 @@ export class OrderService {
     await this.userRMatchService.addRelation(relation);
     match.selectPeople = match.selectPeople + personCount;
     await this.matchService.modifyMatchSelectPeople(match.toJSON());
+    const bossFromDB: any = await this.userService.findByBossId(
+      addOrder.bossId,
+    );
+    const bossInfo = bossFromDB.toJSON();
     const newOrder = new this.orderModel({
       ...addOrder,
       userId,
       status: 0,
       user: userId,
+      bossInfo: {
+        ...bossInfo,
+      },
     });
     await newOrder.save();
 
@@ -299,9 +323,9 @@ export class OrderService {
 
     return await this.orderModel
       .findByIdAndUpdate(id, {
-        // TODO 临时设置
-        // payAmount: amount,
-        payAmount: 10,
+        // TODO 设置支付金额
+        payAmount: amount,
+        // payAmount: 10,
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
         isMonthlyCard,

@@ -19,6 +19,8 @@ export class Order implements OrderInterface {
   user: string;
   @Prop()
   bossId: string;
+  @Prop({ type: Types.Map })
+  bossInfo: any;
   @Prop({ type: Types.ObjectId, ref: Stadium.name })
   stadiumId: string;
   @Prop({ type: Types.ObjectId, ref: Space.name })

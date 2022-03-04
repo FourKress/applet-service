@@ -9,6 +9,7 @@ import { UserRStadiumService } from '../userRStadium/userRstadium.service';
 import { MatchService } from '../match/match.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
+import { WxGroupService } from '../wxGroup/wxGroup.service';
 
 const Moment = require('moment');
 
@@ -20,6 +21,7 @@ export class StadiumService {
     private readonly userRStadiumService: UserRStadiumService,
     private readonly matchService: MatchService,
     private readonly monthlyCardService: MonthlyCardService,
+    private readonly wxGroupService: WxGroupService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -89,7 +91,26 @@ export class StadiumService {
       await this.checkActive(id);
     }
 
-    return await this.stadiumModel.findByIdAndUpdate(id, stadiumInfo).exec();
+    let wxGroup: any = {};
+    if (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) {
+      const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
+        stadiumInfo.wxGroup,
+      );
+      wxGroup = wxGroupFromDB.toJSON();
+      await this.wxGroupService.modify({
+        id: wxGroup.id,
+        wxGroupName: stadiumInfo.wxGroup,
+        bossId: stadiumInfo.bossId,
+        stadiumId: id,
+      });
+    }
+
+    return await this.stadiumModel
+      .findByIdAndUpdate(id, {
+        ...stadiumInfo,
+        wxGroupId: stadiumInfo.wxGroupId || wxGroup.wxGroupId,
+      })
+      .exec();
   }
 
   async modifyRemarks(id, unit, oldUnit = ''): Promise<Stadium> {

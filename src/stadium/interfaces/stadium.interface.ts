@@ -26,6 +26,9 @@ export interface StadiumInterface {
   readonly monthlyCardStatus: boolean;
   // 月卡价格
   readonly monthlyCardPrice: number;
+  readonly wxGroup: string;
+  readonly wxGroupId: string;
+  readonly welcomeWords: string;
   readonly createdAt: number;
   readonly updatedAt: number;
 }
