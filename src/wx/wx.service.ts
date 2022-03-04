@@ -6,6 +6,7 @@ import { ToolsService } from '../common/utils/tools-service';
 import { OrderService } from '../order/order.service';
 import { UsersService } from '../users/users.service';
 import { Y2FUnit } from '../constant';
+import { WxGroupService } from '../wxGroup/wxGroup.service';
 
 const Moment = require('moment');
 
@@ -17,6 +18,7 @@ export class WxService {
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
     private readonly usersService: UsersService,
+    private readonly wxGroupService: WxGroupService,
   ) {
     this.appId = this.configService.get<string>('auth.wxAppKey');
     this.appSecret = this.configService.get<string>('auth.wxAppSecret');
@@ -154,10 +156,18 @@ export class WxService {
         status: 1,
         wxOrderId: transaction_id,
       });
+
+      const wxGroup = await this.wxGroupService.findByStadiumId(
+        order.stadiumId,
+      );
+
       await lastValueFrom(
         this.httpService.post(
           'http://150.158.22.228:4927/wechaty/sendMiniProgram',
-          order,
+          {
+            ...order,
+            wxGroupId: wxGroup.wxGroupId,
+          },
         ),
       );
     }
