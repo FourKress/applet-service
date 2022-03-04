@@ -15,7 +15,21 @@ export class WxGroupService {
     return await this.wxGroupModel.find().exec();
   }
 
+  async findByWxGroupName(wxGroupName): Promise<WxGroup> {
+    return await this.wxGroupModel.findOne({ wxGroupName }).exec();
+  }
+
   async add(params): Promise<WxGroup> {
+    const { wxGroupId } = params;
+    const wxGroupFromDB = await this.wxGroupModel.findOne({ wxGroupId });
+    const wxGroup = wxGroupFromDB.toJSON();
+    if (wxGroupFromDB) {
+      await this.modify({
+        id: wxGroup.id,
+        ...params,
+      });
+      return;
+    }
     const newWxGroup = new this.wxGroupModel(params);
     return await newWxGroup.save();
   }

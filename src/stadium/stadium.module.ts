@@ -6,6 +6,7 @@ import { StadiumService } from './stadium.service';
 import { UserRStadiumModule } from '../userRStadium/userRStadium.module';
 import { MatchModule } from '../match/match.module';
 import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
+import { WxGroupModule } from '../wxGroup/wxGroup.module';
 
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -19,6 +20,7 @@ const fs = require('fs');
     UserRStadiumModule,
     MatchModule,
     MonthlyCardModule,
+    WxGroupModule,
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, done) => {
