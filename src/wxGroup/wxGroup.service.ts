@@ -26,8 +26,8 @@ export class WxGroupService {
   async add(params): Promise<WxGroup> {
     const { wxGroupId } = params;
     const wxGroupFromDB = await this.wxGroupModel.findOne({ wxGroupId });
-    const wxGroup = wxGroupFromDB.toJSON();
     if (wxGroupFromDB) {
+      const wxGroup = wxGroupFromDB.toJSON();
       await this.modify({
         id: wxGroup.id,
         ...params,
