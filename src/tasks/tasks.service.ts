@@ -36,7 +36,7 @@ export class TasksService {
     await this.wxService.updateCertificates();
   }
 
-  @Cron('0 50 14 * * *')
+  @Cron('0 55 13 * * *')
   async handleStadiumAutoShare() {
     const wxGroupList = await this.wxGroupService.findActiveList();
     const stadiumIds = wxGroupList.map((wxGroup) => wxGroup.stadiumId);
