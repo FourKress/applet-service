@@ -7,6 +7,7 @@ import { OrderService } from '../order/order.service';
 import { UsersService } from '../users/users.service';
 import { Y2FUnit } from '../constant';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
+import { UnitEnum } from '../common/enum/space.enum';
 
 const Moment = require('moment');
 
@@ -166,6 +167,8 @@ export class WxService {
           'http://150.158.22.228:4927/wechaty/sendMiniProgram',
           {
             ...order,
+            unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)
+              ?.label,
             wxGroupId: wxGroup.wxGroupId,
           },
         ),

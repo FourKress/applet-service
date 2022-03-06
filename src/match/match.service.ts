@@ -37,6 +37,21 @@ export class MatchService {
       .exec();
   }
 
+  async findLatelyByStadiumIds(stadiumIds): Promise<Match[]> {
+    const nowDay = Moment().format('YYYY-MM-DD');
+    const nextDay = Moment().add(1, 'day').format('YYYY-MM-DD');
+    const thirdDay = Moment().add(2, 'day').format('YYYY-MM-DD');
+    const days = [nowDay, nextDay, thirdDay];
+    return await this.matchModel
+      .find()
+      .in('runDate', days)
+      .in('stadiumId', stadiumIds)
+      .populate('stadium', { name: 1, wxGroupId: 1 }, Stadium.name)
+      .populate('space', { name: 1, unit: 1 }, Space.name)
+      .sort({ runDate: 'asc' })
+      .exec();
+  }
+
   async findBySpaceId(params: any): Promise<MatchSpaceInterface[]> {
     const matchList = (
       await this.matchModel

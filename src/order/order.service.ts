@@ -107,8 +107,9 @@ export class OrderService {
   async getOrderById(id: string): Promise<Order> {
     return this.orderModel
       .findById(id)
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .populate('stadiumId', { name: 1, _id: 1 }, Stadium.name)
-      .populate('spaceId', { name: 1, _id: 1 }, Space.name)
+      .populate('spaceId', { name: 1, _id: 1, unit: 1 }, Space.name)
       .populate(
         'matchId',
         {

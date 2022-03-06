@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, HttpModule } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -8,9 +8,12 @@ import { UsersModule } from '../users/users.module';
 import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 import { WxModule } from '../wx/wx.module';
 import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
+import { WxGroupModule } from '../wxGroup/wxGroup.module';
+import { StadiumModule } from '../stadium/stadium.module';
 
 @Module({
   imports: [
+    HttpModule,
     ScheduleModule.forRoot(),
     OrderModule,
     MatchModule,
@@ -18,6 +21,8 @@ import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
     UserRMatchModule,
     WxModule,
     MonthlyCardModule,
+    WxGroupModule,
+    StadiumModule,
   ],
   providers: [TasksService],
 })

@@ -97,12 +97,21 @@ export class StadiumService {
         stadiumInfo.wxGroup,
       );
       wxGroup = wxGroupFromDB.toJSON();
-      await this.wxGroupService.modify({
-        id: wxGroup.id,
-        wxGroupName: stadiumInfo.wxGroup,
-        bossId: stadiumInfo.bossId,
-        stadiumId: id,
-      });
+      if (wxGroup.stadiumId && wxGroup.bossId) {
+        await this.wxGroupService.add({
+          wxGroupName: wxGroup.wxGroupName,
+          wxGroupId: wxGroup.wxGroupId,
+          bossId: stadiumInfo.bossId,
+          stadiumId: id,
+        });
+      } else {
+        await this.wxGroupService.modify({
+          id: wxGroup.id,
+          wxGroupName: stadiumInfo.wxGroup,
+          bossId: stadiumInfo.bossId,
+          stadiumId: id,
+        });
+      }
     }
 
     return await this.stadiumModel

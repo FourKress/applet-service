@@ -23,6 +23,14 @@ export class WxGroupService {
     return await this.wxGroupModel.findOne({ stadiumId }).exec();
   }
 
+  async findActiveList(): Promise<WxGroup[]> {
+    return await this.wxGroupModel
+      .find()
+      .exists('bossId', true)
+      .exists('stadiumId', true)
+      .exec();
+  }
+
   async add(params): Promise<WxGroup> {
     const { wxGroupId } = params;
     const wxGroupFromDB = await this.wxGroupModel.findOne({ wxGroupId });

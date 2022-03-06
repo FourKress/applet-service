@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpService } from '@nestjs/common';
 import { Interval, Cron } from '@nestjs/schedule';
-
+import { lastValueFrom } from 'rxjs';
 import * as utils from '../order/utils';
 
 import { OrderService } from '../order/order.service';
@@ -9,6 +9,9 @@ import { UsersService } from '../users/users.service';
 import { UserRMatchService } from '../userRMatch/userRMatch.service';
 import { WxService } from '../wx/wx.service';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
+import { StadiumService } from '../stadium/stadium.service';
+import { WxGroupService } from '../wxGroup/wxGroup.service';
+import { UnitEnum } from '../common/enum/space.enum';
 
 const Moment = require('moment');
 
@@ -22,12 +25,44 @@ export class TasksService {
     private readonly userRMatchService: UserRMatchService,
     private readonly wxService: WxService,
     private readonly monthlyCardService: MonthlyCardService,
+    private readonly stadiumService: StadiumService,
+    private readonly wxGroupService: WxGroupService,
+    private readonly httpService: HttpService,
   ) {}
 
   @Cron('0 0 3,13,23 * * *')
   async handleUpdateCertificates() {
     console.log('获取证书');
     await this.wxService.updateCertificates();
+  }
+
+  // @Cron('0 0 9 * * *')
+  @Interval(1000 * 8)
+  async handleStadiumAutoShare() {
+    const wxGroupList = await this.wxGroupService.findActiveList();
+    const stadiumIds = wxGroupList.map((wxGroup) => wxGroup.stadiumId);
+    const matchList = await this.matchService.findLatelyByStadiumIds(
+      stadiumIds,
+    );
+    const map = stadiumIds.map((id) => {
+      const targetList = matchList.filter((m) => m.stadiumId === id);
+      const list = targetList.map((m: any) => {
+        const match = m.toJSON();
+        const space = match.space;
+        const unitName = UnitEnum.find((u) => u.value === space.unit).label;
+        match.unitName = unitName;
+        console.log(match);
+        return match;
+      });
+      return list;
+    });
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/autoShare',
+        map,
+      ),
+    );
+    console.log(map[0]);
   }
 
   @Cron('5 0 0 * * *')
