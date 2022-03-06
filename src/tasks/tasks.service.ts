@@ -36,8 +36,7 @@ export class TasksService {
     await this.wxService.updateCertificates();
   }
 
-  // @Cron('0 0 9 * * *')
-  @Interval(1000 * 8)
+  @Cron('0 0 13 * * *')
   async handleStadiumAutoShare() {
     const wxGroupList = await this.wxGroupService.findActiveList();
     const stadiumIds = wxGroupList.map((wxGroup) => wxGroup.stadiumId);
@@ -57,8 +56,8 @@ export class TasksService {
     });
     await lastValueFrom(
       this.httpService.post(
-        // 'http://150.158.22.228:4927/wechaty/autoShare',
-        'http://localhost:4927/wechaty/autoShare',
+        'http://150.158.22.228:4927/wechaty/autoShare',
+        // 'http://localhost:4927/wechaty/autoShare',
         map,
       ),
     );
