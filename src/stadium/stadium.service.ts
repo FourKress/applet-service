@@ -100,6 +100,10 @@ export class StadiumService {
       const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
         stadiumInfo.wxGroup,
       );
+      if (!wxGroupFromDB) {
+        ToolsService.fail('求队机器人还未加入到关联的微信群，请检查后再试！');
+        return;
+      }
       wxGroup = wxGroupFromDB.toJSON();
       if (wxGroup.stadiumId && wxGroup.bossId) {
         await this.wxGroupService.add({
