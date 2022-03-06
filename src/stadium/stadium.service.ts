@@ -25,7 +25,11 @@ export class StadiumService {
   ) {}
 
   async findAll(): Promise<Stadium[]> {
-    return this.stadiumModel.find().exec();
+    return this.stadiumModel
+      .find({
+        validFlag: true,
+      })
+      .exec();
   }
 
   async findById(id: string): Promise<Stadium> {
@@ -58,7 +62,7 @@ export class StadiumService {
   async add(addStadium: CreateStadiumDto): Promise<Stadium> {
     const { name } = addStadium;
     if (await this.checkName2Id(name)) {
-      ToolsService.fail('添加失败，球场名称已存在！');
+      ToolsService.fail('添加失败，场馆名称已存在！');
       return;
     }
     const newStadium = new this.stadiumModel(addStadium);
@@ -84,7 +88,7 @@ export class StadiumService {
     }
     const hasStadium = await this.checkName2Id(stadiumInfo.name);
     if (hasStadium !== id) {
-      ToolsService.fail('修改失败，球场名称已存在！');
+      ToolsService.fail('修改失败，场馆名称已存在！');
     }
     const stadiumFromDB = await this.stadiumModel.findById(id);
     if (stadiumInfo.monthlyCardStatus !== stadiumFromDB.monthlyCardStatus) {
@@ -118,6 +122,7 @@ export class StadiumService {
       .findByIdAndUpdate(id, {
         ...stadiumInfo,
         wxGroupId: stadiumInfo.wxGroupId || wxGroup.wxGroupId,
+        validFlag: true,
       })
       .exec();
   }
@@ -199,5 +204,26 @@ export class StadiumService {
   async findByName(name): Promise<Stadium[]> {
     const reg = new RegExp(name, 'i');
     return await this.stadiumModel.find({ name: { $regex: reg } }).exec();
+  }
+
+  async checkValidStatus(stadiumId): Promise<boolean> {
+    const stadiumFromDB = await this.stadiumModel.findById(stadiumId);
+    const stadium = stadiumFromDB.toJSON();
+    const checkKeys = [
+      'longitude',
+      'latitude',
+      'phoneNum',
+      'address',
+      'stadiumUrls',
+      'wxGroup',
+      'wxGroupId',
+    ];
+    let flag = true;
+    checkKeys.forEach((key) => {
+      if (!flag) return;
+      flag = !!stadium[key];
+    });
+
+    return flag;
   }
 }

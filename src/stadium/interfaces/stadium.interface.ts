@@ -29,6 +29,7 @@ export interface StadiumInterface {
   readonly wxGroup: string;
   readonly wxGroupId: string;
   readonly welcomeWords: string;
+  readonly validFlag: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;
 }

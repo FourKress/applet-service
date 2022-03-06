@@ -148,6 +148,13 @@ export class MatchService {
       runDate,
       stadiumId,
     } = addMatch;
+
+    const valid = await this.stadiumService.checkValidStatus(stadiumId);
+    if (!valid) {
+      ToolsService.fail('请先完善场馆相关设置');
+      return;
+    }
+
     const hasMatch = await this.matchModel.findOne({
       spaceId,
       startAt,

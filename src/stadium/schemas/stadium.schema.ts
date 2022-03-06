@@ -43,6 +43,8 @@ export class Stadium implements StadiumInterface {
   wxGroupId: string;
   @Prop()
   welcomeWords: string;
+  @Prop({ default: false })
+  validFlag: boolean;
   @Prop()
   createdAt: number;
   @Prop()
