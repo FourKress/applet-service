@@ -51,18 +51,18 @@ export class TasksService {
         const space = match.space;
         const unitName = UnitEnum.find((u) => u.value === space.unit).label;
         match.unitName = unitName;
-        console.log(match);
         return match;
       });
       return list;
     });
     await lastValueFrom(
       this.httpService.post(
-        'http://150.158.22.228:4927/wechaty/autoShare',
+        // 'http://150.158.22.228:4927/wechaty/autoShare',
+        'http://localhost:4927/wechaty/autoShare',
         map,
       ),
     );
-    console.log(map[0]);
+    console.log('自动分享触发');
   }
 
   @Cron('5 0 0 * * *')
