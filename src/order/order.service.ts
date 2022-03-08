@@ -419,7 +419,9 @@ export class OrderService {
     const { stadiumId, runDate } = params;
     const stadium = await this.stadiumService.findById(stadiumId);
     const { name, id } = stadium;
-    const matchList = (await this.matchService.findByStadiumId(params)).filter(
+    const matchList = (
+      await this.matchService.findByStadiumId({ ...params, repeatFlag: false })
+    ).filter(
       (d) => Moment(Moment.now()).diff(Moment(`${d.runDate} ${d.endAt}`)) >= 0,
     );
     const matchCoverOrderList = await Promise.all(
@@ -730,7 +732,7 @@ export class OrderService {
   async findActiveOrderByMatchId(matchId: string): Promise<Order[]> {
     return await this.orderModel
       .find({ matchId })
-      .nin('status', [2, 3, 6])
+      // .nin('status', [2, 3, 6])
       .exec();
   }
 }

@@ -43,7 +43,7 @@ export class MatchService {
     const thirdDay = Moment().add(2, 'day').format('YYYY-MM-DD');
     const days = [nowDay, nextDay, thirdDay];
     return await this.matchModel
-      .find()
+      .find({ repeatFlag: false })
       .in('runDate', days)
       .in('stadiumId', stadiumIds)
       .populate('stadium', { name: 1, wxGroupId: 1 }, Stadium.name)
@@ -58,6 +58,7 @@ export class MatchService {
         .find({
           ...params,
           status: true,
+          repeatFlag: false,
         })
         .exec()
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
@@ -99,7 +100,10 @@ export class MatchService {
 
   async findByRunData(params: MatchRunDto): Promise<Match[]> {
     const matchList = await this.matchModel
-      .find(params)
+      .find({
+        ...params,
+        repeatFlag: false,
+      })
       .populate('stadium', { name: 1 }, Stadium.name)
       .populate('space', { name: 1 }, Space.name)
       .exec();
@@ -223,8 +227,18 @@ export class MatchService {
       ToolsService.fail(`${id ? 'spaceId' : 'id'} 不能为空`);
     }
 
-    const { repeatModel, repeatWeek, runDate } = match;
+    const { repeatModel, repeatWeek, runDate, endAt } = match;
     const repeatName = this.setRepeatName(repeatModel, repeatWeek, runDate);
+
+    if (repeatModel === 1) {
+      const hasOrder = await this.orderService.findActiveOrderByMatchId(id);
+      const noEnd =
+        Moment(`${runDate} ${endAt}`).valueOf() > Moment.now().valueOf();
+      if (hasOrder?.length && noEnd) {
+        ToolsService.fail('不能修改，有订单正在使用！');
+        return;
+      }
+    }
 
     const matchFromDB = await this.matchModel
       .findByIdAndUpdate(id, {
@@ -233,15 +247,6 @@ export class MatchService {
         repeatFlag: repeatModel !== 1,
       })
       .exec();
-
-    const hasOrder = await this.orderService.findActiveOrderByMatchId(id);
-    const notNextDay =
-      Moment(runDate).endOf('day').valueOf() > Moment.now().valueOf();
-    const hasErrorOrder = hasOrder.some((d) => [8, 9].includes(d.status));
-    if ((hasOrder?.length && notNextDay) || hasErrorOrder) {
-      ToolsService.fail('不能修改，有订单正在使用！');
-      return;
-    }
 
     if (repeatModel !== 1) {
       await this.autoAddRepeatMatch(matchFromDB.toJSON(), 'modify');
@@ -285,9 +290,11 @@ export class MatchService {
 
   async autoAddRepeatMatch(match, type) {
     const { id } = match;
-    await this.matchModel.deleteMany({ parentId: id });
-    const dayList = Array(6)
-      .fill(1)
+    if (type === 'add') {
+      await this.matchModel.deleteMany({ parentId: id });
+    }
+    const dayList = Array(7)
+      .fill(0)
       .map((d, i) => d + i);
     await Promise.all(
       dayList.map(async (day) => {
@@ -323,7 +330,15 @@ export class MatchService {
       const target = await this.matchModel
         .findOne({ parentId: id, runDate })
         .exec();
-      targetId = target ? target.toJSON().id : Types.ObjectId().toHexString();
+      const targetMatchId = target.toJSON().id;
+
+      const hasOrder = await this.orderService.findActiveOrderByMatchId(
+        targetMatchId,
+      );
+      if (hasOrder?.length > 0) {
+        return;
+      }
+      targetId = targetMatchId;
     }
     const { repeatFlag } = match;
     if (!repeatFlag) {
@@ -351,7 +366,10 @@ export class MatchService {
     const coverList = [];
     const matchIds = relationList.map((d) => d.matchId);
     if (!matchIds?.length) return [];
-    const matchList = await this.matchModel.find().in('_id', matchIds).exec();
+    const matchList = await this.matchModel
+      .find({ repeatFlag: false })
+      .in('_id', matchIds)
+      .exec();
     const orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
       userId,
       matchIds,
