@@ -32,6 +32,10 @@ export class StadiumService {
       .exec();
   }
 
+  async adminList(params): Promise<Stadium[]> {
+    return this.stadiumModel.find(params).exec();
+  }
+
   async findById(id: string): Promise<Stadium> {
     if (!id) {
       ToolsService.fail('id不能为空！');
