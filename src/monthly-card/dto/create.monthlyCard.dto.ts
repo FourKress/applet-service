@@ -1,4 +1,4 @@
-import { IsString, IsMongoId, IsNotEmpty } from 'class-validator';
+import { IsString, IsMongoId, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class CreateMonthlyCardDto {
   @IsMongoId({ message: 'userId 不是正确的ID类型' })
@@ -14,4 +14,8 @@ export class CreateMonthlyCardDto {
   @IsNotEmpty({ message: 'validPeriodEnd 不能为空' })
   @IsString({ message: 'validPeriodEnd 必须是 string 类型' })
   validPeriodEnd: string;
+
+  @IsNotEmpty({ message: 'validFlag 不能为空' })
+  @IsBoolean({ message: 'validFlag 必须是 boolean 类型' })
+  validFlag: boolean;
 }

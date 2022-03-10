@@ -317,6 +317,7 @@ export class OrderService {
           stadiumId,
           validPeriodStart: Moment().format('YYYY-MM-DD'),
           validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
+          validFlag: true,
         });
         amount = stadium.monthlyCardPrice + baseAmount;
       }
