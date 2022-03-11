@@ -17,6 +17,7 @@ import { MatchSpaceInterface } from './interfaces/match-space.interface';
 import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
+import { ToolsService } from '../common/utils/tools-service';
 
 @Controller('match')
 export class MatchController {
@@ -56,6 +57,11 @@ export class MatchController {
   @Post('runList')
   @HttpCode(HttpStatus.OK)
   async findByRunData(@Body() params: MatchRunDto): Promise<Match[]> {
+    const { stadiumId } = params;
+    if (!stadiumId) {
+      ToolsService.fail('请先到个人中心完善场馆相关设置');
+      return;
+    }
     return await this.matchService.findByRunData(params);
   }
 
