@@ -42,6 +42,13 @@ export class StadiumController {
     return await this.stadiumService.modify(modifyStadium);
   }
 
+  @NoAuth()
+  @Post('modifyWxGroupName')
+  @HttpCode(HttpStatus.OK)
+  async modifyWxGroupName(@Body() wxGroup): Promise<Stadium> {
+    return await this.stadiumService.modifyWxGroupName(wxGroup);
+  }
+
   @Post('add')
   @HttpCode(HttpStatus.OK)
   async add(@Body() addStadium: CreateStadiumDto): Promise<Stadium> {

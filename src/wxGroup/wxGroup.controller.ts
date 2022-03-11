@@ -33,4 +33,11 @@ export class WxGroupController {
   async wxGroupModify(@Body() params): Promise<WxGroup> {
     return this.wxGroupService.modify(params);
   }
+
+  @NoAuth()
+  @Post('modifyWxGroupName')
+  @HttpCode(HttpStatus.OK)
+  async modifyWxGroupName(@Body() params): Promise<any> {
+    return this.wxGroupService.modifyWxGroupName(params);
+  }
 }

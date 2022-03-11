@@ -43,4 +43,19 @@ export class WxGroupService {
     }
     return await this.wxGroupModel.findByIdAndUpdate(id, wxGroup).exec();
   }
+
+  async modifyWxGroupName(params): Promise<any> {
+    const { wxGroupId, wxGroupName } = params;
+    if (!wxGroupId) {
+      ToolsService.fail('wxGroupId不能为空！');
+    }
+    return await this.wxGroupModel
+      .updateMany(
+        { wxGroupId },
+        {
+          wxGroupName,
+        },
+      )
+      .exec();
+  }
 }

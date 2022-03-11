@@ -102,7 +102,9 @@ export class StadiumService {
       );
       wxGroup = wxGroupFromDB.toJSON();
       if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
-        ToolsService.fail('求队机器人还未加入到关联的微信群，请检查后再试！');
+        ToolsService.fail(
+          '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
+        );
         return;
       }
       if (wxGroup.stadiumId && wxGroup.bossId) {
@@ -229,5 +231,18 @@ export class StadiumService {
     });
 
     return flag;
+  }
+
+  async modifyWxGroupName(wxGroup): Promise<any> {
+    const { wxGroupId, wxGroupName } = wxGroup;
+    await this.wxGroupService.modifyWxGroupName(wxGroup);
+    return await this.stadiumModel
+      .updateMany(
+        { wxGroupId },
+        {
+          wxGroup: wxGroupName,
+        },
+      )
+      .exec();
   }
 }
