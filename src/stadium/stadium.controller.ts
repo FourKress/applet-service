@@ -28,6 +28,12 @@ export class StadiumController {
     return await this.stadiumService.findAll();
   }
 
+  @Post('adminList')
+  @HttpCode(HttpStatus.OK)
+  async adminList(@Body() params): Promise<Stadium[]> {
+    return await this.stadiumService.adminList(params);
+  }
+
   @NoAuth()
   @Get('info')
   async info(

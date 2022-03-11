@@ -10,6 +10,7 @@ import { MatchService } from '../match/match.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
+import { UsersService } from '../users/users.service';
 
 const Moment = require('moment');
 
@@ -22,6 +23,7 @@ export class StadiumService {
     private readonly matchService: MatchService,
     private readonly monthlyCardService: MonthlyCardService,
     private readonly wxGroupService: WxGroupService,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -30,6 +32,23 @@ export class StadiumService {
         validFlag: true,
       })
       .exec();
+  }
+
+  async adminList(params): Promise<Stadium[]> {
+    const stadiumList = await this.stadiumModel.find(params).exec();
+    const result = [];
+    await Promise.all(
+      stadiumList.map(async (s) => {
+        const stadium = s.toJSON();
+        const user = await this.usersService.findByBossId(s.bossId);
+        console.log(user);
+        result.push({
+          ...stadium,
+          user,
+        });
+      }),
+    );
+    return result;
   }
 
   async findById(id: string): Promise<Stadium> {
