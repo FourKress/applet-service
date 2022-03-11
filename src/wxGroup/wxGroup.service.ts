@@ -32,16 +32,6 @@ export class WxGroupService {
   }
 
   async add(params): Promise<WxGroup> {
-    const { wxGroupId } = params;
-    const wxGroupFromDB = await this.wxGroupModel.findOne({ wxGroupId });
-    if (wxGroupFromDB) {
-      const wxGroup = wxGroupFromDB.toJSON();
-      await this.modify({
-        id: wxGroup.id,
-        ...params,
-      });
-      return;
-    }
     const newWxGroup = new this.wxGroupModel(params);
     return await newWxGroup.save();
   }
