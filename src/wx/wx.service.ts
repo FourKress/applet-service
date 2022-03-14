@@ -307,6 +307,12 @@ export class WxService {
     return data;
   }
 
+  async wechatyBotNotice(orderId): Promise<any> {
+    const orderFromDB: any = await this.orderService.getOrderById(orderId);
+    const order = orderFromDB.toJSON();
+    await this.handleWechatyBotNotice(order, order.stadiumId.id);
+  }
+
   async handleWechatyBotNotice(order, stadiumId): Promise<any> {
     const wxGroup = await this.wxGroupService.findByStadiumId(stadiumId);
 
