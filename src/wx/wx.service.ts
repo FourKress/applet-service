@@ -158,21 +158,7 @@ export class WxService {
         wxOrderId: transaction_id,
       });
 
-      const wxGroup = await this.wxGroupService.findByStadiumId(
-        order.stadiumId.id,
-      );
-
-      await lastValueFrom(
-        this.httpService.post(
-          'http://150.158.22.228:4927/wechaty/sendMiniProgram',
-          {
-            ...order,
-            unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)
-              ?.label,
-            wxGroupId: wxGroup.wxGroupId,
-          },
-        ),
-      );
+      await this.handleWechatyBotNotice(order, order.stadiumId.id);
     }
   }
 
@@ -319,5 +305,20 @@ export class WxService {
     }
 
     return data;
+  }
+
+  async handleWechatyBotNotice(order, stadiumId): Promise<any> {
+    const wxGroup = await this.wxGroupService.findByStadiumId(stadiumId);
+
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/sendMiniProgram',
+        {
+          ...order,
+          unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)?.label,
+          wxGroupId: wxGroup.wxGroupId,
+        },
+      ),
+    );
   }
 }
