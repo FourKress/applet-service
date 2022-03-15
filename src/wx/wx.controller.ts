@@ -46,4 +46,11 @@ export class WxController {
   async refundNotice(@Headers() headers, @Body() body): Promise<any> {
     return await this.wxService.refundNotice(body, headers);
   }
+
+  @NoAuth()
+  @Post('wechatyBotNotice')
+  @HttpCode(HttpStatus.OK)
+  async wechatyBotNotice(@Body('orderId') orderId): Promise<any> {
+    return await this.wxService.wechatyBotNotice(orderId);
+  }
 }
