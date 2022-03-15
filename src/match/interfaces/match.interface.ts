@@ -18,6 +18,8 @@ export interface MatchInterface {
   repeatWeek: number[];
   repeatFlag: boolean;
   status: boolean;
+  chargeModel: number;
+  matchTotalAmt: number;
   createdAt: number;
   updatedAt: number;
 }

@@ -221,6 +221,10 @@ export class TasksService {
             withdrawAt: Moment.now(),
           });
           await this.userService.setUserTeamUpCount(order.userId);
+        } else if (
+          Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 5
+        ) {
+          console.log('总价退款');
         }
       }
     }
