@@ -135,6 +135,7 @@ export class TasksService {
       const order = item.toJSON();
       const { createdAt, status, matchId, personCount, bossId } = order;
       const match = await this.matchService.findById(matchId);
+      const userRMatch = await this.userRMatchService;
       const { selectPeople, minPeople, runDate, startAt, endAt } = match;
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
@@ -162,9 +163,16 @@ export class TasksService {
           id: matchId,
           selectPeople: realSelectPeople,
         });
+        const userId = order.userId;
+        const userRMatch = await this.userRMatchService.onlyRelationByUserId(
+          matchId,
+          userId,
+        );
+        console.log(userRMatch.count, personCount);
         await this.changeUserRMatch({
           matchId,
-          count: realSelectPeople,
+          userId,
+          count: userRMatch.count - personCount,
         });
       }
 

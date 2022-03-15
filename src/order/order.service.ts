@@ -612,8 +612,12 @@ export class OrderService {
 
   async handleMatchRestore(orderId) {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
-    const { matchId, personCount } = order;
+    const { matchId, personCount, userId } = order;
     const match: any = await this.matchService.findById(matchId);
+    const userRMatch = await this.userRMatchService.onlyRelationByUserId(
+      matchId,
+      userId,
+    );
     const realSelectPeople = match.selectPeople - personCount;
     const selectPeople = realSelectPeople < 0 ? 0 : realSelectPeople;
     await this.matchService.changeMatchSelectPeople({
@@ -622,7 +626,8 @@ export class OrderService {
     });
     await this.userRMatchService.changeRCount({
       matchId,
-      count: selectPeople,
+      userId,
+      count: userRMatch.count - personCount,
     });
   }
 

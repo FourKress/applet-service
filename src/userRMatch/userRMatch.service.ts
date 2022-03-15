@@ -85,11 +85,12 @@ export class UserRMatchService {
   }
 
   async changeRCount(params: any): Promise<any> {
-    const { matchId, ...data } = params;
+    const { matchId, userId, ...data } = params;
     await this.userRMatchModel
       .findOneAndUpdate(
         {
           matchId,
+          userId,
         },
         {
           $set: data,
