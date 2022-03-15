@@ -14,6 +14,7 @@ import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UnitEnum } from '../common/enum/space.enum';
 
 const Moment = require('moment');
+import * as currency from 'currency.js';
 
 @Injectable()
 export class TasksService {
@@ -135,8 +136,15 @@ export class TasksService {
       const order = item.toJSON();
       const { createdAt, status, matchId, personCount, bossId } = order;
       const match = await this.matchService.findById(matchId);
-      const userRMatch = await this.userRMatchService;
-      const { selectPeople, minPeople, runDate, startAt, endAt } = match;
+      const {
+        selectPeople,
+        minPeople,
+        runDate,
+        startAt,
+        endAt,
+        chargeModel,
+        matchTotalAmt,
+      } = match;
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
         .reduce((sum, current) => sum + current.personCount, 0);
@@ -222,8 +230,21 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
+          order.payMethod == 'wechat' &&
+          order.payAmount === 0 &&
+          chargeModel === 1 &&
           Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 5
         ) {
+          const unitPrice = currency(matchTotalAmt).divide(selectPeople).value;
+          const refundAmt = currency(order.payAmount).subtract(unitPrice).value;
+          console.log(
+            selectPeople,
+            chargeModel,
+            matchTotalAmt,
+            unitPrice,
+            order.payAmount,
+            refundAmt,
+          );
           console.log('总价退款');
         }
       }

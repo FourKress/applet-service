@@ -121,8 +121,8 @@ export class UsersService {
     return await this.userModel.find().exists('bossId', true).exec();
   }
 
-  async findUserList(): Promise<User[]> {
-    return await this.userModel.find().exists('bossId', false).exec();
+  async findUserList(params): Promise<User[]> {
+    return await this.userModel.find(params).exists('bossId', false).exec();
   }
 
   async changeBossStatus(params): Promise<User> {
@@ -130,6 +130,14 @@ export class UsersService {
     return await this.userModel
       .findByIdAndUpdate(id, {
         bossStatus,
+      })
+      .exec();
+  }
+
+  async applyForBoss(userId): Promise<User> {
+    return await this.userModel
+      .findByIdAndUpdate(userId, {
+        isApplyForBoss: true,
       })
       .exec();
   }

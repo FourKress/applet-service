@@ -47,6 +47,8 @@ export class User implements UserInterface {
   adminPassword: string;
   @Prop({ default: false })
   bossStatus: boolean;
+  @Prop({ default: false })
+  isApplyForBoss: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
