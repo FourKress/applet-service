@@ -119,7 +119,7 @@ export class StadiumService {
       const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
         stadiumInfo.wxGroup,
       );
-      wxGroup = wxGroupFromDB.toJSON();
+      wxGroup = wxGroupFromDB ? wxGroupFromDB?.toJSON() : {};
       if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
         ToolsService.fail(
           '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
