@@ -404,8 +404,8 @@ export class OrderService {
       balanceAmt,
     };
     statisticsList.forEach((order) => {
-      const { payAmount, refundAmount = 0 } = order;
-      const price = Number(payAmount - refundAmount);
+      const { payAmount, refundAmount = 0, compensateAmt = 0 } = order;
+      const price = Number(payAmount - refundAmount - compensateAmt);
       sum.monthCount = currency(sum.monthCount).add(price).value;
       if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime())) > 0) {
         sum.dayCount = currency(sum.dayCount).add(price).value;
@@ -432,7 +432,7 @@ export class OrderService {
         const { id } = match;
         const orderList = await this.orderModel
           .find({ matchId: id })
-          .in('status', [2, 3]);
+          .in('status', [2]);
         const monthlyCardCount = orderList.filter(
           (item) => item.payMethod === 2,
         ).length;
@@ -447,7 +447,11 @@ export class OrderService {
         );
         const sumPayAmount = filterList.reduce(
           (sum, curr) =>
-            currency(sum).add(curr.payAmount - (curr.refundAmount || 0)).value,
+            currency(sum).add(
+              curr.payAmount -
+                (curr.refundAmount || 0) -
+                (curr.compensateAmt || 0),
+            ).value,
           0,
         );
         return {
@@ -505,7 +509,9 @@ export class OrderService {
               })
             )?.validPeriodEnd;
           }
-          totalAmount = currency(totalAmount).add(order.payAmount).value;
+          totalAmount = currency(totalAmount).add(
+            order.payAmount - (order.compensateAmt || 0),
+          ).value;
           success.push(order);
         } else if (status === 6) {
           cancel.push(order);
@@ -642,7 +648,8 @@ export class OrderService {
       lastTime: filterList[0].createdAt,
       stadiumId: order.stadiumId,
       totalPayAmount: filterList.reduce(
-        (sum, curr) => currency(sum).add(curr.payAmount).value,
+        (sum, curr) =>
+          currency(sum).add(curr.payAmount - (curr.compensateAmt || 0)).value,
         0,
       ),
     };

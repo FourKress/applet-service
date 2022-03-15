@@ -36,4 +36,6 @@ export class OrderInfoInterface implements OrderInterface {
   wxRefundId: string;
   prepayInfo: any;
   closeFlag: boolean;
+  isCompensate: boolean;
+  compensateAmt: number;
 }

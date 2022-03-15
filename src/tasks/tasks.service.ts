@@ -15,6 +15,7 @@ import { UnitEnum } from '../common/enum/space.enum';
 
 const Moment = require('moment');
 import * as currency from 'currency.js';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class TasksService {
@@ -222,7 +223,9 @@ export class TasksService {
             status: 2,
           });
           const userInfo = await this.userService.findByBossId(bossId);
-          const balanceAmt = userInfo.balanceAmt + order.payAmount;
+          const balanceAmt = currency(userInfo.balanceAmt).add(
+            currency(order.payAmount).subtract(order.compensateAmt).value,
+          ).value;
           await this.changeBossUser({
             bossId,
             balanceAmt,
@@ -230,13 +233,17 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
-          order.payMethod == 'wechat' &&
-          order.payAmount === 0 &&
+          order.payMethod === 1 &&
+          order.payAmount !== 0 &&
           chargeModel === 1 &&
-          Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 5
+          Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 2 &&
+          !order.isCompensate
         ) {
           const unitPrice = currency(matchTotalAmt).divide(selectPeople).value;
-          const refundAmt = currency(order.payAmount).subtract(unitPrice).value;
+          const refundAmt = currency(order.payAmount).subtract(
+            unitPrice * personCount,
+          ).value;
+          console.log('总价退款');
           console.log(
             selectPeople,
             chargeModel,
@@ -245,7 +252,19 @@ export class TasksService {
             order.payAmount,
             refundAmt,
           );
-          console.log('总价退款');
+          if (refundAmt <= 0) return;
+          await this.changeOrder({
+            ...order,
+            isCompensate: true,
+            compensateAmt: refundAmt,
+          });
+
+          await this.wxService.refund({
+            orderId: order.id,
+            refundAmount: refundAmt,
+            refundId: Types.ObjectId().toHexString(),
+            payAmount: order.payAmount,
+          });
         }
       }
     }
