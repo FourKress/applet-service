@@ -43,7 +43,7 @@ export class MatchService {
     const thirdDay = Moment().add(2, 'day').format('YYYY-MM-DD');
     const days = [nowDay, nextDay, thirdDay];
     return await this.matchModel
-      .find({ repeatFlag: false })
+      .find({ repeatFlag: false, status: true })
       .in('runDate', days)
       .in('stadiumId', stadiumIds)
       .populate('stadium', { name: 1, wxGroupId: 1 }, Stadium.name)
