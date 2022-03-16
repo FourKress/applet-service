@@ -1,15 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpService } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ModifyUserDto } from './dto/modify-user.dto';
 import { ToolsService } from '../common/utils/tools-service';
 import { User, UserDocument } from './schemas/user.schema';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly httpService: HttpService,
   ) {}
 
   async findOneByOpenId(openId: string): Promise<User> {
@@ -135,10 +137,19 @@ export class UsersService {
   }
 
   async applyForBoss(userId): Promise<User> {
-    return await this.userModel
+    const user = await this.userModel
       .findByIdAndUpdate(userId, {
         isApplyForBoss: true,
       })
       .exec();
+
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/appleForBoss',
+        user,
+      ),
+    );
+
+    return user;
   }
 }

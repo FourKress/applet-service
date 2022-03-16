@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, HttpModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './passport/jwt.strategy';
@@ -13,6 +13,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
   imports: [
     ConfigModule.forFeature(AuthConfig),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    HttpModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, UsersService, JWTService, JwtStrategy],
