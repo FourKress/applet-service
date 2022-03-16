@@ -65,4 +65,9 @@ export class ModifyMatchDto {
   @IsNotEmpty({ message: 'repeatFlag 不能为空' })
   @IsBoolean({ message: 'repeatFlag 必须是 boolean 类型' })
   readonly repeatFlag: boolean;
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'chargeModel 不能为空' })
+  @IsNumber({ allowNaN: false }, { message: 'chargeModel 必须是 number 类型' })
+  readonly chargeModel: number;
 }

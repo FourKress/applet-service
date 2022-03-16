@@ -20,6 +20,8 @@ export class MatchSpaceInterface implements MatchInterface {
   readonly repeatName: string;
   readonly repeatFlag: boolean;
   readonly status: boolean;
+  readonly chargeModel: number;
+  readonly matchTotalAmt: number;
   readonly createdAt: number;
   readonly updatedAt: number;
 }

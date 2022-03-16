@@ -64,13 +64,19 @@ export class UsersController {
 
   @Post('findUserList')
   @HttpCode(HttpStatus.OK)
-  async findUserList(): Promise<User[]> {
-    return await this.usersService.findUserList();
+  async findUserList(@Body() params): Promise<User[]> {
+    return await this.usersService.findUserList(params);
   }
 
   @Post('changeBossStatus')
   @HttpCode(HttpStatus.OK)
   async changeBossStatus(@Body() params: any): Promise<User> {
     return await this.usersService.changeBossStatus(params);
+  }
+
+  @Get('applyForBoss')
+  async applyForBoss(@Request() req): Promise<User> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.usersService.applyForBoss(tokenInfo.userId);
   }
 }

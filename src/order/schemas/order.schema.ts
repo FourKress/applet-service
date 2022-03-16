@@ -61,6 +61,10 @@ export class Order implements OrderInterface {
   prepayInfo: any;
   @Prop()
   closeFlag: boolean;
+  @Prop({ default: false })
+  isCompensate: boolean;
+  @Prop({ default: 0 })
+  compensateAmt: number;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

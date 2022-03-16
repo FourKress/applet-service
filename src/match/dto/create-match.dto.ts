@@ -50,10 +50,14 @@ export class CreateMatchDto {
   readonly price: number;
 
   @IsNotEmpty({ message: 'repeatModel 不能为空' })
-  @IsNumber({ allowNaN: false }, { message: 'price 必须是 number 类型' })
+  @IsNumber({ allowNaN: false }, { message: 'repeatModel 必须是 number 类型' })
   readonly repeatModel: number;
 
   @IsOptional()
   @IsNotEmpty({ message: 'repeatWeek 不能为空' })
   readonly repeatWeek: number[];
+
+  @IsNotEmpty({ message: 'chargeModel 不能为空' })
+  @IsNumber({ allowNaN: false }, { message: 'chargeModel 必须是 number 类型' })
+  readonly chargeModel: number;
 }
