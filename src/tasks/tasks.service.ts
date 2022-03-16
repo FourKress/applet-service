@@ -145,6 +145,7 @@ export class TasksService {
         endAt,
         chargeModel,
         matchTotalAmt,
+        rebatePrice,
       } = match;
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
@@ -233,16 +234,25 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
-          order.payMethod === 1 &&
-          order.payAmount !== 0 &&
-          chargeModel === 1 &&
           Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 2 &&
-          !order.isCompensate
+          !order.isCompensate &&
+          order.payAmount !== 0 &&
+          chargeModel === 1
         ) {
           const unitPrice = currency(matchTotalAmt).divide(selectPeople).value;
-          const refundAmt = currency(order.payAmount).subtract(
-            unitPrice * personCount,
-          ).value;
+          let refundAmt = 0;
+          if (order.payMethod === 1) {
+            refundAmt = currency(order.payAmount).subtract(
+              unitPrice * personCount,
+            ).value;
+          } else {
+            const realCount = order.personCount - 1;
+            const realAmount = currency(order.payAmount).subtract(
+              order.payAmount - realCount * rebatePrice,
+            ).value;
+            const amt = unitPrice * realCount;
+            refundAmt = currency(realAmount).subtract(amt).value;
+          }
           console.log('总价退款');
           console.log(
             selectPeople,
@@ -259,12 +269,12 @@ export class TasksService {
             compensateAmt: refundAmt,
           });
 
-          await this.wxService.refund({
-            orderId: order.id,
-            refundAmount: refundAmt,
-            refundId: Types.ObjectId().toHexString(),
-            payAmount: order.payAmount,
-          });
+          // await this.wxService.refund({
+          //   orderId: order.id,
+          //   refundAmount: refundAmt,
+          //   refundId: Types.ObjectId().toHexString(),
+          //   payAmount: order.payAmount,
+          // });
         }
       }
     }
