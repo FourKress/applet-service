@@ -154,10 +154,15 @@ export class StadiumService {
 
   async modifyRemarks(id, unit, oldUnit = ''): Promise<Stadium> {
     const stadium = await this.findById(id);
-    const unitLabel: any = UnitEnum.find((d) => d.value === unit)?.label;
-    const oldUnitLabel: any = UnitEnum.find((d) => d.value === oldUnit)?.label;
     const remarks = stadium.remarks ? stadium.remarks.split('，') : [];
-    const realRemarks = remarks.filter((d) => d !== oldUnitLabel);
+    const unitLabel: any = UnitEnum.find((d) => d.value === unit)?.label;
+    let oldUnitLabel: any = '';
+    if (oldUnit) {
+      oldUnitLabel = UnitEnum.find((d) => d.value === oldUnit)?.label;
+    }
+    const realRemarks = oldUnitLabel
+      ? remarks.filter((d) => d !== oldUnitLabel)
+      : remarks;
     const newRemarks = [...new Set(realRemarks.concat(unitLabel))].join('，');
     return await this.stadiumModel
       .findByIdAndUpdate(id, {
