@@ -374,7 +374,7 @@ export class MatchService {
       userId,
       matchIds,
     );
-
+    if (!matchList?.length) return [];
     await Promise.all(
       relationList.map(async (r) => {
         const match = matchList

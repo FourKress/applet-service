@@ -313,13 +313,6 @@ export class OrderService {
       if (checkMonthlyCard) {
         amount = baseAmount;
       } else {
-        await this.monthlyCardService.addMonthlyCard({
-          userId,
-          stadiumId,
-          validPeriodStart: Moment().format('YYYY-MM-DD'),
-          validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
-          validFlag: true,
-        });
         amount = stadium.monthlyCardPrice + baseAmount;
       }
     }
@@ -327,7 +320,7 @@ export class OrderService {
     return await this.orderModel
       .findByIdAndUpdate(id, {
         // TODO 设置支付金额
-        payAmount: amount,
+        payAmount: currency(amount).value,
         // payAmount: 10,
         payMethod: isWechat ? 1 : 2,
         newMonthlyCard: !isWechat && !isMonthlyCard,
@@ -558,7 +551,8 @@ export class OrderService {
     if (refundType === 1) {
       refundAmount = payAmount;
       if (newMonthlyCard) {
-        refundAmount = payAmount - stadium.monthlyCardPrice;
+        const cardPrice = stadium.monthlyCardPrice;
+        refundAmount = currency(payAmount).subtract(cardPrice).value;
       }
     } else {
       if ((payMethod === 2 && payAmount === 0) || status === 6) {
@@ -578,7 +572,9 @@ export class OrderService {
         } else if (diffTime >= 120) {
           refundAmount = payAmount;
           if (newMonthlyCard) {
-            refundAmount = payAmount - stadium.monthlyCardPrice;
+            refundAmount = currency(payAmount).subtract(
+              stadium.monthlyCardPrice,
+            ).value;
           }
         }
       }
@@ -741,5 +737,15 @@ export class OrderService {
       .find({ matchId })
       // .nin('status', [2, 3, 6])
       .exec();
+  }
+
+  async addMonthlyCard(userId, stadiumId) {
+    await this.monthlyCardService.addMonthlyCard({
+      userId,
+      stadiumId,
+      validPeriodStart: Moment().format('YYYY-MM-DD'),
+      validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
+      validFlag: true,
+    });
   }
 }
