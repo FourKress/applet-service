@@ -234,7 +234,7 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
-          Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') <= 2 &&
+          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'minutes') <= 3 &&
           !order.isCompensate &&
           order.payAmount !== 0 &&
           chargeModel === 1
@@ -269,12 +269,12 @@ export class TasksService {
             compensateAmt: refundAmt,
           });
 
-          // await this.wxService.refund({
-          //   orderId: order.id,
-          //   refundAmount: refundAmt,
-          //   refundId: Types.ObjectId().toHexString(),
-          //   payAmount: order.payAmount,
-          // });
+          await this.wxService.refund({
+            orderId: order.id,
+            refundAmount: refundAmt,
+            refundId: Types.ObjectId().toHexString(),
+            payAmount: order.payAmount,
+          });
         }
       }
     }

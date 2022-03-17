@@ -404,8 +404,15 @@ export class OrderService {
       balanceAmt,
     };
     statisticsList.forEach((order) => {
-      const { payAmount, refundAmount = 0, compensateAmt = 0 } = order;
-      const price = Number(payAmount - refundAmount - compensateAmt);
+      const {
+        payAmount,
+        refundAmount = 0,
+        compensateAmt = 0,
+        wxRefundId = null,
+      } = order;
+      const price = Number(
+        payAmount - (wxRefundId ? refundAmount : 0) - compensateAmt,
+      );
       sum.monthCount = currency(sum.monthCount).add(price).value;
       if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime())) > 0) {
         sum.dayCount = currency(sum.dayCount).add(price).value;
@@ -439,7 +446,8 @@ export class OrderService {
         let refundAmt = 0;
         const ordinaryCount = orderList.reduce((sum, curr) => {
           refundAmt = currency(refundAmt).add(
-            (curr.refundAmount || 0) + (curr.compensateAmt || 0),
+            (curr.wxRefundId ? curr.refundAmount : 0) +
+              (curr.compensateAmt || 0),
           ).value;
           if (curr.payMethod === 1) {
             return sum + curr.personCount;
@@ -451,7 +459,7 @@ export class OrderService {
           (sum, curr) =>
             currency(sum).add(
               curr.payAmount -
-                (curr.refundAmount || 0) -
+                (curr.wxRefundId ? curr.refundAmount : 0) -
                 (curr.compensateAmt || 0),
             ).value,
           0,

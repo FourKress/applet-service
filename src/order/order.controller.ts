@@ -82,10 +82,11 @@ export class OrderController {
   async monthAndAayStatistics(
     @Request() req,
     @Query('month') month: string,
+    @Query('bossId') bossId: string,
   ): Promise<any> {
     const tokenInfo: UserEntity = req.user;
     return await this.orderService.monthAndAayStatistics(
-      tokenInfo.bossId,
+      bossId || tokenInfo.bossId,
       month,
     );
   }
