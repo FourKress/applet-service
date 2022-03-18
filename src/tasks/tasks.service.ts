@@ -14,6 +14,8 @@ import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UnitEnum } from '../common/enum/space.enum';
 
 const Moment = require('moment');
+import * as currency from 'currency.js';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class TasksService {
@@ -135,8 +137,16 @@ export class TasksService {
       const order = item.toJSON();
       const { createdAt, status, matchId, personCount, bossId } = order;
       const match = await this.matchService.findById(matchId);
-      const userRMatch = await this.userRMatchService;
-      const { selectPeople, minPeople, runDate, startAt, endAt } = match;
+      const {
+        selectPeople,
+        minPeople,
+        runDate,
+        startAt,
+        endAt,
+        chargeModel,
+        matchTotalAmt,
+        rebatePrice,
+      } = match;
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
         .reduce((sum, current) => sum + current.personCount, 0);
@@ -214,13 +224,57 @@ export class TasksService {
             status: 2,
           });
           const userInfo = await this.userService.findByBossId(bossId);
-          const balanceAmt = userInfo.balanceAmt + order.payAmount;
+          const balanceAmt = currency(userInfo.balanceAmt).add(
+            currency(order.payAmount).subtract(order.compensateAmt).value,
+          ).value;
           await this.changeBossUser({
             bossId,
             balanceAmt,
             withdrawAt: Moment.now(),
           });
           await this.userService.setUserTeamUpCount(order.userId);
+        } else if (
+          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'minutes') <= 3 &&
+          !order.isCompensate &&
+          order.payAmount !== 0 &&
+          chargeModel === 1
+        ) {
+          const unitPrice = currency(matchTotalAmt).divide(selectPeople).value;
+          let refundAmt = 0;
+          if (order.payMethod === 1) {
+            refundAmt = currency(order.payAmount).subtract(
+              unitPrice * personCount,
+            ).value;
+          } else {
+            const realCount = order.personCount - 1;
+            const realAmount = currency(order.payAmount).subtract(
+              order.payAmount - realCount * rebatePrice,
+            ).value;
+            const amt = unitPrice * realCount;
+            refundAmt = currency(realAmount).subtract(amt).value;
+          }
+          console.log('总价退款');
+          console.log(
+            selectPeople,
+            chargeModel,
+            matchTotalAmt,
+            unitPrice,
+            order.payAmount,
+            refundAmt,
+          );
+          if (refundAmt <= 0) return;
+          await this.changeOrder({
+            ...order,
+            isCompensate: true,
+            compensateAmt: refundAmt,
+          });
+
+          await this.wxService.refund({
+            orderId: order.id,
+            refundAmount: refundAmt,
+            refundId: Types.ObjectId().toHexString(),
+            payAmount: order.payAmount,
+          });
         }
       }
     }

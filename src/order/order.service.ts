@@ -397,8 +397,15 @@ export class OrderService {
       balanceAmt,
     };
     statisticsList.forEach((order) => {
-      const { payAmount, refundAmount = 0 } = order;
-      const price = Number(payAmount - refundAmount);
+      const {
+        payAmount,
+        refundAmount = 0,
+        compensateAmt = 0,
+        wxRefundId = null,
+      } = order;
+      const price = Number(
+        payAmount - (wxRefundId ? refundAmount : 0) - compensateAmt,
+      );
       sum.monthCount = currency(sum.monthCount).add(price).value;
       if (Moment(order.createdAt).diff(Moment(this.nowDayStartTime())) > 0) {
         sum.dayCount = currency(sum.dayCount).add(price).value;
@@ -429,18 +436,25 @@ export class OrderService {
         const monthlyCardCount = orderList.filter(
           (item) => item.payMethod === 2,
         ).length;
-        const isOrdinary = (d) =>
-          d.payMethod === 1 || (d.payMethod === 2 && d.personCount > 1);
-        const filterList = orderList.filter((d) => isOrdinary(d));
-        const ordinaryCount = filterList.reduce(
+        let refundAmt = 0;
+        const ordinaryCount = orderList.reduce((sum, curr) => {
+          refundAmt = currency(refundAmt).add(
+            (curr.wxRefundId ? curr.refundAmount : 0) +
+              (curr.compensateAmt || 0),
+          ).value;
+          if (curr.payMethod === 1) {
+            return sum + curr.personCount;
+          } else {
+            return sum + curr.personCount - 1;
+          }
+        }, 0);
+        const sumPayAmount = orderList.reduce(
           (sum, curr) =>
-            sum +
-            (curr.payMethod === 1 ? curr.personCount : curr.personCount - 1),
-          0,
-        );
-        const sumPayAmount = filterList.reduce(
-          (sum, curr) =>
-            currency(sum).add(curr.payAmount - (curr.refundAmount || 0)).value,
+            currency(sum).add(
+              curr.payAmount -
+                (curr.wxRefundId ? curr.refundAmount : 0) -
+                (curr.compensateAmt || 0),
+            ).value,
           0,
         );
         return {
@@ -448,6 +462,7 @@ export class OrderService {
           sumPayAmount,
           monthlyCardCount,
           ordinaryCount,
+          refundAmt,
         };
       }),
     );
@@ -471,6 +486,7 @@ export class OrderService {
       })
       .in('status', [2, 3, 6])
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .populate('matchId', { price: 1, rebatePrice: 1 }, Match.name)
       .exec();
     const success = [];
     const cancel = [];
@@ -479,7 +495,8 @@ export class OrderService {
     let totalAmount = 0;
 
     await Promise.all(
-      orderList.map(async (order: any) => {
+      orderList.map(async (item: any) => {
+        const order = item.toJSON();
         const {
           status,
           payMethod,
@@ -489,16 +506,17 @@ export class OrderService {
           refundType,
         } = order;
         if (status === 2) {
-          if (payMethod && !newMonthlyCard) {
-            order.monthlyCardValidDate = (
-              await this.monthlyCardService.checkMonthlyCard({
-                userId,
-                stadiumId,
-                validFlag: true,
-              })
-            )?.validPeriodEnd;
+          if (payMethod === 2 && !newMonthlyCard) {
+            const target = await this.monthlyCardService.checkMonthlyCard({
+              userId,
+              stadiumId,
+              validFlag: true,
+            });
+            order.monthlyCardValidDate = target?.validPeriodEnd;
           }
-          totalAmount = currency(totalAmount).add(order.payAmount).value;
+          totalAmount = currency(totalAmount).add(
+            order.payAmount - (order.compensateAmt || 0),
+          ).value;
           success.push(order);
         } else if (status === 6) {
           cancel.push(order);
@@ -506,6 +524,9 @@ export class OrderService {
           if (refundType === 1) {
             systemRefund.push(order);
           } else {
+            totalAmount = currency(totalAmount).add(
+              order.payAmount - (order.refundAmount || 0),
+            ).value;
             selfRefund.push(order);
           }
         }
@@ -638,7 +659,8 @@ export class OrderService {
       lastTime: filterList[0].createdAt,
       stadiumId: order.stadiumId,
       totalPayAmount: filterList.reduce(
-        (sum, curr) => currency(sum).add(curr.payAmount).value,
+        (sum, curr) =>
+          currency(sum).add(curr.payAmount - (curr.compensateAmt || 0)).value,
         0,
       ),
     };
