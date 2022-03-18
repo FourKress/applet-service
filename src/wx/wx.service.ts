@@ -157,7 +157,9 @@ export class WxService {
         status: 1,
         wxOrderId: transaction_id,
       });
-      await this.orderService.addMonthlyCard(order.userId, order.stadiumId);
+      if (order.newMonthlyCard) {
+        await this.orderService.addMonthlyCard(order.userId, order.stadiumId);
+      }
       await this.handleWechatyBotNotice(order, order.stadiumId.id);
     }
   }
