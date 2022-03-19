@@ -139,11 +139,13 @@ export class OrderService {
       stadiumId,
       validFlag: true,
     });
-    const findMonthlyCard = await this.orderModel.findOne({
-      matchId,
-      userId,
-      payMethod: 2,
-    });
+    const findMonthlyCard = await this.orderModel
+      .find({
+        matchId,
+        userId,
+        payMethod: 2,
+      })
+      .in('status', [1, 2, 5, 7]);
 
     const price = currency(match.price).multiply(match.rebate / 10).value;
 
@@ -168,7 +170,7 @@ export class OrderService {
       statusName: utils.StatusMap[order.status],
       validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
       validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
-      monthlyCardPayStatus: !findMonthlyCard,
+      monthlyCardPayStatus: findMonthlyCard?.length === 0,
     });
     return orderInfo;
   }
