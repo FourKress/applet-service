@@ -16,6 +16,7 @@ import { UnitEnum } from '../common/enum/space.enum';
 const Moment = require('moment');
 import * as currency from 'currency.js';
 import { Types } from 'mongoose';
+import { Y2FUnit } from '../constant';
 
 @Injectable()
 export class TasksService {
@@ -271,7 +272,7 @@ export class TasksService {
 
           await this.wxService.refund({
             orderId: order.id,
-            refundAmount: refundAmt,
+            refundAmount: refundAmt * Y2FUnit,
             refundId: Types.ObjectId().toHexString(),
             payAmount: order.payAmount,
           });
