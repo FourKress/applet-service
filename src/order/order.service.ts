@@ -142,7 +142,7 @@ export class OrderService {
     const findMonthlyCard = await this.orderModel.findOne({
       matchId,
       userId,
-      payAmount: 0,
+      payMethod: 2,
     });
 
     const price = currency(match.price).multiply(match.rebate / 10).value;
