@@ -152,4 +152,8 @@ export class UsersService {
 
     return user;
   }
+
+  async changeApplyForBoss(user): Promise<User> {
+    return await this.modify(user);
+  }
 }

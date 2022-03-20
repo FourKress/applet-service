@@ -79,4 +79,10 @@ export class UsersController {
     const tokenInfo: UserEntity = req.user;
     return await this.usersService.applyForBoss(tokenInfo.userId);
   }
+
+  @Post('changeApplyForBoss')
+  @HttpCode(HttpStatus.OK)
+  async changeApplyForBoss(@Body() params: any): Promise<User> {
+    return await this.usersService.changeApplyForBoss(params);
+  }
 }
