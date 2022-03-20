@@ -435,19 +435,34 @@ export class OrderService {
         const orderList = await this.orderModel
           .find({ matchId: id })
           .in('status', [2, 3]);
-        const monthlyCardCount = orderList.filter(
-          (item) => item.payMethod === 2,
-        ).length;
+        const monthlyCardCount = orderList.filter((item) => {
+          if (item.payMethod === 2) {
+            if (item.status === 2) {
+              return true;
+            } else if (item.payAmount > 0) {
+              return true;
+            }
+            return false;
+          }
+          return false;
+        }).length;
         let refundAmt = 0;
         const ordinaryCount = orderList.reduce((sum, curr) => {
           refundAmt = currency(refundAmt).add(
-            (curr.wxRefundId ? curr.refundAmount : 0) +
-              (curr.compensateAmt || 0),
+            (curr.wxRefundId &&
+            curr.status === 3 &&
+            curr.refundAmount !== curr.payAmount
+              ? curr.payAmount - curr.refundAmount
+              : 0) + (curr.compensateAmt || 0),
           ).value;
-          if (curr.payMethod === 1) {
-            return sum + curr.personCount;
+          if (curr.status === 2) {
+            if (curr.payMethod === 1) {
+              return sum + curr.personCount;
+            } else {
+              return sum + curr.personCount - 1;
+            }
           } else {
-            return sum + curr.personCount - 1;
+            return sum + 0;
           }
         }, 0);
         const sumPayAmount = orderList.reduce(
