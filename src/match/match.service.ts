@@ -293,7 +293,7 @@ export class MatchService {
     if (type === 'add') {
       await this.matchModel.deleteMany({ parentId: id });
     }
-    const dayList = Array(7)
+    const dayList = Array(14)
       .fill(0)
       .map((d, i) => d + i);
     await Promise.all(
@@ -330,7 +330,8 @@ export class MatchService {
       const target = await this.matchModel
         .findOne({ parentId: id, runDate })
         .exec();
-      const targetMatchId = target.toJSON().id;
+      const targetMatchId =
+        target?.toJSON()?.id ?? Types.ObjectId().toHexString();
 
       const hasOrder = await this.orderService.findActiveOrderByMatchId(
         targetMatchId,

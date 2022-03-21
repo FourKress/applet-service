@@ -76,7 +76,7 @@ export class TasksService {
       if (!repeatFlag) {
         await this.matchService.autoAddRepeatMatch(match, 'add');
       } else {
-        const runDate = Moment().add(6, 'day').format('YYYY-MM-DD');
+        const runDate = Moment().add(13, 'day').format('YYYY-MM-DD');
         await this.matchService.handleRepeatDay(match, runDate, 'add');
       }
     }
