@@ -596,10 +596,18 @@ export class OrderService {
       if ((payMethod === 2 && payAmount === 0) || status === 6) {
         refundAmount = 0;
       } else {
-        if (diffTime < 60) {
-          ToolsService.fail('距开场小于一小时，无法退款！');
+        if (diffTime < 60 * 2) {
+          ToolsService.fail('距开场小于两小时，无法退款！');
           return;
-        } else if (60 <= diffTime && diffTime < 120) {
+        } else if (60 * 2 <= diffTime && diffTime < 60 * 4) {
+          if (newMonthlyCard) {
+            refundAmount = currency(
+              payAmount - stadium.monthlyCardPrice,
+            ).multiply(0.5).value;
+          } else {
+            refundAmount = currency(payAmount).multiply(0.5).value;
+          }
+        } else if (60 * 4 <= diffTime && diffTime < 60 * 8) {
           if (newMonthlyCard) {
             refundAmount = currency(
               payAmount - stadium.monthlyCardPrice,
@@ -607,7 +615,7 @@ export class OrderService {
           } else {
             refundAmount = currency(payAmount).multiply(0.8).value;
           }
-        } else if (diffTime >= 120) {
+        } else if (diffTime >= 60 * 8) {
           refundAmount = payAmount;
           if (newMonthlyCard) {
             refundAmount = currency(payAmount).subtract(
