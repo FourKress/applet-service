@@ -50,7 +50,7 @@ export class WxController {
   @NoAuth()
   @Post('wechatyBotNotice')
   @HttpCode(HttpStatus.OK)
-  async wechatyBotNotice(@Body('orderId') orderId): Promise<any> {
-    return await this.wxService.wechatyBotNotice(orderId);
+  async wechatyBotNotice(@Body() params): Promise<any> {
+    return await this.wxService.wechatyBotNotice(params);
   }
 }

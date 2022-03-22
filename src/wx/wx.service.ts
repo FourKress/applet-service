@@ -133,6 +133,8 @@ export class WxService {
         status: 3,
         wxRefundId: refund_id,
       });
+
+      await this.handleWechatyBotNotice(order, 'refundNotice');
     }
   }
 
@@ -163,7 +165,7 @@ export class WxService {
           order.stadiumId.id,
         );
       }
-      await this.handleWechatyBotNotice(order, order.stadiumId.id);
+      await this.handleWechatyBotNotice(order, 'sendMiniProgram');
     }
   }
 
@@ -200,7 +202,7 @@ export class WxService {
   }
 
   async refund(order): Promise<any> {
-    const { orderId, refundAmount, payAmount, refundId } = order;
+    const { orderId, refundAmount, payAmount, refundId, refundType } = order;
     const orderFromDB = await this.orderService.getOrderById(orderId);
     if ([4, 3].includes(orderFromDB.status)) {
       return;
@@ -229,6 +231,7 @@ export class WxService {
     await this.orderService.orderRefund({
       orderId,
       status: 4,
+      refundType,
     });
 
     return data;
@@ -312,24 +315,23 @@ export class WxService {
     return data;
   }
 
-  async wechatyBotNotice(orderId): Promise<any> {
+  async wechatyBotNotice({ orderId, url }): Promise<any> {
     const orderFromDB: any = await this.orderService.getOrderById(orderId);
     const order = orderFromDB.toJSON();
-    await this.handleWechatyBotNotice(order, order.stadiumId.id);
+    await this.handleWechatyBotNotice(order, url);
   }
 
-  async handleWechatyBotNotice(order, stadiumId): Promise<any> {
-    const wxGroup = await this.wxGroupService.findByStadiumId(stadiumId);
+  async handleWechatyBotNotice(order, url): Promise<any> {
+    const wxGroup = await this.wxGroupService.findByStadiumId(
+      order.stadiumId.id,
+    );
 
     await lastValueFrom(
-      this.httpService.post(
-        'http://150.158.22.228:4927/wechaty/sendMiniProgram',
-        {
-          ...order,
-          unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)?.label,
-          wxGroupId: wxGroup.wxGroupId,
-        },
-      ),
+      this.httpService.post(`http://150.158.22.228:4927/wechaty/${url}`, {
+        ...order,
+        unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)?.label,
+        wxGroupId: wxGroup.wxGroupId,
+      }),
     );
   }
 }

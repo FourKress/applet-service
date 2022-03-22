@@ -596,9 +596,12 @@ export class OrderService {
       if ((payMethod === 2 && payAmount === 0) || status === 6) {
         refundAmount = 0;
       } else {
-        if (diffTime < 60 * 2) {
-          ToolsService.fail('距开场小于两小时，无法退款！');
+        if (diffTime <= 2) {
+          ToolsService.fail('距开场小于两分钟，无法退款！');
           return;
+        } else if (2 < diffTime && diffTime < 60) {
+          // 触发退款,金额0元
+          refundAmount = 0;
         } else if (60 * 2 <= diffTime && diffTime < 60 * 4) {
           if (newMonthlyCard) {
             refundAmount = currency(
@@ -644,8 +647,10 @@ export class OrderService {
     return await this.getRefundInfo(orderId, 1);
   }
 
-  async orderRefund({ orderId, status }) {
-    await this.handleMatchRestore(orderId);
+  async orderRefund({ orderId, status, refundType }) {
+    if (refundType === 2) {
+      await this.handleMatchRestore(orderId);
+    }
     return await this.modifyOrder({
       id: orderId,
       status,
@@ -768,9 +773,7 @@ export class OrderService {
           } else {
             await this.wxService.refund({
               orderId: id,
-              refundAmount: refundInfo.refundAmount,
-              refundId: refundInfo.refundId,
-              payAmount: refundInfo.payAmount,
+              ...refundInfo,
             });
           }
         }

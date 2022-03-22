@@ -202,9 +202,7 @@ export class TasksService {
             } else {
               await this.wxService.refund({
                 orderId: order.id,
-                refundAmount: refundInfo.refundAmount,
-                refundId: refundInfo.refundId,
-                payAmount: refundInfo.payAmount,
+                ...refundInfo,
               });
             }
           } else {
@@ -275,6 +273,7 @@ export class TasksService {
             refundAmount: refundAmt * Y2FUnit,
             refundId: Types.ObjectId().toHexString(),
             payAmount: order.payAmount,
+            refundType: 1,
           });
         }
       }
