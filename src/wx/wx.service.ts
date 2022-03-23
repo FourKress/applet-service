@@ -60,6 +60,22 @@ export class WxService {
     return res.data;
   }
 
+  async getPhoneNumber() {
+    const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+    const accessTokenResult = await lastValueFrom(
+      this.httpService.get(`https://api.weixin.qq.com/cgi-bin/token?${params}`),
+    );
+    const accessToken = accessTokenResult.data?.access_token;
+    const phoneNumberInfo = await lastValueFrom(
+      this.httpService.get(
+        `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`,
+      ),
+    );
+    // const phoneNumber = phoneNumberInfo.data?.purePhoneNumber;
+    const phoneNumber = phoneNumberInfo.data?.phoneInfo?.phoneNumber;
+    return phoneNumber;
+  }
+
   async updateCertificates() {
     await this.payment.getCertificates(true);
   }
@@ -133,8 +149,9 @@ export class WxService {
         status: 3,
         wxRefundId: refund_id,
       });
-
-      await this.handleWechatyBotNotice(order, 'refundNotice');
+      if (order.refundType === 2) {
+        await this.handleWechatyBotNotice(order, 'refundNotice');
+      }
     }
   }
 

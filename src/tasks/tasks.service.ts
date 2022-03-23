@@ -41,6 +41,7 @@ export class TasksService {
 
   @Cron('0 0 9 * * *')
   async handleStadiumAutoShare() {
+    if (process.env.NODE_ENV === 'test') return;
     const wxGroupList = await this.wxGroupService.findActiveList();
     const stadiumIds = wxGroupList.map((wxGroup) => wxGroup.stadiumId);
     const matchList = await this.matchService.findLatelyByStadiumIds(
