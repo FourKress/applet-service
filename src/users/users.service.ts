@@ -61,7 +61,7 @@ export class UsersService {
     return await newUser.save();
   }
 
-  async modify(modifyUser: ModifyUserDto): Promise<User> {
+  async modify(modifyUser): Promise<User> {
     const { id, ...userInfo } = modifyUser;
     if (!id) {
       ToolsService.fail('id不能为空！');

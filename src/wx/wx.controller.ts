@@ -21,6 +21,13 @@ export class WxController {
     return await this.wxService.code2Session(params.code);
   }
 
+  @NoAuth()
+  @Post('getPhoneNumber')
+  @HttpCode(HttpStatus.OK)
+  async getPhoneNumber(@Body() params): Promise<string> {
+    return await this.wxService.getPhoneNumber(params);
+  }
+
   @Post('pay')
   @HttpCode(HttpStatus.OK)
   async pay(@Body() order): Promise<any> {

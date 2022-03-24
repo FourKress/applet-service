@@ -60,19 +60,26 @@ export class WxService {
     return res.data;
   }
 
-  async getPhoneNumber() {
-    const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+  async getPhoneNumber({ userId, code }) {
+    const token = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     const accessTokenResult = await lastValueFrom(
-      this.httpService.get(`https://api.weixin.qq.com/cgi-bin/token?${params}`),
+      this.httpService.get(`https://api.weixin.qq.com/cgi-bin/token?${token}`),
     );
     const accessToken = accessTokenResult.data?.access_token;
     const phoneNumberInfo = await lastValueFrom(
-      this.httpService.get(
+      this.httpService.post(
         `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`,
+        {
+          code,
+        },
       ),
     );
-    // const phoneNumber = phoneNumberInfo.data?.purePhoneNumber;
-    const phoneNumber = phoneNumberInfo.data?.phoneInfo?.phoneNumber;
+    const phoneNumber = phoneNumberInfo.data?.phone_info?.phoneNumber;
+    await this.usersService.modify({
+      id: userId,
+      phoneNum: phoneNumber,
+      bossPhoneNum: phoneNumber,
+    });
     return phoneNumber;
   }
 
