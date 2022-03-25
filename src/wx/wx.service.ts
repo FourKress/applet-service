@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { Y2FUnit } from '../constant';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UnitEnum } from '../common/enum/space.enum';
+import { wxBizDataCrypto } from './wxBizDataCrypto';
 
 const Moment = require('moment');
 
@@ -60,21 +61,40 @@ export class WxService {
     return res.data;
   }
 
-  async getPhoneNumber({ userId, code }) {
+  async getPhoneNumber({
+    userId,
+    code = '',
+    sessionKey = '',
+    encryptedData = '',
+    iv = '',
+  }) {
     const token = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     const accessTokenResult = await lastValueFrom(
       this.httpService.get(`https://api.weixin.qq.com/cgi-bin/token?${token}`),
     );
     const accessToken = accessTokenResult.data?.access_token;
-    const phoneNumberInfo = await lastValueFrom(
-      this.httpService.post(
-        `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`,
-        {
-          code,
-        },
-      ),
-    );
-    const phoneNumber = phoneNumberInfo.data?.phone_info?.phoneNumber;
+
+    let phoneNumber;
+    if (code) {
+      const phoneNumberInfo = await lastValueFrom(
+        this.httpService.post(
+          `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`,
+          {
+            code,
+          },
+        ),
+      );
+      phoneNumber = phoneNumberInfo.data?.phone_info?.phoneNumber;
+    } else {
+      const phoneNumberInfo = wxBizDataCrypto(
+        this.appId,
+        sessionKey,
+        encryptedData,
+        iv,
+      );
+      phoneNumber = phoneNumberInfo?.phoneNumber;
+    }
+
     await this.usersService.modify({
       id: userId,
       phoneNum: phoneNumber,
