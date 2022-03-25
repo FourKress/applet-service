@@ -171,6 +171,7 @@ export class OrderService {
       validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
       validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
       monthlyCardPayStatus: findMonthlyCard?.length === 0,
+      chargeModel: match.chargeModel,
     });
     return orderInfo;
   }
