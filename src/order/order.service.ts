@@ -257,6 +257,13 @@ export class OrderService {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
+    if (order?.status === 0) {
+      const orderFromDB = await this.orderModel.findById(id).exec();
+      if (orderFromDB.status !== 5) {
+        return orderFromDB;
+      }
+    }
+
     return await this.orderModel.findByIdAndUpdate(id, order).exec();
   }
 

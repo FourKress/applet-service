@@ -164,7 +164,7 @@ export class TasksService {
         status === 0 &&
         ((isStart && failMatch) ||
           Moment(nowTime).diff(Moment(createdAt), 'minutes') >=
-            utils.countdown(createdAt, `${runDate} ${endAt}`, 'minutes'))
+            utils.countdown(createdAt, `${runDate} ${startAt}`, 'minutes'))
       ) {
         this.logger.log(`${order.id} 未支付 系统自动取消订单`);
         await this.changeOrder({
