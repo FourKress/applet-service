@@ -655,7 +655,7 @@ export class OrderService {
     return await this.getRefundInfo(orderId, 1);
   }
 
-  async orderRefund({ orderId, status, refundType }) {
+  async orderRefund({ orderId, status, refundType = 2 }) {
     if (refundType === 2) {
       await this.handleMatchRestore(orderId);
     }

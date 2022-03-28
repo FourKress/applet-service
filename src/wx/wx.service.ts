@@ -246,7 +246,13 @@ export class WxService {
   }
 
   async refund(order): Promise<any> {
-    const { orderId, refundAmount, payAmount, refundId, refundType } = order;
+    const {
+      orderId,
+      refundAmount,
+      payAmount,
+      refundId,
+      refundType = 2,
+    } = order;
     const orderFromDB = await this.orderService.getOrderById(orderId);
     if ([4, 3].includes(orderFromDB.status)) {
       return;
