@@ -163,8 +163,9 @@ export class MatchService {
       spaceId,
       startAt,
       endAt,
-      repeatModel,
+      runDate,
     });
+    console.log(hasMatch);
     if (hasMatch || !spaceId) {
       ToolsService.fail(
         !spaceId ? 'spaceId不能为空！' : '添加失败，相同场次已存在！',
