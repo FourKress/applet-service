@@ -747,11 +747,7 @@ export class OrderService {
     const sortFn = {
       0: (a, b) => b.count - a.count,
       1: (a, b) => b.createdAt - a.createdAt,
-      2: (a, b) => b.count - a.count,
     };
-    if (flag) {
-      sortFn[2] = (a, b) => b.isMonthlyCard - a.isMonthlyCard;
-    }
     return coverUserList.sort(sortFn[type] || sortFn[0]);
   }
 
