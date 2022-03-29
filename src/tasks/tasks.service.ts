@@ -234,7 +234,7 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
-          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'minutes') <= 3 &&
+          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'minutes') <= 5 &&
           !order.isCompensate &&
           order.payAmount !== 0 &&
           chargeModel === 1
@@ -271,7 +271,7 @@ export class TasksService {
 
           await this.wxService.refund({
             orderId: order.id,
-            refundAmount: refundAmt * Y2FUnit,
+            refundAmount: refundAmt.toFixed(2),
             refundId: Types.ObjectId().toHexString(),
             payAmount: order.payAmount,
             refundType: 1,

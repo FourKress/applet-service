@@ -157,7 +157,7 @@ export class WxService {
     } = resource;
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
-    const { payAmount, refundAmount, status, bossId } = order;
+    const { payAmount, refundAmount, status, bossId, isCompensate } = order;
     console.log(refundAmount === payer_refund / Y2FUnit, status === 4);
     if (refundAmount === payer_refund / Y2FUnit && status === 4) {
       const userInfo = await this.usersService.findByBossId(bossId);
@@ -173,7 +173,7 @@ export class WxService {
 
       await this.orderService.modifyOrder({
         id: out_trade_no,
-        status: 3,
+        status: isCompensate ? 7 : 3,
         wxRefundId: refund_id,
       });
       if (order.refundType === 2) {
