@@ -280,7 +280,7 @@ export class WxService {
 
     await this.orderService.orderRefund({
       orderId,
-      status: 4,
+      status: orderFromDB.isCompensate ? 7 : 4,
       refundType,
     });
 

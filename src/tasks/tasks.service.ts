@@ -269,13 +269,17 @@ export class TasksService {
             compensateAmt: refundAmt,
           });
 
-          await this.wxService.refund({
-            orderId: order.id,
-            refundAmount: refundAmt.toFixed(2),
-            refundId: Types.ObjectId().toHexString(),
-            payAmount: order.payAmount,
-            refundType: 1,
-          });
+          this.wxService
+            .refund({
+              orderId: order.id,
+              refundAmount: refundAmt.toFixed(2),
+              refundId: Types.ObjectId().toHexString(),
+              payAmount: order.payAmount,
+              refundType: 1,
+            })
+            .then(() => {
+              console.log(order.id, '平摊模式退款');
+            });
         }
       }
     }
