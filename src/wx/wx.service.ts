@@ -375,6 +375,9 @@ export class WxService {
     const wxGroup = await this.wxGroupService.findByStadiumId(
       order.stadiumId.id,
     );
+    if (!wxGroup.wxGroupId) {
+      return '';
+    }
 
     await lastValueFrom(
       this.httpService.post(`http://150.158.22.228:4927/wechaty/${url}`, {

@@ -121,32 +121,34 @@ export class StadiumService {
       );
       wxGroup = wxGroupFromDB ? wxGroupFromDB?.toJSON() : {};
       if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
-        ToolsService.fail(
-          '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
-        );
-        return;
-      }
-      if (wxGroup.stadiumId && wxGroup.bossId) {
-        await this.wxGroupService.add({
-          wxGroupName: wxGroup.wxGroupName,
-          wxGroupId: wxGroup.wxGroupId,
-          bossId: stadiumInfo.bossId,
-          stadiumId: id,
-        });
+        // ToolsService.fail(
+        //   '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
+        // );
+        // return;
+        console.log('未添加机器人');
       } else {
-        await this.wxGroupService.modify({
-          id: wxGroup.id,
-          wxGroupName: stadiumInfo.wxGroup,
-          bossId: stadiumInfo.bossId,
-          stadiumId: id,
-        });
+        if (wxGroup?.stadiumId && wxGroup?.bossId) {
+          await this.wxGroupService.add({
+            wxGroupName: wxGroup.wxGroupName,
+            wxGroupId: wxGroup.wxGroupId,
+            bossId: stadiumInfo.bossId,
+            stadiumId: id,
+          });
+        } else {
+          await this.wxGroupService.modify({
+            id: wxGroup.id,
+            wxGroupName: stadiumInfo.wxGroup,
+            bossId: stadiumInfo.bossId,
+            stadiumId: id,
+          });
+        }
       }
     }
 
     return await this.stadiumModel
       .findByIdAndUpdate(id, {
         ...stadiumInfo,
-        wxGroupId: stadiumInfo.wxGroupId || wxGroup.wxGroupId,
+        wxGroupId: stadiumInfo?.wxGroupId || wxGroup?.wxGroupId || '',
         validFlag: true,
       })
       .exec();
