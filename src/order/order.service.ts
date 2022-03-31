@@ -352,7 +352,7 @@ export class OrderService {
             stadiumId,
           })
           .in('status', [2, 7]);
-        order.stadiumTempCount = orderList.length;
+        order.stadiumTempCount = orderList.length + 1;
         order.orderStatus = utils.StatusMap[orderList[0]?.status];
         return order;
       }),
