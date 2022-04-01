@@ -424,4 +424,22 @@ export class MatchService {
       ),
     );
   }
+
+  async getToDayRevenue(runDate): Promise<any> {
+    const stadiumList = (
+      await this.matchModel
+        .find({ runDate, status: true })
+        .populate('stadium', { name: 1, phoneNum: 1 }, Stadium.name)
+        .exec()
+    )
+      .filter(
+        (m) =>
+          m.selectPeople >= m.minPeople &&
+          Moment().diff(`${runDate} ${m.endAt}`) > 0,
+      )
+      .map((d) => {
+        return d.stadium;
+      });
+    return [...new Set(stadiumList)];
+  }
 }

@@ -106,4 +106,9 @@ export class MatchController {
     const tokenInfo: UserEntity = req.user;
     return await this.matchService.findWaitStartList(tokenInfo.userId);
   }
+
+  @Get('getToDayRevenue')
+  async getToDayRevenue(@Query('runDate') runDate: string): Promise<any[]> {
+    return await this.matchService.getToDayRevenue(runDate);
+  }
 }
