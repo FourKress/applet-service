@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
+import { json, urlencoded } from 'express';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 import { Reflector } from '@nestjs/core';
@@ -30,6 +31,10 @@ async function bootstrap() {
     new BadRequestExceptionFilter(),
   );
   app.useGlobalPipes(new ValidationPipe());
+
+  // 文件上传大小限制
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ extended: true, limit: '5mb' }));
 
   app.enableCors();
   app.enable('trust proxy');
