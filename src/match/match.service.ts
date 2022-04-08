@@ -244,6 +244,8 @@ export class MatchService {
     const matchFromDB = await this.matchModel
       .findByIdAndUpdate(id, {
         ...match,
+        spaceId,
+        space: spaceId,
         repeatName,
         repeatFlag: repeatModel !== 1,
       })
