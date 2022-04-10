@@ -9,6 +9,13 @@ import { Y2FUnit } from '../constant';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { wxBizDataCrypto } from './wxBizDataCrypto';
+import { generate } from './payUtils';
+import * as https from 'https';
+
+const crypto = require('crypto');
+const xml2js = require('xml2js');
+const fs = require('fs');
+const path = require('path');
 
 const Moment = require('moment');
 
@@ -386,5 +393,96 @@ export class WxService {
         wxGroupId: wxGroup.wxGroupId,
       }),
     );
+  }
+
+  async handleWithdraw(params): Promise<any> {
+    const { amount, openId, withdrawId } = params;
+
+    const signObj = {
+      mch_appid: this.appId,
+      mchid: this.mchId,
+      nonce_str: generate(),
+      partner_trade_no: withdrawId,
+      openid: openId,
+      check_name: 'NO_CHECK',
+      amount: amount,
+      desc: '场主提现',
+      spbill_create_ip: '150.158.22.228',
+      sign: '',
+    };
+    signObj.sign = this.getSignParam(signObj);
+    const formData = this.getXmlParam(signObj);
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: true,
+      key: fs.readFileSync(
+        path.resolve(__dirname, '../../apiclient_key.pem'),
+        'utf-8',
+      ),
+      cert: fs.readFileSync(
+        path.resolve(__dirname, '../../apiclient_cert.pem'),
+        'utf-8',
+      ),
+      passphrase: this.mchId,
+    });
+    console.log(formData);
+
+    const url =
+      'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
+    const wxResult = await lastValueFrom(
+      this.httpService.request({
+        url,
+        method: 'POST',
+        timeout: 15000,
+        headers: {
+          'content-type': 'application/json;charset=utf-8',
+        },
+        data: formData,
+        httpsAgent,
+      }),
+    );
+
+    let responseData = {};
+    xml2js.parseString(wxResult.data, (error, result) => {
+      const reData = result.xml;
+      console.log(reData, error);
+      if (reData.result_code[0] === 'SUCCESS') {
+        responseData = {
+          data: reData,
+        };
+      } else {
+        responseData = {
+          wxReturnMsg: '微信提现API失败',
+          wxReturnCode: 'FAIL',
+        };
+      }
+    });
+    console.log(responseData);
+    return responseData;
+  }
+
+  getSignParam(obj) {
+    const keys = Object.keys(obj).sort();
+    const _arr = [];
+    keys.forEach((key) => {
+      if (obj[key]) {
+        _arr.push(`${key}=${obj[key]}`);
+      }
+    });
+    const signValue = crypto
+      .createHash('md5')
+      .update(`${_arr.join('&')}&key=68A4BCADE59F4A43811F2103F13BCA38`)
+      .digest('hex');
+
+    return signValue;
+  }
+
+  //请求时的xml参数
+  getXmlParam(obj) {
+    let _xml = '<xml>';
+    for (const key in obj) {
+      _xml += `<${key}>${obj[key]}</${key}>`;
+    }
+    _xml = _xml + '</xml>';
+    return _xml;
   }
 }

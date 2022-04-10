@@ -18,6 +18,7 @@ import { OrderModule } from './order/order.module';
 import { MonthlyCardModule } from './monthly-card/monthly-card.module';
 import { UserRMatchModule } from './userRMatch/userRMatch.module';
 import { WxGroupModule } from './wxGroup/wxGroup.module';
+import { WithdrawModule } from './withdraw/withdraw.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { WxGroupModule } from './wxGroup/wxGroup.module';
     MonthlyCardModule,
     UserRMatchModule,
     WxGroupModule,
+    WithdrawModule,
   ],
 })
 export class AppModule {}
