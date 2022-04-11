@@ -34,6 +34,7 @@ export class WxService {
     this.mchId = this.configService.get<string>('auth.wxMchId');
     this.wxSerialNo = this.configService.get<string>('auth.wxSerialNo');
     this.wxApiV3Key = this.configService.get<string>('auth.wxApiV3Key');
+    this.wxApiV2Key = this.configService.get<string>('auth.wxApiV2Key');
     this.serverAddress = this.configService.get<string>('auth.audience');
     this.wxPayDescription = this.configService.get<string>(
       'auth.wxPayDescription',
@@ -53,6 +54,7 @@ export class WxService {
   private readonly mchId: string;
   private readonly wxSerialNo: string;
   private readonly wxApiV3Key: string;
+  private readonly wxApiV2Key: string;
   private readonly wxPayDescription: string;
   private readonly serverAddress: string;
 
@@ -424,8 +426,6 @@ export class WxService {
       ),
       passphrase: this.mchId,
     });
-    console.log(formData);
-
     const url =
       'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
     const wxResult = await lastValueFrom(
@@ -445,18 +445,39 @@ export class WxService {
     xml2js.parseString(wxResult.data, (error, result) => {
       const reData = result.xml;
       console.log(reData, error);
-      if (reData.result_code[0] === 'SUCCESS') {
-        responseData = {
-          data: reData,
-        };
+      const return_code = reData.return_code[0];
+      const return_msg = reData.return_msg[0];
+
+      if (return_code === 'SUCCESS') {
+        const result_code = reData.result_code[0];
+
+        if (result_code === 'SUCCESS') {
+          responseData = {
+            status: true,
+            return_code,
+            return_msg,
+            result_code,
+            wxWithdrawAt: reData.payment_time[0],
+            wxWithdrawId: reData.payment_no[0],
+          };
+        } else {
+          responseData = {
+            status: false,
+            err_code: reData.err_code[0],
+            err_code_des: reData.err_code_des[0],
+            return_code,
+            return_msg,
+            result_code,
+          };
+        }
       } else {
         responseData = {
-          wxReturnMsg: '微信提现API失败',
-          wxReturnCode: 'FAIL',
+          status: false,
+          return_code,
+          return_msg,
         };
       }
     });
-    console.log(responseData);
     return responseData;
   }
 
@@ -470,13 +491,13 @@ export class WxService {
     });
     const signValue = crypto
       .createHash('md5')
-      .update(`${_arr.join('&')}&key=68A4BCADE59F4A43811F2103F13BCA38`)
+      .update(`${_arr.join('&')}&key=${this.wxApiV2Key}`)
       .digest('hex');
 
     return signValue;
   }
 
-  //请求时的xml参数
+  // 请求时的xml参数
   getXmlParam(obj) {
     let _xml = '<xml>';
     for (const key in obj) {

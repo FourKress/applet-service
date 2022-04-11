@@ -19,15 +19,25 @@ export class WithdrawService {
 
   async handleWithdraw(tokenInfo: UserEntity, amount: number): Promise<any> {
     const { openId, bossId, userId } = tokenInfo;
-    const userFormDB = await this.usersService.findByBossId(bossId);
-    const { balanceAmt } = userFormDB;
-    console.log(balanceAmt);
     const withdraw = new this.withdrawModel({ userId, bossId, amount });
-    console.log(withdraw);
-    return await this.wxService.handleWithdraw({
+    await withdraw.save();
+    const withdrawId = withdraw._id;
+    const wxResult = await this.wxService.handleWithdraw({
       amount,
       openId,
-      withdrawId: withdraw._id,
+      withdrawId,
     });
+    const { status, ...result } = wxResult;
+    await this.withdrawModel.findByIdAndUpdate(withdrawId, {
+      ...wxResult,
+    });
+    if (status) {
+      const userFormDB = await this.usersService.findByBossId(bossId);
+      const { balanceAmt } = userFormDB;
+      console.log(balanceAmt);
+    } else {
+      console.log(result);
+    }
+    return wxResult;
   }
 }

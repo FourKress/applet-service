@@ -5,14 +5,14 @@ export interface WithdrawInterface {
   bossId: string;
   // 提现金额
   amount: number;
-  status: number;
+  status: boolean;
   wxWithdrawAt: number;
   wxWithdrawId: string;
-  createdAt: number;
-  updatedAt: number;
   return_code: string;
   return_msg: string;
   err_code: string;
   err_code_des: string;
   result_code: string;
+  createdAt: number;
+  updatedAt: number;
 }

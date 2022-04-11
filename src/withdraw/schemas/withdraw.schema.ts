@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { WithdrawInterface } from '../interfaces/withdraw.interfaces';
 
@@ -15,26 +15,26 @@ export class Withdraw implements WithdrawInterface {
   bossId: string;
   @Prop()
   amount: number;
-  @Prop()
-  status: number;
-  @Prop()
+  @Prop({ default: false })
+  status: boolean;
+  @Prop({ default: 0 })
   wxWithdrawAt: number;
-  @Prop()
+  @Prop({ default: '' })
   wxWithdrawId: string;
+  @Prop({ default: '' })
+  return_code: string;
+  @Prop({ default: '' })
+  return_msg: string;
+  @Prop({ default: '' })
+  err_code: string;
+  @Prop({ default: '' })
+  err_code_des: string;
+  @Prop({ default: '' })
+  result_code: string;
   @Prop()
   createdAt: number;
   @Prop()
   updatedAt: number;
-  @Prop()
-  return_code: string;
-  @Prop()
-  return_msg: string;
-  @Prop()
-  err_code: string;
-  @Prop()
-  err_code_des: string;
-  @Prop()
-  result_code: string;
 }
 
 export const WithdrawSchema = SchemaFactory.createForClass(Withdraw);
