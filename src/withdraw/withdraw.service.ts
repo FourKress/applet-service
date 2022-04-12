@@ -8,6 +8,8 @@ import { WxService } from '../wx/wx.service';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { ToolsService } from '../common/utils/tools-service';
+import Moment from 'moment';
+import currency from 'currency.js';
 
 @Injectable()
 export class WithdrawService {
@@ -21,6 +23,22 @@ export class WithdrawService {
 
   async handleWithdraw(tokenInfo: UserEntity, amount: number): Promise<any> {
     const { openId, bossId, userId } = tokenInfo;
+    const oldWithdrawList = await this.withdrawModel
+      .find({ userId, bossId })
+      .where('createdAt')
+      .gte(Moment().startOf('day').valueOf());
+    if (oldWithdrawList?.length >= 10) {
+      ToolsService.fail('单日提现次数不能超过10次');
+      return;
+    }
+    const amt = oldWithdrawList.reduce(
+      (sum, curr) => currency(sum).add(curr.amount).value,
+      0,
+    );
+    if (amt >= 2000) {
+      ToolsService.fail('单日、单次提现金额不能超过2000元');
+      return;
+    }
     const withdraw = new this.withdrawModel({ userId, bossId, amount });
     await withdraw.save();
     const withdrawId = withdraw._id;
