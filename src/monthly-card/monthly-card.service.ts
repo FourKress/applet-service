@@ -5,12 +5,14 @@ import { ModifyMonthlyCardDto } from './dto/modify.monthlyCard.dto';
 import { Model } from 'mongoose';
 import { MonthlyCard, MonthlyCardDocument } from './schemas/monthlyCard.schema';
 import { Stadium } from '../stadium/schemas/stadium.schema';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class MonthlyCardService {
   constructor(
     @InjectModel(MonthlyCard.name)
     private readonly monthlyCardModel: Model<MonthlyCardDocument>,
+    private readonly userService: UsersService,
   ) {}
 
   async addMonthlyCard(info: CreateMonthlyCardDto): Promise<MonthlyCard> {
@@ -27,9 +29,17 @@ export class MonthlyCardService {
   }
 
   async changeCardValid(id: string, validFlag: boolean): Promise<any> {
-    return this.monthlyCardModel.findByIdAndUpdate(id, {
+    const monthlyCard = await this.monthlyCardModel.findByIdAndUpdate(id, {
       validFlag,
     });
+    const userId = monthlyCard.userId;
+    const user = await this.userService.findOneById(userId);
+    const monthlyCardCount = user.monthlyCardCount + (validFlag ? 1 : -1);
+    await this.userService.modify({
+      id: userId,
+      monthlyCardCount,
+    });
+    return monthlyCard;
   }
 
   async findByUserId(userId: string): Promise<MonthlyCard[]> {

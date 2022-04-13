@@ -804,5 +804,10 @@ export class OrderService {
       validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
       validFlag: true,
     });
+    const user = await this.userService.findOneById(userId);
+    await this.userService.modify({
+      id: userId,
+      monthlyCardCount: user.monthlyCardCount + 1,
+    });
   }
 }
