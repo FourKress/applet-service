@@ -35,7 +35,7 @@ export class WithdrawService {
       (sum, curr) => currency(sum).add(curr.amount).value,
       0,
     );
-    if (amt >= 2000) {
+    if (amt > 2000) {
       ToolsService.fail('单日、单次提现金额不能超过2000元');
       return;
     }
