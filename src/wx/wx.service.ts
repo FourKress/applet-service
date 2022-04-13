@@ -158,8 +158,14 @@ export class WxService {
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
     const { payAmount, refundAmount, status, bossId, isCompensate } = order;
-    console.log(refundAmount === payer_refund / Y2FUnit, status === 4);
-    if (refundAmount === payer_refund / Y2FUnit && status === 4) {
+    console.log(
+      String(refundAmount) === (payer_refund / Y2FUnit).toFixed(2),
+      status === 4,
+    );
+    if (
+      String(refundAmount) === (payer_refund / Y2FUnit).toFixed(2) &&
+      status === 4
+    ) {
       const userInfo = await this.usersService.findByBossId(bossId);
       const addBalanceAmt = payAmount - refundAmount;
       if (addBalanceAmt > 0) {
@@ -197,7 +203,10 @@ export class WxService {
     } = resource;
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
-    if (order.payAmount === payer_total / Y2FUnit && order.status === 5) {
+    if (
+      String(order.payAmount) === (payer_total / Y2FUnit).toFixed(2) &&
+      order.status === 5
+    ) {
       await this.orderService.modifyOrder({
         id: order.id,
         status: 1,
@@ -227,7 +236,7 @@ export class WxService {
       out_trade_no: orderId,
       notify_url: `${this.serverAddress}/api/wx/payNotice`,
       amount: {
-        total: payAmount * Y2FUnit,
+        total: (payAmount * Y2FUnit).toFixed(2),
       },
       payer: {
         openid: openId,
@@ -262,8 +271,8 @@ export class WxService {
       out_refund_no: refundId,
       notify_url: `${this.serverAddress}/api/wx/refundNotice`,
       amount: {
-        refund: refundAmount * Y2FUnit,
-        total: payAmount * Y2FUnit,
+        refund: (refundAmount * Y2FUnit).toFixed(2),
+        total: (payAmount * Y2FUnit).toFixed(2),
         currency: 'CNY',
       },
     });
