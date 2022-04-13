@@ -31,9 +31,12 @@ export class UsersController {
   }
 
   @Get('findOneById')
-  async findOneById(@Request() req): Promise<User> {
+  async findOneById(
+    @Request() req,
+    @Query('userId', new ValidationIDPipe()) userId: string,
+  ): Promise<User> {
     const tokenInfo: UserEntity = req.user;
-    return await this.usersService.findOneById(tokenInfo.userId);
+    return await this.usersService.findOneById(userId || tokenInfo.userId);
   }
 
   @Post('modify')

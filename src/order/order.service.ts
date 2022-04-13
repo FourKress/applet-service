@@ -704,7 +704,7 @@ export class OrderService {
     };
   }
 
-  async userList(bossId, type): Promise<any[]> {
+  async userList(bossId, sortType): Promise<any[]> {
     const orderList = (
       await this.orderModel
         .find({
@@ -729,7 +729,6 @@ export class OrderService {
         }
       }
     });
-    let flag = false;
     const coverUserList = await Promise.all(
       userList.map(async (user) => {
         const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
@@ -737,7 +736,6 @@ export class OrderService {
           stadiumId: user.stadiumId,
           validFlag: true,
         });
-        if (!!isMonthlyCard) flag = true;
         return {
           ...user,
           isMonthlyCard: !!isMonthlyCard,
@@ -746,9 +744,9 @@ export class OrderService {
     );
     const sortFn = {
       0: (a, b) => b.count - a.count,
-      1: (a, b) => b.createdAt - a.createdAt,
+      1: (a, b) => b.lastTime - a.lastTime,
     };
-    return coverUserList.sort(sortFn[type] || sortFn[0]);
+    return coverUserList.sort(sortFn[sortType] || sortFn[0]);
   }
 
   async handleOrderByMatchCancel(matchId: string): Promise<any> {
