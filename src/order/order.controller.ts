@@ -122,4 +122,14 @@ export class OrderController {
     const tokenInfo: UserEntity = req.user;
     return await this.orderService.userList(tokenInfo.bossId, type || 0);
   }
+
+  @Post('infoByUserId')
+  @HttpCode(HttpStatus.OK)
+  async infoByUserId(
+    @Request() req,
+    @Body('userId', new ValidationIDPipe()) userId: string,
+  ): Promise<any> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.orderService.infoByUserId(userId, tokenInfo.bossId);
+  }
 }

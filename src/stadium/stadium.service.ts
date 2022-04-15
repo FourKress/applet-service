@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
@@ -21,6 +21,7 @@ export class StadiumService {
     private readonly stadiumModel: Model<StadiumDocument>,
     private readonly userRStadiumService: UserRStadiumService,
     private readonly matchService: MatchService,
+    @Inject(forwardRef(() => MonthlyCardService))
     private readonly monthlyCardService: MonthlyCardService,
     private readonly wxGroupService: WxGroupService,
     private readonly usersService: UsersService,
