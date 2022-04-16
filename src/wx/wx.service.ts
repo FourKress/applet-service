@@ -9,6 +9,7 @@ import { Y2FUnit } from '../constant';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { wxBizDataCrypto } from './wxBizDataCrypto';
+import currency from 'currency.js';
 
 const Moment = require('moment');
 
@@ -200,11 +201,17 @@ export class WxService {
       out_trade_no,
       transaction_id,
       amount: { payer_total },
+      promotion_detail = [],
     } = resource;
+    const promotionAmt = promotion_detail.reduce(
+      (sum, curr) => currency(sum).add(curr?.amount || 0).value,
+      0,
+    );
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
     if (
-      order.payAmount === parseFloat((payer_total / Y2FUnit).toFixed(2)) &&
+      order.payAmount ===
+        parseFloat(((payer_total + promotionAmt) / Y2FUnit).toFixed(2)) &&
       order.status === 5
     ) {
       await this.orderService.modifyOrder({
