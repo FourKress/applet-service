@@ -583,7 +583,10 @@ export class OrderService {
   async getRefundInfo(orderId, refundType): Promise<any> {
     const order = (await this.orderModel.findById(orderId)).toJSON();
     const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
-    if (![0, 1, 9].includes(status)) {
+
+    const checkStatus = [0, 1, 9];
+    if (refundType === 1) checkStatus.push(7);
+    if (!checkStatus.includes(status)) {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
