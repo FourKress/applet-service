@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateStadiumDto } from './dto/create-stadium.dto';
@@ -11,6 +11,7 @@ import { UnitEnum } from '../common/enum/space.enum';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UsersService } from '../users/users.service';
+import { OrderService } from '../order/order.service';
 
 const Moment = require('moment');
 
@@ -24,6 +25,8 @@ export class StadiumService {
     private readonly monthlyCardService: MonthlyCardService,
     private readonly wxGroupService: WxGroupService,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -270,5 +273,18 @@ export class StadiumService {
         },
       )
       .exec();
+  }
+
+  async remove(stadiumId): Promise<boolean> {
+    const checkOrder = await this.orderService.findActiveOrderByStadium(
+      stadiumId,
+    );
+    if (checkOrder?.length) {
+      ToolsService.fail('删除失败，有订单正在使用中。');
+      return;
+    }
+    const result = await this.stadiumModel.findByIdAndDelete(stadiumId).exec();
+    console.log(result);
+    return true;
   }
 }

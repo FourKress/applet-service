@@ -809,4 +809,13 @@ export class OrderService {
       validFlag: true,
     });
   }
+
+  async findActiveOrderByStadium(stadiumId): Promise<Order[]> {
+    return await this.orderModel
+      .find({
+        stadiumId,
+      })
+      .nin('status', [0, 5, 1, 7, 4, 9])
+      .exec();
+  }
 }
