@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { MonthlyCard, MonthlyCardDocument } from './schemas/monthlyCard.schema';
 import { Stadium } from '../stadium/schemas/stadium.schema';
 import { UsersService } from '../users/users.service';
+import { StadiumService } from '../stadium/stadium.service';
 
 @Injectable()
 export class MonthlyCardService {
@@ -13,6 +14,7 @@ export class MonthlyCardService {
     @InjectModel(MonthlyCard.name)
     private readonly monthlyCardModel: Model<MonthlyCardDocument>,
     private readonly userService: UsersService,
+    private readonly stadiumService: StadiumService,
   ) {}
 
   async addMonthlyCard(info: CreateMonthlyCardDto): Promise<MonthlyCard> {
@@ -46,6 +48,7 @@ export class MonthlyCardService {
     const relationList = await this.monthlyCardModel
       .find({
         userId,
+        validFlag: true,
       })
       .populate('stadium', { name: 1, monthlyCardPrice: 1 }, Stadium.name)
       .exec();
@@ -62,6 +65,47 @@ export class MonthlyCardService {
       stadiumId,
     });
     return monthlyCardList;
+  }
+
+  async getStadiumIds(bossId) {
+    const stadiumList = await this.stadiumService.findByBossId(bossId);
+    const ids = stadiumList.map((d: any) => {
+      const item = d.toJSON();
+      return item.id;
+    });
+    return ids;
+  }
+
+  async findAllByUserId(
+    userId: string,
+    bossId: string,
+  ): Promise<MonthlyCard[]> {
+    const ids = await this.getStadiumIds(bossId);
+
+    const relationList = await this.monthlyCardModel
+      .find({
+        userId,
+      })
+      .in('stadiumId', ids)
+      .populate('stadium', { name: 1, monthlyCardPrice: 1 }, Stadium.name)
+      .exec();
+    return relationList;
+  }
+
+  async infoByUserId(userId: string, bossId: string): Promise<any> {
+    const ids = await this.getStadiumIds(bossId);
+
+    const relationList = await this.monthlyCardModel
+      .find({
+        userId,
+      })
+      .in('stadiumId', ids)
+      .sort({ createdAt: 'desc' })
+      .exec();
+    return {
+      count: relationList.length,
+      time: relationList[0].validPeriodEnd,
+    };
   }
 
   async modifyByIds(modifyInfo: ModifyMonthlyCardDto): Promise<MonthlyCard> {
