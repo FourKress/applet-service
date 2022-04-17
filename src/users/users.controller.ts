@@ -33,7 +33,7 @@ export class UsersController {
   @Get('findOneById')
   async findOneById(
     @Request() req,
-    @Query('userId', new ValidationIDPipe()) userId: string,
+    @Query('userId') userId?: string,
   ): Promise<User> {
     const tokenInfo: UserEntity = req.user;
     return await this.usersService.findOneById(userId || tokenInfo.userId);
