@@ -94,7 +94,7 @@ export class MonthlyCardService {
       .exec();
     return {
       count: relationList.length,
-      time: relationList[0].validPeriodEnd,
+      time: relationList[0]?.validPeriodEnd,
     };
   }
 
