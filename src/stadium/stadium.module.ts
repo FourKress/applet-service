@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Stadium, StadiumSchema } from './schemas/stadium.schema';
 import { StadiumController } from './stadium.controller';
@@ -20,7 +20,7 @@ const fs = require('fs');
     MongooseModule.forFeature([{ name: Stadium.name, schema: StadiumSchema }]),
     UserRStadiumModule,
     MatchModule,
-    MonthlyCardModule,
+    forwardRef(() => MonthlyCardModule),
     WxGroupModule,
     UsersModule,
     MulterModule.register({
