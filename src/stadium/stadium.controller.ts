@@ -88,4 +88,11 @@ export class StadiumController {
   async findByName(@Body() params): Promise<Stadium[]> {
     return await this.stadiumService.findByName(params.stadiumName);
   }
+
+  @Get('remove')
+  async remove(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<boolean> {
+    return await this.stadiumService.remove(stadiumId);
+  }
 }

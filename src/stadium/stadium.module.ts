@@ -8,6 +8,7 @@ import { MatchModule } from '../match/match.module';
 import { MonthlyCardModule } from '../monthly-card/monthly-card.module';
 import { WxGroupModule } from '../wxGroup/wxGroup.module';
 import { UsersModule } from '../users/users.module';
+import { OrderModule } from '../order/order.module';
 
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -23,6 +24,7 @@ const fs = require('fs');
     forwardRef(() => MonthlyCardModule),
     WxGroupModule,
     UsersModule,
+    forwardRef(() => OrderModule),
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, done) => {

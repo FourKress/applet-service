@@ -582,7 +582,10 @@ export class OrderService {
   async getRefundInfo(orderId, refundType): Promise<any> {
     const order = (await this.orderModel.findById(orderId)).toJSON();
     const { payAmount, matchId, payMethod, newMonthlyCard, status } = order;
-    if (![0, 1, 9].includes(status)) {
+
+    const checkStatus = [0, 1, 9];
+    if (refundType === 1) checkStatus.push(7);
+    if (!checkStatus.includes(status)) {
       ToolsService.fail('该订单无法退款，请检查订单状态！');
       return;
     }
@@ -836,5 +839,14 @@ export class OrderService {
       all: list,
       time: list[0].createdAt,
     };
+  }
+
+  async findActiveOrderByStadium(stadiumId): Promise<Order[]> {
+    return await this.orderModel
+      .find({
+        stadiumId,
+      })
+      .nin('status', [0, 5, 1, 7, 4, 9])
+      .exec();
   }
 }
