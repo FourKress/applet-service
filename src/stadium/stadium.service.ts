@@ -22,6 +22,7 @@ export class StadiumService {
     private readonly stadiumModel: Model<StadiumDocument>,
     private readonly userRStadiumService: UserRStadiumService,
     private readonly matchService: MatchService,
+    @Inject(forwardRef(() => MonthlyCardService))
     private readonly monthlyCardService: MonthlyCardService,
     private readonly wxGroupService: WxGroupService,
     private readonly usersService: UsersService,

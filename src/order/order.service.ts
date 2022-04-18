@@ -707,7 +707,7 @@ export class OrderService {
     };
   }
 
-  async userList(bossId, type): Promise<any[]> {
+  async userList(bossId, sortType): Promise<any[]> {
     const orderList = (
       await this.orderModel
         .find({
@@ -732,7 +732,6 @@ export class OrderService {
         }
       }
     });
-    let flag = false;
     const coverUserList = await Promise.all(
       userList.map(async (user) => {
         const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
@@ -740,7 +739,6 @@ export class OrderService {
           stadiumId: user.stadiumId,
           validFlag: true,
         });
-        if (!!isMonthlyCard) flag = true;
         return {
           ...user,
           isMonthlyCard: !!isMonthlyCard,
@@ -749,13 +747,9 @@ export class OrderService {
     );
     const sortFn = {
       0: (a, b) => b.count - a.count,
-      1: (a, b) => b.createdAt - a.createdAt,
-      2: (a, b) => b.count - a.count,
+      1: (a, b) => b.lastTime - a.lastTime,
     };
-    if (flag) {
-      sortFn[2] = (a, b) => b.isMonthlyCard - a.isMonthlyCard;
-    }
-    return coverUserList.sort(sortFn[type] || sortFn[0]);
+    return coverUserList.sort(sortFn[sortType] || sortFn[0]);
   }
 
   async handleOrderByMatchCancel(matchId: string): Promise<any> {
@@ -808,6 +802,39 @@ export class OrderService {
       validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
       validFlag: true,
     });
+  }
+
+  async infoByUserId(userId, bossId): Promise<any> {
+    const list = await this.orderModel
+      .find({
+        userId,
+        bossId,
+      })
+      .in('status', [2, 3])
+      .populate(
+        'matchId',
+        { name: 1, unit: 1, runDate: 1, endAt: 1, startAt: 1 },
+        Match.name,
+      )
+      .sort({ createdAt: 'desc' })
+      .exec();
+    const successCount = [];
+    const errorCount = [];
+    list.forEach((d) => {
+      const { status } = d;
+      if (status === 2) {
+        successCount.push(d);
+      } else {
+        errorCount.push(d);
+      }
+    });
+
+    return {
+      success: successCount,
+      error: errorCount,
+      all: list,
+      time: list[0].createdAt,
+    };
   }
 
   async findActiveOrderByStadium(stadiumId): Promise<Order[]> {

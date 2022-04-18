@@ -21,7 +21,7 @@ const fs = require('fs');
     MongooseModule.forFeature([{ name: Stadium.name, schema: StadiumSchema }]),
     UserRStadiumModule,
     MatchModule,
-    MonthlyCardModule,
+    forwardRef(() => MonthlyCardModule),
     WxGroupModule,
     UsersModule,
     forwardRef(() => OrderModule),
