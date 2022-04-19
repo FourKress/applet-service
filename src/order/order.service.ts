@@ -706,7 +706,8 @@ export class OrderService {
     };
   }
 
-  async userList(bossId, sortType): Promise<any[]> {
+  async userList(bossId, params): Promise<any[]> {
+    const { type = 0, keywords = undefined } = params;
     const orderList = (
       await this.orderModel
         .find({
@@ -721,16 +722,18 @@ export class OrderService {
 
     const userList = [];
 
-    orderList.forEach((order: any, index) => {
-      if (index === 0) {
-        userList.push(this.setUserInfo(order, orderList));
-      } else {
-        const ids = userList.map((u) => u.id);
-        if (!ids.includes(order.user.id)) {
+    orderList
+      .filter((d) => (keywords ? d.user?.nickName.includes(keywords) : true))
+      .forEach((order: any, index) => {
+        if (index === 0) {
           userList.push(this.setUserInfo(order, orderList));
+        } else {
+          const ids = userList.map((u) => u.id);
+          if (!ids.includes(order.user.id)) {
+            userList.push(this.setUserInfo(order, orderList));
+          }
         }
-      }
-    });
+      });
     const coverUserList = await Promise.all(
       userList.map(async (user) => {
         const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
@@ -748,7 +751,7 @@ export class OrderService {
       0: (a, b) => b.count - a.count,
       1: (a, b) => b.lastTime - a.lastTime,
     };
-    return coverUserList.sort(sortFn[sortType] || sortFn[0]);
+    return coverUserList.sort(sortFn[type] || sortFn[0]);
   }
 
   async handleOrderByMatchCancel(matchId: string): Promise<any> {

@@ -16,6 +16,7 @@ export class SpaceService {
   constructor(
     @InjectModel(Space.name) private readonly spaceModel: Model<SpaceDocument>,
     private readonly matchService: MatchService,
+    @Inject(forwardRef(() => StadiumService))
     private readonly stadiumService: StadiumService,
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
@@ -121,6 +122,14 @@ export class SpaceService {
   async handleStadiumRemarks(space, oldUnit: any = '') {
     const { stadiumId, unit } = space;
     await this.stadiumService.modifyRemarks(stadiumId, unit, oldUnit);
+  }
+
+  async deleteByStadiumId(stadiumId) {
+    await this.spaceModel
+      .deleteOne({
+        stadiumId,
+      })
+      .exec();
   }
 
   unitEnum() {

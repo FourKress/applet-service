@@ -117,9 +117,9 @@ export class OrderController {
   }
 
   @Get('userList')
-  async userList(@Request() req, @Query('type') type: number): Promise<any[]> {
+  async userList(@Request() req, @Query() params: any): Promise<any[]> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.userList(tokenInfo.bossId, type || 0);
+    return await this.orderService.userList(tokenInfo.bossId, params);
   }
 
   @Post('infoByUserId')
