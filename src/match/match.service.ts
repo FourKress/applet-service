@@ -444,4 +444,12 @@ export class MatchService {
       });
     return [...new Set(stadiumList)];
   }
+
+  async deleteByStadiumId(stadiumId) {
+    await this.matchModel
+      .deleteOne({
+        stadiumId,
+      })
+      .exec();
+  }
 }

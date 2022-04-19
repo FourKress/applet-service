@@ -53,6 +53,7 @@ export class MonthlyCardService {
   async getMonthlyCardBySId(stadiumId: string): Promise<MonthlyCard[]> {
     const monthlyCardList = await this.monthlyCardModel.find({
       stadiumId,
+      validFlag: true,
     });
     return monthlyCardList;
   }

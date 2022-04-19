@@ -11,7 +11,7 @@ import { OrderModule } from '../order/order.module';
   imports: [
     MongooseModule.forFeature([{ name: Space.name, schema: SpaceSchema }]),
     MatchModule,
-    StadiumModule,
+    forwardRef(() => StadiumModule),
     forwardRef(() => OrderModule),
   ],
   controllers: [SpaceController],

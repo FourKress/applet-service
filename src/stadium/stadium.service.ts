@@ -12,6 +12,7 @@ import { MonthlyCardService } from '../monthly-card/monthly-card.service';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UsersService } from '../users/users.service';
 import { OrderService } from '../order/order.service';
+import { SpaceService } from '../space/space.service';
 
 const Moment = require('moment');
 
@@ -28,6 +29,7 @@ export class StadiumService {
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
+    private readonly spaceService: SpaceService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -96,8 +98,7 @@ export class StadiumService {
     const monthlyCardList = await this.monthlyCardService.getMonthlyCardBySId(
       id,
     );
-    const validFlag = monthlyCardList.some((d) => !d.validFlag);
-    if (validFlag) {
+    if (monthlyCardList?.length) {
       ToolsService.fail('不能修改月卡状态，有订单正在使用！');
       return false;
     }
@@ -251,8 +252,8 @@ export class StadiumService {
       'phoneNum',
       'address',
       'stadiumUrls',
-      'wxGroup',
-      'wxGroupId',
+      // 'wxGroup',
+      // 'wxGroupId',
     ];
     let flag = true;
     checkKeys.forEach((key) => {
@@ -284,8 +285,16 @@ export class StadiumService {
       ToolsService.fail('删除失败，有订单正在使用中。');
       return;
     }
-    const result = await this.stadiumModel.findByIdAndDelete(stadiumId).exec();
-    console.log(result);
+    const checkMonthlyCard = await this.monthlyCardService.getMonthlyCardBySId(
+      stadiumId,
+    );
+    if (checkMonthlyCard?.length) {
+      ToolsService.fail('删除失败，有月卡未到期。');
+      return;
+    }
+    await this.stadiumModel.findByIdAndDelete(stadiumId).exec();
+    await this.spaceService.deleteByStadiumId(stadiumId);
+    await this.matchService.deleteByStadiumId(stadiumId);
     return true;
   }
 }
