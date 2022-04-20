@@ -179,10 +179,22 @@ export class StadiumService {
   }
 
   async waitStartList(userId, search): Promise<Stadium[]> {
-    const { type } = search;
+    const { type, keywords = null } = search;
+    const reg = new RegExp(keywords, 'i');
+
     switch (Number(type)) {
       case 1:
-        const stadiumList = await this.findAll();
+        let stadiumList = [];
+        if (keywords) {
+          stadiumList = await this.stadiumModel
+            .find({
+              name: { $regex: reg },
+              validFlag: true,
+            })
+            .exec();
+        } else {
+          stadiumList = await this.findAll();
+        }
         return await this.filterStadiumByMatch(stadiumList);
         break;
       case 2:
@@ -190,10 +202,20 @@ export class StadiumService {
           userId,
         );
         const ids = watchList.map((d: any) => d.stadiumId);
-        const stadiumWatchList = await this.stadiumModel
-          .find()
-          .in('_id', ids)
-          .exec();
+        let stadiumWatchList = [];
+        if (keywords) {
+          stadiumWatchList = await this.stadiumModel
+            .find({
+              name: { $regex: reg },
+            })
+            .in('_id', ids)
+            .exec();
+        } else {
+          stadiumWatchList = await this.stadiumModel
+            .find()
+            .in('_id', ids)
+            .exec();
+        }
         return await this.filterStadiumByMatch(stadiumWatchList);
         break;
       default:
