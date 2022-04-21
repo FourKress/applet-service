@@ -318,4 +318,10 @@ export class StadiumService {
     await this.matchService.deleteByStadiumId(stadiumId);
     return true;
   }
+
+  async modifyByWechatyBotStatus(stadium, status): Promise<Stadium> {
+    return this.stadiumModel.findByIdAndUpdate(stadium, {
+      applyBot: status,
+    });
+  }
 }
