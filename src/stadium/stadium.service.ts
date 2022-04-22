@@ -126,11 +126,10 @@ export class StadiumService {
       );
       wxGroup = wxGroupFromDB ? wxGroupFromDB?.toJSON() : {};
       if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
-        // ToolsService.fail(
-        //   '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
-        // );
-        // return;
-        console.log('未添加机器人');
+        ToolsService.fail(
+          '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
+        );
+        return;
       } else {
         if (wxGroup?.stadiumId && wxGroup?.bossId) {
           await this.wxGroupService.add({
@@ -318,5 +317,11 @@ export class StadiumService {
     await this.spaceService.deleteByStadiumId(stadiumId);
     await this.matchService.deleteByStadiumId(stadiumId);
     return true;
+  }
+
+  async modifyByWechatyBotStatus(stadium, status): Promise<Stadium> {
+    return this.stadiumModel.findByIdAndUpdate(stadium, {
+      applyBot: status,
+    });
   }
 }

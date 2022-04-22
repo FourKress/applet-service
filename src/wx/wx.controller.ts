@@ -7,9 +7,12 @@ import {
   HttpStatus,
   Body,
   Headers,
+  Request,
 } from '@nestjs/common';
 import { WxService } from './wx.service';
 import { NoAuth } from '../common/decorators/no-auth.decorator';
+import { ValidationIDPipe } from '../common/pipe/validationID.pipe';
+import { UserEntity } from '../auth/interfaces/user-entity.interface';
 
 @Controller('wx')
 export class WxController {
@@ -54,10 +57,18 @@ export class WxController {
     return await this.wxService.refundNotice(body, headers);
   }
 
-  @NoAuth()
   @Post('wechatyBotNotice')
   @HttpCode(HttpStatus.OK)
   async wechatyBotNotice(@Body() params): Promise<any> {
     return await this.wxService.wechatyBotNotice(params);
+  }
+
+  @Get('applyWechatyBot')
+  async applyWechatyBot(
+    @Request() req,
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<any> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.wxService.applyWechatyBot(stadiumId, tokenInfo.bossId);
   }
 }

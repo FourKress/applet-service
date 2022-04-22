@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { OrderModule } from '../order/order.module';
 import { UsersModule } from '../users/users.module';
 import { WxGroupModule } from '../wxGroup/wxGroup.module';
+import { StadiumModule } from '../stadium/stadium.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { WxGroupModule } from '../wxGroup/wxGroup.module';
     forwardRef(() => OrderModule),
     UsersModule,
     WxGroupModule,
+    StadiumModule,
   ],
   controllers: [WxController],
   providers: [WxService],
