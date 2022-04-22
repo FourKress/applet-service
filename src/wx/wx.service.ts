@@ -415,8 +415,7 @@ export class WxService {
 
     await lastValueFrom(
       this.httpService.post(
-        // 'http://150.158.22.228:4927/wechaty/applyWechatyBot',
-        'http://localhost:4927/wechaty/applyWechatyBot',
+        'http://150.158.22.228:4927/wechaty/applyWechatyBot',
         {
           ...stadium.toJSON(),
           user,
