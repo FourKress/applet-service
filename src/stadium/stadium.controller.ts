@@ -95,4 +95,10 @@ export class StadiumController {
   ): Promise<boolean> {
     return await this.stadiumService.remove(stadiumId);
   }
+
+  @Post('changeBotStatus')
+  @HttpCode(HttpStatus.OK)
+  changeBotStatus(@Body() params): any {
+    return this.stadiumService.changeBotStatus(params);
+  }
 }

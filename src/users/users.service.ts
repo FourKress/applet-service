@@ -120,11 +120,23 @@ export class UsersService {
   }
 
   async findBossList(): Promise<User[]> {
-    return await this.userModel.find().exists('bossId', true).exec();
+    return await this.userModel
+      .find()
+      .exists('bossId', true)
+      .ne('bossId', '')
+      .exec();
   }
 
   async findUserList(params): Promise<User[]> {
-    return await this.userModel.find(params).exists('bossId', false).exec();
+    return await this.userModel
+      .find(params)
+      .or([
+        {
+          bossId: null,
+        },
+        { bossId: '' },
+      ])
+      .exec();
   }
 
   async changeBossStatus(params): Promise<User> {

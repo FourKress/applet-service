@@ -47,6 +47,8 @@ export class Stadium implements StadiumInterface {
   validFlag: boolean;
   @Prop({ default: false })
   applyBot: boolean;
+  @Prop({ default: false })
+  botStatus: boolean;
   @Prop()
   createdAt: number;
   @Prop()

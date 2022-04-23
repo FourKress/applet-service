@@ -41,7 +41,15 @@ export class StadiumService {
   }
 
   async adminList(params): Promise<Stadium[]> {
-    const stadiumList = await this.stadiumModel.find(params).exec();
+    const keys = Object.keys(params);
+    let data = params;
+    if (keys.includes('applyBot')) {
+      data = {
+        ...params,
+        botStatus: !params.applyBot,
+      };
+    }
+    const stadiumList = await this.stadiumModel.find(data).exec();
     const result = [];
     await Promise.all(
       stadiumList.map(async (s) => {
@@ -323,5 +331,23 @@ export class StadiumService {
     return this.stadiumModel.findByIdAndUpdate(stadium, {
       applyBot: status,
     });
+  }
+
+  async changeBotStatus(params): Promise<any> {
+    const { stadiumId, botStatus } = params;
+    let stadium;
+    if (botStatus) {
+      stadium = {
+        botStatus: true,
+      };
+    } else {
+      stadium = {
+        wxGroup: '',
+        wxGroupId: '',
+        botStatus: false,
+        applyBot: false,
+      };
+    }
+    await this.stadiumModel.findByIdAndUpdate(stadiumId, stadium);
   }
 }
