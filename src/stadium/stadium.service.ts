@@ -46,7 +46,7 @@ export class StadiumService {
     if (keys.includes('applyBot')) {
       data = {
         ...params,
-        botStatus: !params.applyBot,
+        botStatus: false,
       };
     }
     const stadiumList = await this.stadiumModel.find(data).exec();
