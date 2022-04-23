@@ -130,8 +130,12 @@ export class UsersService {
   async findUserList(params): Promise<User[]> {
     return await this.userModel
       .find(params)
-      .exists('bossId', false)
-      .ne('bossId', '')
+      .or([
+        {
+          bossId: null,
+        },
+        { bossId: '' },
+      ])
       .exec();
   }
 
