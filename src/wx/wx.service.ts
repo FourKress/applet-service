@@ -7,6 +7,7 @@ import { OrderService } from '../order/order.service';
 import { UsersService } from '../users/users.service';
 import { Y2FUnit } from '../constant';
 import { WxGroupService } from '../wxGroup/wxGroup.service';
+import { StadiumService } from '../stadium/stadium.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { wxBizDataCrypto } from './wxBizDataCrypto';
 import currency from 'currency.js';
@@ -22,6 +23,7 @@ export class WxService {
     private readonly orderService: OrderService,
     private readonly usersService: UsersService,
     private readonly wxGroupService: WxGroupService,
+    private readonly stadiumService: StadiumService,
   ) {
     this.appId = this.configService.get<string>('auth.wxAppKey');
     this.appSecret = this.configService.get<string>('auth.wxAppSecret');
@@ -401,6 +403,24 @@ export class WxService {
         unitName: UnitEnum.find((d) => d.value === order.spaceId.unit)?.label,
         wxGroupId: wxGroup.wxGroupId,
       }),
+    );
+  }
+
+  async applyWechatyBot(stadiumId, bossId): Promise<any> {
+    const stadium: any = await this.stadiumService.modifyByWechatyBotStatus(
+      stadiumId,
+      true,
+    );
+    const user = await this.usersService.findByBossId(bossId);
+
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/applyWechatyBot',
+        {
+          ...stadium.toJSON(),
+          user,
+        },
+      ),
     );
   }
 }
