@@ -159,13 +159,15 @@ export class MatchService {
       return;
     }
 
-    const hasMatch = await this.matchModel.findOne({
-      spaceId,
-      startAt,
-      endAt,
-      runDate,
-      status: true,
-    });
+    const hasMatch = await this.matchModel
+      .findOne({
+        spaceId,
+        startAt,
+        endAt,
+        runDate,
+        status: true,
+      })
+      .exists('parentId', true);
     console.log(hasMatch);
     if (hasMatch || !spaceId) {
       ToolsService.fail(
