@@ -50,7 +50,7 @@ export class SpaceService {
   }
 
   async dropDownList(stadiumId: string): Promise<Space[]> {
-    return await this.spaceModel.find({ stadiumId }).exec();
+    return await this.spaceModel.find({ stadiumId, validFlag: true }).exec();
   }
 
   async findById(id: string): Promise<Space> {
@@ -116,7 +116,9 @@ export class SpaceService {
 
   async removeSpace(id: string): Promise<any> {
     await this.checkActive(id);
-    await this.spaceModel.findByIdAndDelete(id);
+    await this.spaceModel.findByIdAndUpdate(id, {
+      validFlag: false,
+    });
   }
 
   async handleStadiumRemarks(space, oldUnit: any = '') {
