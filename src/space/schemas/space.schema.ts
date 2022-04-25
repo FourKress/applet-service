@@ -15,6 +15,8 @@ export class Space implements SpaceInterface {
   name: string;
   @Prop({ required: true })
   unit: number;
+  @Prop({ default: true })
+  validFlag: boolean;
   @Prop()
   createdAt: number;
   @Prop()
