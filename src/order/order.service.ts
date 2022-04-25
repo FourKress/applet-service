@@ -281,6 +281,9 @@ export class OrderService {
     const { matchId } = order;
 
     const match = await this.matchService.findById(matchId);
+    if (!match?.status) {
+      ToolsService.fail('不能支付，场次已取消！');
+    }
     if (
       utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
         (Moment() - Moment(order.createdAt)) <

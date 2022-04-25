@@ -164,6 +164,7 @@ export class MatchService {
       startAt,
       endAt,
       runDate,
+      status: true,
     });
     console.log(hasMatch);
     if (hasMatch || !spaceId) {
