@@ -89,11 +89,11 @@ export class StadiumController {
     return await this.stadiumService.findByName(params.stadiumName);
   }
 
-  @Get('remove')
-  async remove(
-    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
-  ): Promise<boolean> {
-    return await this.stadiumService.remove(stadiumId);
+  @NoAuth()
+  @Post('remove')
+  @HttpCode(HttpStatus.OK)
+  async remove(@Body() params: any): Promise<boolean> {
+    return await this.stadiumService.remove(params);
   }
 
   @Post('changeBotStatus')

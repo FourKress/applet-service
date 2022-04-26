@@ -31,7 +31,9 @@ export class MatchService {
 
   async findAllBase(): Promise<Match[]> {
     return await this.matchModel
-      .find()
+      .find({
+        validFlag: true,
+      })
       .exists('parentId', false)
       .ne('repeatModel', 1)
       .exec();
@@ -166,6 +168,7 @@ export class MatchService {
         endAt,
         runDate,
         status: true,
+        validFlag: true,
       })
       .exists('parentId', true);
     console.log(hasMatch);
@@ -374,7 +377,7 @@ export class MatchService {
     const matchIds = relationList.map((d) => d.matchId);
     if (!matchIds?.length) return [];
     const matchList = await this.matchModel
-      .find({ repeatFlag: false })
+      .find({ repeatFlag: false, status: true, validFlag: true })
       .in('_id', matchIds)
       .exec();
     const orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
@@ -433,7 +436,7 @@ export class MatchService {
   async getToDayRevenue(runDate): Promise<any> {
     const stadiumList = (
       await this.matchModel
-        .find({ runDate, status: true })
+        .find({ runDate, status: true, validFlag: true })
         .populate('stadium', { name: 1, phoneNum: 1 }, Stadium.name)
         .exec()
     )
@@ -450,9 +453,14 @@ export class MatchService {
 
   async deleteByStadiumId(stadiumId) {
     await this.matchModel
-      .deleteOne({
-        stadiumId,
-      })
+      .updateMany(
+        {
+          stadiumId,
+        },
+        {
+          validFlag: false,
+        },
+      )
       .exec();
   }
 }
