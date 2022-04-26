@@ -55,6 +55,8 @@ export class Match implements MatchInterface {
   chargeModel: number;
   @Prop()
   matchTotalAmt: number;
+  @Prop({ default: true })
+  validFlag: boolean;
   @Prop()
   createdAt: number;
   @Prop()

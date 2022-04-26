@@ -128,9 +128,12 @@ export class SpaceService {
 
   async deleteByStadiumId(stadiumId) {
     await this.spaceModel
-      .deleteOne({
-        stadiumId,
-      })
+      .updateMany(
+        { stadiumId },
+        {
+          validFlag: false,
+        },
+      )
       .exec();
   }
 
