@@ -45,6 +45,8 @@ export class Stadium implements StadiumInterface {
   welcomeWords: string;
   @Prop({ default: false })
   validFlag: boolean;
+  @Prop({ default: false })
+  isDelete: boolean;
   @Prop()
   createdAt: number;
   @Prop()

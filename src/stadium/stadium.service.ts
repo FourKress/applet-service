@@ -41,13 +41,17 @@ export class StadiumService {
   }
 
   async adminList(params): Promise<Stadium[]> {
-    const stadiumList = await this.stadiumModel.find(params).exec();
+    const stadiumList = await this.stadiumModel
+      .find({
+        ...params,
+        isDelete: false,
+      })
+      .exec();
     const result = [];
     await Promise.all(
       stadiumList.map(async (s) => {
         const stadium = s.toJSON();
         const user = await this.usersService.findByBossId(s.bossId);
-        console.log(user);
         result.push({
           ...stadium,
           user,
@@ -75,6 +79,7 @@ export class StadiumService {
     const hasStadium = await this.stadiumModel
       .findOne({
         name,
+        isDelete: false,
       })
       .exec();
     const id = hasStadium?._id;
@@ -190,6 +195,7 @@ export class StadiumService {
             .find({
               name: { $regex: reg },
               validFlag: true,
+              isDelete: false,
             })
             .exec();
         } else {
@@ -207,12 +213,13 @@ export class StadiumService {
           stadiumWatchList = await this.stadiumModel
             .find({
               name: { $regex: reg },
+              isDelete: false,
             })
             .in('_id', ids)
             .exec();
         } else {
           stadiumWatchList = await this.stadiumModel
-            .find()
+            .find({ isDelete: false })
             .in('_id', ids)
             .exec();
         }
@@ -262,7 +269,9 @@ export class StadiumService {
 
   async findByName(name): Promise<Stadium[]> {
     const reg = new RegExp(name, 'i');
-    return await this.stadiumModel.find({ name: { $regex: reg } }).exec();
+    return await this.stadiumModel
+      .find({ name: { $regex: reg }, isDelete: false })
+      .exec();
   }
 
   async checkValidStatus(stadiumId): Promise<boolean> {
@@ -291,7 +300,7 @@ export class StadiumService {
     await this.wxGroupService.modifyWxGroupName(wxGroup);
     return await this.stadiumModel
       .updateMany(
-        { wxGroupId },
+        { wxGroupId, isDelete: false },
         {
           wxGroup: wxGroupName,
         },
@@ -314,7 +323,9 @@ export class StadiumService {
       ToolsService.fail('删除失败，有月卡未到期。');
       return;
     }
-    await this.stadiumModel.findByIdAndDelete(stadiumId).exec();
+    await this.stadiumModel
+      .findByIdAndUpdate(stadiumId, { isDelete: true })
+      .exec();
     await this.spaceService.deleteByStadiumId(stadiumId);
     await this.matchService.deleteByStadiumId(stadiumId);
     return true;
