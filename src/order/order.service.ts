@@ -133,11 +133,14 @@ export class OrderService {
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
     const match = await this.matchService.findById(matchId);
-    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
-      userId,
-      stadiumId,
-      validFlag: true,
-    });
+    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard(
+      {
+        userId,
+        stadiumId,
+        validFlag: true,
+      },
+      order.createdAt,
+    );
     const findMonthlyCard = await this.orderModel
       .find({
         matchId,
@@ -303,7 +306,7 @@ export class OrderService {
     const { flag, match, order }: any = await this.checkOrderPayFlag(id);
     if (!flag) return;
 
-    const { stadiumId, userId, personCount } = order;
+    const { stadiumId, userId, personCount, createdAt } = order;
 
     let amount = 0;
     let isMonthlyCard = false;
@@ -316,11 +319,14 @@ export class OrderService {
         ToolsService.fail('不支持月卡支付，请选择其他支付方式');
       }
       const baseAmount = (personCount - 1) * match.rebatePrice;
-      const checkMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
-        userId,
-        stadiumId,
-        validFlag: true,
-      });
+      const checkMonthlyCard = await this.monthlyCardService.checkMonthlyCard(
+        {
+          userId,
+          stadiumId,
+          validFlag: true,
+        },
+        createdAt,
+      );
       isMonthlyCard = !!checkMonthlyCard;
       if (checkMonthlyCard) {
         amount = baseAmount;
@@ -531,14 +537,17 @@ export class OrderService {
           userId,
           stadiumId,
           refundType,
+          createdAt,
         } = order;
         if (status === 2) {
           if (payMethod === 2 && !newMonthlyCard) {
-            const target = await this.monthlyCardService.checkMonthlyCard({
-              userId,
-              stadiumId,
-              validFlag: true,
-            });
+            const target = await this.monthlyCardService.checkMonthlyCard(
+              {
+                userId,
+                stadiumId,
+              },
+              createdAt,
+            );
             order.monthlyCardValidDate = target?.validPeriodEnd;
           }
           totalAmount = currency(totalAmount).add(
@@ -739,11 +748,13 @@ export class OrderService {
       });
     const coverUserList = await Promise.all(
       userList.map(async (user) => {
-        const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard({
-          userId: user.id,
-          stadiumId: user.stadiumId,
-          validFlag: true,
-        });
+        const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard(
+          {
+            userId: user.id,
+            stadiumId: user.stadiumId,
+          },
+          user.createdAt,
+        );
         return {
           ...user,
           isMonthlyCard: !!isMonthlyCard,
