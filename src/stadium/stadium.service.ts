@@ -72,7 +72,7 @@ export class StadiumService {
     if (!bossId) {
       ToolsService.fail('bossId不能为空！');
     }
-    return await this.stadiumModel.find({ bossId }).exec();
+    return await this.stadiumModel.find({ bossId, isDelete: false }).exec();
   }
 
   async checkName2Id(name: string): Promise<string> {
