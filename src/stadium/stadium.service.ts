@@ -308,7 +308,8 @@ export class StadiumService {
       .exec();
   }
 
-  async remove(stadiumId): Promise<boolean> {
+  async remove(params): Promise<boolean> {
+    const { stadiumId, bossId } = params;
     const checkOrder = await this.orderService.findActiveOrderByStadium(
       stadiumId,
     );
@@ -322,6 +323,20 @@ export class StadiumService {
     if (checkMonthlyCard?.length) {
       ToolsService.fail('删除失败，有月卡未到期。');
       return;
+    }
+    const count = await this.stadiumModel
+      .find({
+        bossId,
+      })
+      .count();
+    if (count <= 1) {
+      const user: any = await this.usersService.findByBossId(bossId);
+      await this.usersService.modify({
+        id: user.toJSON().id,
+        bossId: '',
+        withdrawAt: 0,
+        balanceAmt: 0,
+      });
     }
     await this.stadiumModel
       .findByIdAndUpdate(stadiumId, { isDelete: true })
