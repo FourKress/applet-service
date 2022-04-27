@@ -20,7 +20,7 @@ export class Withdraw implements WithdrawInterface {
   @Prop({ default: false })
   status: boolean;
   @Prop({ default: 0 })
-  wxWithdrawAt: number;
+  wxWithdrawAt: string;
   @Prop({ default: '' })
   wxWithdrawId: string;
   @Prop({ default: '' })
