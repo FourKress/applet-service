@@ -407,7 +407,7 @@ export class WxService {
       partner_trade_no: withdrawId,
       openid: openId,
       check_name: 'NO_CHECK',
-      amount: withdrawAmt,
+      amount: parseFloat((withdrawAmt * Y2FUnit).toFixed(2)),
       desc: '场主提现',
       spbill_create_ip: '150.158.22.228',
       sign: '',
