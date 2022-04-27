@@ -415,8 +415,26 @@ export class WxService {
     );
   }
 
+  async applyWechatyBot(stadiumId, bossId): Promise<any> {
+    const stadium: any = await this.stadiumService.modifyByWechatyBotStatus(
+      stadiumId,
+      true,
+    );
+    const user = await this.usersService.findByBossId(bossId);
+
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/applyWechatyBot',
+        {
+          ...stadium.toJSON(),
+          user,
+        },
+      ),
+    );
+  }
+
   async handleWithdraw(params): Promise<any> {
-    const { withdrawAmt, openId, withdrawId } = params;
+    const { withdrawAmt, openId, withdrawId, bossId } = params;
 
     const signObj = {
       mch_appid: this.appId,
@@ -478,6 +496,11 @@ export class WxService {
             wxWithdrawAt: reData.payment_time[0],
             wxWithdrawId: reData.payment_no[0],
           };
+          this.withdrawNotice({
+            bossId,
+            withdrawAmt,
+            withdrawStatus: true,
+          });
         } else {
           responseData = {
             status: false,
@@ -487,6 +510,11 @@ export class WxService {
             return_msg,
             result_code,
           };
+          this.withdrawNotice({
+            bossId,
+            withdrawAmt,
+            withdrawStatus: false,
+          });
         }
       } else {
         responseData = {
@@ -525,19 +553,16 @@ export class WxService {
     return _xml;
   }
 
-  async applyWechatyBot(stadiumId, bossId): Promise<any> {
-    const stadium: any = await this.stadiumService.modifyByWechatyBotStatus(
-      stadiumId,
-      true,
-    );
-    const user = await this.usersService.findByBossId(bossId);
-
+  async withdrawNotice(withdrawInfo): Promise<any> {
+    const { withdrawStatus, withdrawAmt, bossId } = withdrawInfo;
+    const user: any = await this.usersService.findByBossId(bossId);
     await lastValueFrom(
       this.httpService.post(
-        'http://150.158.22.228:4927/wechaty/applyWechatyBot',
+        'http://150.158.22.228:4927/wechaty/withdrawNotice',
         {
-          ...stadium.toJSON(),
-          user,
+          ...user.toJSON(),
+          withdrawStatus,
+          withdrawAmt,
         },
       ),
     );

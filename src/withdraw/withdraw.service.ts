@@ -54,6 +54,7 @@ export class WithdrawService {
       withdrawAmt,
       openId,
       withdrawId,
+      bossId,
     });
     const { status, ...result } = wxResult;
     this.logger.log(result);
