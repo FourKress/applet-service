@@ -24,7 +24,9 @@ export class SpaceService {
 
   async findByStadiumId(params: any): Promise<SpaceMatchDto[]> {
     const { stadiumId } = params;
-    const spaceList = await this.spaceModel.find({ stadiumId }).exec();
+    const spaceList = await this.spaceModel
+      .find({ stadiumId, validFlag: true })
+      .exec();
     const matchList = await this.matchService.findByRunData({
       ...params,
       status: true,

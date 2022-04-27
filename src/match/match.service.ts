@@ -61,6 +61,7 @@ export class MatchService {
           ...params,
           status: true,
           repeatFlag: false,
+          validFlag: true,
         })
         .exec()
     ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
@@ -140,7 +141,10 @@ export class MatchService {
   async details(id: string): Promise<MatchSpaceInterface> {
     const match: any = (
       await this.matchModel
-        .findById(id)
+        .findOne({
+          id,
+          validFlag: true,
+        })
         .populate('stadium', { name: 1, _id: 1 }, Stadium.name)
         .populate('space', { name: 1, _id: 1, unit: 1 }, Space.name)
         .exec()
