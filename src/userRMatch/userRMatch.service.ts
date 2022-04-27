@@ -32,14 +32,15 @@ export class UserRMatchService {
     return personList;
   }
 
-  relationByUserId(userId: string): any {
+  async relationByUserId(userId: string): Promise<UserRMatch[]> {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
-    const relation = this.userRMatchModel.find({
-      userId,
-    });
-    return relation;
+    return await this.userRMatchModel
+      .find({
+        userId,
+      })
+      .exec();
   }
 
   onlyRelationByUserId(matchId: string, userId: string): any {
