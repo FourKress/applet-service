@@ -45,7 +45,7 @@ export class MatchService {
     const thirdDay = Moment().add(2, 'day').format('YYYY-MM-DD');
     const days = [nowDay, nextDay, thirdDay];
     return await this.matchModel
-      .find({ repeatFlag: false, status: true })
+      .find({ repeatFlag: false, status: true, validFlag: true })
       .in('runDate', days)
       .in('stadiumId', stadiumIds)
       .populate('stadium', { name: 1, wxGroupId: 1 }, Stadium.name)
@@ -76,7 +76,10 @@ export class MatchService {
 
   async findByStadiumId(params: any, type = ''): Promise<Match[]> {
     const search = this.matchModel
-      .find(params)
+      .find({
+        ...params,
+        validFlag: true,
+      })
       .populate('space', { name: 1 }, Space.name);
     if (type) {
       return (await search.exists('parentId', false).exec()).filter((match) =>
@@ -105,6 +108,7 @@ export class MatchService {
       .find({
         ...params,
         repeatFlag: false,
+        validFlag: true,
       })
       .populate('stadium', { name: 1 }, Stadium.name)
       .populate('space', { name: 1 }, Space.name)
