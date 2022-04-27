@@ -6,7 +6,7 @@ export interface WithdrawInterface {
   // 提现金额
   withdrawAmt: number;
   status: boolean;
-  wxWithdrawAt: number;
+  wxWithdrawAt: string;
   wxWithdrawId: string;
   return_code: string;
   return_msg: string;
