@@ -36,6 +36,7 @@ export class StadiumService {
     return this.stadiumModel
       .find({
         validFlag: true,
+        isDelete: false,
       })
       .exec();
   }
@@ -49,10 +50,12 @@ export class StadiumService {
         botStatus: false,
       };
     }
-    const stadiumList = await this.stadiumModel.find({
-      ...data,
-      isDelete: false,
-    }).exec();
+    const stadiumList = await this.stadiumModel
+      .find({
+        ...data,
+        isDelete: false,
+      })
+      .exec();
     const result = [];
     await Promise.all(
       stadiumList.map(async (s) => {
@@ -219,12 +222,13 @@ export class StadiumService {
             .find({
               name: { $regex: reg },
               isDelete: false,
+              validFlag: true,
             })
             .in('_id', ids)
             .exec();
         } else {
           stadiumWatchList = await this.stadiumModel
-            .find({ isDelete: false })
+            .find({ isDelete: false, validFlag: true })
             .in('_id', ids)
             .exec();
         }
