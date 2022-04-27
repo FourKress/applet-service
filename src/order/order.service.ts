@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateOderDto } from './dto/create-oder.dto';
-import { ModifyOderDto } from './dto/modify-oder.dto';
 import { OrderInfoInterface } from './interfaces/order-info.interface';
 import { OrderCountInterface } from './interfaces/order-count.interface';
 import { MonthlyCardService } from '../monthly-card/monthly-card.service';
@@ -819,6 +818,11 @@ export class OrderService {
       validPeriodStart: Moment().format('YYYY-MM-DD'),
       validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
       validFlag: true,
+    });
+    const user = await this.userService.findOneById(userId);
+    await this.userService.modify({
+      id: userId,
+      monthlyCardCount: user.monthlyCardCount + 1,
     });
   }
 
