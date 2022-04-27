@@ -14,7 +14,9 @@ export class Withdraw implements WithdrawInterface {
   @Prop()
   bossId: string;
   @Prop()
-  amount: number;
+  withdrawAmt: number;
+  @Prop()
+  createdMonthAt: number;
   @Prop({ default: false })
   status: boolean;
   @Prop({ default: 0 })

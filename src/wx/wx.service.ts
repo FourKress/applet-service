@@ -416,7 +416,7 @@ export class WxService {
   }
 
   async handleWithdraw(params): Promise<any> {
-    const { amount, openId, withdrawId } = params;
+    const { withdrawAmt, openId, withdrawId } = params;
 
     const signObj = {
       mch_appid: this.appId,
@@ -425,7 +425,7 @@ export class WxService {
       partner_trade_no: withdrawId,
       openid: openId,
       check_name: 'NO_CHECK',
-      amount: amount,
+      amount: withdrawAmt,
       desc: '场主提现',
       spbill_create_ip: '150.158.22.228',
       sign: '',
