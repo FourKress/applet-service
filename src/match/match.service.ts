@@ -368,11 +368,11 @@ export class MatchService {
   }
 
   async findWaitStartList(userId: string): Promise<any> {
-    const db = this.userRMatchService.relationByUserId(userId);
-    const relationList = await db
-      .where('expirationDate')
-      .gte(Moment().startOf('day').valueOf())
-      .exec();
+    const db = await this.userRMatchService.relationByUserId(userId);
+    const relationList = db.filter(
+      (d) =>
+        Moment().startOf('day').valueOf() <= Moment(d.expirationDate).valueOf(),
+    );
     const coverList = [];
     const matchIds = relationList.map((d) => d.matchId);
     if (!matchIds?.length) return [];

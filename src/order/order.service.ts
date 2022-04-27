@@ -706,6 +706,7 @@ export class OrderService {
     );
     return {
       ...order.user,
+      orderCreatedAt: order.createdAt,
       count: filterList.length,
       monthlyCardCount: filterList.filter((d) => d.isMonthlyCard).length,
       lastTime: filterList[0].createdAt,
@@ -753,7 +754,7 @@ export class OrderService {
             userId: user.id,
             stadiumId: user.stadiumId,
           },
-          user.createdAt,
+          user.orderCreatedAt,
         );
         return {
           ...user,

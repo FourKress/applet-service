@@ -49,9 +49,10 @@ export class StadiumService {
         botStatus: false,
       };
     }
-    const stadiumList = await this.stadiumModel
-      .find({ ...data, isDelete: false })
-      .exec();
+    const stadiumList = await this.stadiumModel.find({
+      ...data,
+      isDelete: false,
+    }).exec();
     const result = [];
     await Promise.all(
       stadiumList.map(async (s) => {
