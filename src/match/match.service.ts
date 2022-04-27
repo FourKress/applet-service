@@ -142,7 +142,7 @@ export class MatchService {
     const match: any = (
       await this.matchModel
         .findOne({
-          id,
+          _id: id,
           validFlag: true,
         })
         .populate('stadium', { name: 1, _id: 1 }, Stadium.name)
