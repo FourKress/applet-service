@@ -88,7 +88,7 @@ export class WithdrawService {
       const target = records.find((r) => r?.monthTime === d.createdMonthAt);
       const withdraw = {
         ...d.toJSON(),
-        time: Moment(d.createdAt).format('MM月DD日 HH:MM'),
+        time: Moment(d.createdAt).format('MM月DD日 HH:mm'),
       };
       if (!records?.length || !target) {
         records.push({
