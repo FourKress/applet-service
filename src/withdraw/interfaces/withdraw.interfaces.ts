@@ -4,7 +4,7 @@ export interface WithdrawInterface {
   userId: string;
   bossId: string;
   // 提现金额
-  amount: number;
+  withdrawAmt: number;
   status: boolean;
   wxWithdrawAt: number;
   wxWithdrawId: string;

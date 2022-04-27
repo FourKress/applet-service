@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Get,
   Request,
 } from '@nestjs/common';
 
@@ -18,9 +19,16 @@ export class WithdrawController {
   @HttpCode(HttpStatus.OK)
   async handleWithdraw(
     @Request() req,
-    @Body('amount') amount: number,
+    @Body('withdrawAmt') withdrawAmt: number,
   ): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return await this.withdrawService.handleWithdraw(tokenInfo, amount);
+    return await this.withdrawService.handleWithdraw(tokenInfo, withdrawAmt);
+  }
+
+  @Get('records')
+  @HttpCode(HttpStatus.OK)
+  async getRecordsList(@Request() req): Promise<any[]> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.withdrawService.getRecordsList(tokenInfo.bossId);
   }
 }
