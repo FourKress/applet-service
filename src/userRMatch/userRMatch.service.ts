@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserRMatchDto } from './dto/create-userRMatch.dto';
 import { ModifyUserRMatchDto } from './dto/modify-userRMatch.dto';
@@ -6,6 +6,7 @@ import { UserRMatch, UserRMatchDocument } from './schemas/userRMatch.schema';
 import { UsersService } from '../users/users.service';
 import { Model } from 'mongoose';
 import { ToolsService } from '../common/utils/tools-service';
+import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class UserRMatchService {
@@ -13,6 +14,8 @@ export class UserRMatchService {
     @InjectModel(UserRMatch.name)
     private readonly userRMatchModel: Model<UserRMatchDocument>,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
   ) {}
 
   async findAllByMatchId(matchId: string): Promise<UserRMatch[]> {
@@ -21,9 +24,23 @@ export class UserRMatchService {
     if (relationList?.length) {
       personList = await Promise.all(
         relationList.map(async (relation) => {
-          const user = await this.usersService.findOneById(relation.userId);
+          const orderList = await this.orderService.findRegistrationFormOrder(
+            relation.userId,
+            relation.matchId,
+          );
+          const isMonthlyCardPay = orderList.some((d) => d.payMethod === 2);
+          const user: any = orderList[0]?.user;
+          user.isMonthlyCardPay = false;
           const count = relation.count < 0 ? 0 : relation.count;
-          const userList = new Array(count).fill('').map(() => user);
+          const userList = Array.from(new Array(count).keys()).map((item) => {
+            if (item === 0 && isMonthlyCardPay) {
+              return {
+                ...user.toJSON(),
+                isMonthlyCard: true,
+              };
+            }
+            return user;
+          });
           return userList;
         }),
       );
