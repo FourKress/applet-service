@@ -334,7 +334,7 @@ export class OrderService {
         match.runDate,
       );
       isMonthlyCard = !!checkMonthlyCard;
-      if (checkMonthlyCard) {
+      if (isMonthlyCard) {
         amount = baseAmount;
       } else {
         amount = stadium.monthlyCardPrice + baseAmount;
