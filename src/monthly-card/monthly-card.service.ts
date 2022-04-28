@@ -57,25 +57,13 @@ export class MonthlyCardService {
     return relationList;
   }
 
-  async checkMonthlyCard(relationInfo: any, orderCreatedAt): Promise<any> {
-    const { validFlag = null } = relationInfo;
-    if (validFlag) {
-      const monthlyCard = await this.monthlyCardModel.findOne(relationInfo);
-      if (
-        Moment(monthlyCard.validPeriodEnd).valueOf() <
-        Moment().startOf('day').valueOf()
-      ) {
-        return false;
-      }
-      return monthlyCard;
-    } else {
-      const monthlyCard = await this.monthlyCardModel.find(relationInfo);
-      return monthlyCard.filter(
-        (d) =>
-          Moment(d.validPeriodStart).valueOf() <= orderCreatedAt &&
-          Moment(d.validPeriodEnd).valueOf() >= orderCreatedAt,
-      )[0];
-    }
+  async checkMonthlyCard(relationInfo: any, orderRunDate): Promise<any> {
+    const monthlyCard = await this.monthlyCardModel.find(relationInfo);
+    return monthlyCard.filter(
+      (d) =>
+        Moment(d.validPeriodStart).valueOf() <= orderRunDate &&
+        Moment(d.validPeriodEnd).valueOf() >= orderRunDate,
+    )[0];
   }
 
   async getMonthlyCardBySId(stadiumId: string): Promise<MonthlyCard[]> {
