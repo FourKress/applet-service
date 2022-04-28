@@ -86,6 +86,7 @@ export class WithdrawService {
     const list = await this.withdrawModel
       .find({
         bossId,
+        status: true,
       })
       .sort({ createdAt: 'desc' })
       .exec();
