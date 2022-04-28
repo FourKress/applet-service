@@ -124,6 +124,12 @@ export class StadiumService {
     if (!id) {
       ToolsService.fail('id不能为空！');
     }
+
+    const { monthlyCardStatus, monthlyCardPrice } = stadiumInfo;
+    if (monthlyCardStatus && monthlyCardPrice <= 0) {
+      ToolsService.fail('月卡金额不能小于等于0');
+    }
+
     const hasStadium = await this.checkName2Id(stadiumInfo.name);
     if (hasStadium !== id) {
       ToolsService.fail('修改失败，场馆名称已存在！');
