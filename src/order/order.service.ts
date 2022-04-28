@@ -173,7 +173,9 @@ export class OrderService {
       statusName: utils.StatusMap[order.status],
       validPeriodStart: isMonthlyCard ? isMonthlyCard.validPeriodStart : '',
       validPeriodEnd: isMonthlyCard ? isMonthlyCard.validPeriodEnd : '',
-      monthlyCardPayStatus: findMonthlyCard?.length === 0,
+      monthlyCardPayStatus: isMonthlyCard
+        ? findMonthlyCard?.length === 0
+        : true,
       chargeModel: match.chargeModel,
     });
     return orderInfo;
