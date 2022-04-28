@@ -59,10 +59,11 @@ export class MonthlyCardService {
 
   async checkMonthlyCard(relationInfo: any, orderRunDate): Promise<any> {
     const monthlyCard = await this.monthlyCardModel.find(relationInfo);
+    const runTime = Moment(orderRunDate).valueOf();
     return monthlyCard.filter(
       (d) =>
-        Moment(d.validPeriodStart).valueOf() <= orderRunDate &&
-        Moment(d.validPeriodEnd).valueOf() >= orderRunDate,
+        Moment(d.validPeriodStart).valueOf() <= runTime &&
+        Moment(d.validPeriodEnd).valueOf() >= runTime,
     )[0];
   }
 
