@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { WithdrawInterface } from '../interfaces/withdraw.interfaces';
+import { User } from '../../users/schemas/user.schema';
 
 export type WithdrawDocument = Withdraw & Document;
 
@@ -9,7 +10,7 @@ export type WithdrawDocument = Withdraw & Document;
 export class Withdraw implements WithdrawInterface {
   @Prop()
   id: string;
-  @Prop()
+  @Prop({ type: Types.ObjectId, ref: User.name })
   userId: string;
   @Prop()
   bossId: string;

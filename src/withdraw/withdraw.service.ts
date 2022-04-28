@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { UserEntity } from '../auth/interfaces/user-entity.interface';
 import { ToolsService } from '../common/utils/tools-service';
 import * as currency from 'currency.js';
+import { User } from '../users/schemas/user.schema';
 const Moment = require('moment');
 
 @Injectable()
@@ -83,7 +84,7 @@ export class WithdrawService {
   }
 
   async getRecordsList(bossId): Promise<any[]> {
-    const list = await this.withdrawModel
+    const recordsList = await this.withdrawModel
       .find({
         bossId,
         status: true,
@@ -91,7 +92,7 @@ export class WithdrawService {
       .sort({ createdAt: 'desc' })
       .exec();
     const records = [];
-    list.forEach((d) => {
+    recordsList.forEach((d) => {
       const target = records.find((r) => r?.monthTime === d.createdMonthAt);
       const withdraw = {
         ...d.toJSON(),
@@ -114,5 +115,13 @@ export class WithdrawService {
     });
 
     return records;
+  }
+
+  async getAdminRecordsList(params): Promise<any[]> {
+    return await this.withdrawModel
+      .find(params)
+      .sort({ createdAt: 'desc' })
+      .populate('userId', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
   }
 }
