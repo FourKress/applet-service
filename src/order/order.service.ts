@@ -140,7 +140,7 @@ export class OrderService {
         stadiumId,
         validFlag: true,
       },
-      order.createdAt,
+      match.runDate,
     );
     const findMonthlyCard = await this.orderModel
       .find({
@@ -307,7 +307,7 @@ export class OrderService {
     const { flag, match, order }: any = await this.checkOrderPayFlag(id);
     if (!flag) return;
 
-    const { stadiumId, userId, personCount, createdAt } = order;
+    const { stadiumId, userId, personCount } = order;
 
     let amount = 0;
     let isMonthlyCard = false;
@@ -326,7 +326,7 @@ export class OrderService {
           stadiumId,
           validFlag: true,
         },
-        createdAt,
+        match.runDate,
       );
       isMonthlyCard = !!checkMonthlyCard;
       if (checkMonthlyCard) {
@@ -538,7 +538,7 @@ export class OrderService {
           userId,
           stadiumId,
           refundType,
-          createdAt,
+          matchId,
         } = order;
         if (status === 2) {
           if (payMethod === 2 && !newMonthlyCard) {
@@ -547,7 +547,7 @@ export class OrderService {
                 userId,
                 stadiumId,
               },
-              createdAt,
+              matchId.runDate,
             );
             order.monthlyCardValidDate = target?.validPeriodEnd;
           }
@@ -707,7 +707,7 @@ export class OrderService {
     );
     return {
       ...order.user,
-      orderCreatedAt: order.createdAt,
+      orderRunDate: order?.matchId.runDate,
       count: filterList.length,
       monthlyCardCount: filterList.filter((d) => d.isMonthlyCard).length,
       lastTime: filterList[0].createdAt,
@@ -729,6 +729,7 @@ export class OrderService {
           status: 2,
         })
         .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+        .populate('matchId', { runDate: 1 }, Match.name)
         .exec()
     )
       .reverse()
@@ -755,7 +756,7 @@ export class OrderService {
             userId: user.id,
             stadiumId: user.stadiumId,
           },
-          user.orderCreatedAt,
+          user.orderRunDate,
         );
         return {
           ...user,
@@ -812,12 +813,28 @@ export class OrderService {
       .exec();
   }
 
-  async addMonthlyCard(userId, stadiumId) {
+  async addMonthlyCard(userId, stadiumId, orderRunDate) {
+    const check = await this.monthlyCardService.checkMonthlyCard(
+      {
+        userId,
+        stadiumId,
+        validFlag: true,
+      },
+      orderRunDate,
+    );
+    let validPeriodStart = Moment().format('YYYY-MM-DD');
+    let validPeriodEnd = Moment().add(31, 'day').format('YYYY-MM-DD');
+    // 已有月卡, 在当前月卡有效期外再次购买的情况
+    if (check && orderRunDate) {
+      validPeriodStart = orderRunDate;
+      validPeriodEnd = Moment(orderRunDate).add(31, 'day').format('YYYY-MM-DD');
+    }
+
     await this.monthlyCardService.addMonthlyCard({
       userId,
       stadiumId,
-      validPeriodStart: Moment().format('YYYY-MM-DD'),
-      validPeriodEnd: Moment().add(31, 'day').format('YYYY-MM-DD'),
+      validPeriodStart,
+      validPeriodEnd,
       validFlag: true,
     });
   }

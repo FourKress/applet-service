@@ -225,6 +225,7 @@ export class WxService {
         await this.orderService.addMonthlyCard(
           order.userId,
           order.stadiumId.id,
+          order.matchId.runDate,
         );
       }
       await this.handleWechatyBotNotice(order, 'sendMiniProgram');
