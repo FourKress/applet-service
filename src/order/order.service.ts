@@ -306,6 +306,9 @@ export class OrderService {
   }
 
   async orderPay(id: string, payMethod: string): Promise<Order> {
+    if (!payMethod) {
+      ToolsService.fail('系统异常，支付失败');
+    }
     const { flag, match, order }: any = await this.checkOrderPayFlag(id);
     if (!flag) return;
 
