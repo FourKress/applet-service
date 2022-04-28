@@ -885,4 +885,14 @@ export class OrderService {
       .nin('status', [0, 5, 1, 7, 4, 9])
       .exec();
   }
+
+  async findRegistrationFormOrder(userId, matchId): Promise<Order[]> {
+    return await this.orderModel
+      .find({
+        userId,
+        matchId,
+      })
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
+  }
 }
