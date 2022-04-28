@@ -21,6 +21,24 @@ const path = require('path');
 
 const Moment = require('moment');
 
+const errorMap = {
+  PAYEE_ACCOUNT_ABNORMAL: '用户账户收款异常',
+  PAYER_ACCOUNT_ABNORMAL: '商户账户付款受限',
+  EXCEED_PAYEE_ACCOUNT_LIMIT: '用户账户收款受限',
+  RECEIVED_MONEY_LIMIT: '已达到今日提现额度上限，请明日再试',
+  SEND_MONEY_LIMIT: '已达到今日商户付款额度上限，请明日再试',
+  SENDNUM_LIMIT: '已达到今日提现次数上限，请明日再试',
+  V2_ACCOUNT_SIMPLE_BAN: '无法给未实名用户付款',
+  MONEY_LIMIT: '已经达到今日商户付款额度上限或已达到提现额度上限',
+  FREQ_LIMIT: '超过频率限制，请稍后再试。',
+  SYSTEMERROR: '微信内部接口调用发生错误',
+  SEND_FAILED: '付款错误',
+  OPENID_ERROR: 'Openid错误',
+  PARAM_ERROR: '参数错误',
+  AMOUNT_LIMIT: '金额超限',
+  NO_AUTH: '没有该接口权限',
+};
+
 @Injectable()
 export class WxService {
   constructor(
@@ -502,10 +520,12 @@ export class WxService {
             withdrawStatus: true,
           });
         } else {
+          const errCodeDes = reData.err_code_des.join();
           responseData = {
             status: false,
-            err_code: reData.err_code[0],
-            err_code_des: reData.err_code_des[0],
+            err_code: reData.err_code.join(),
+            err_code_des: errCodeDes,
+            errMessage: errorMap[reData.err_code[0]],
             return_code,
             return_msg,
             result_code,
@@ -514,6 +534,7 @@ export class WxService {
             bossId,
             withdrawAmt,
             withdrawStatus: false,
+            errCodeDes,
           });
         }
       } else {
@@ -554,15 +575,14 @@ export class WxService {
   }
 
   async withdrawNotice(withdrawInfo): Promise<any> {
-    const { withdrawStatus, withdrawAmt, bossId } = withdrawInfo;
+    const { bossId, ...info } = withdrawInfo;
     const user: any = await this.usersService.findByBossId(bossId);
     await lastValueFrom(
       this.httpService.post(
         'http://150.158.22.228:4927/wechaty/withdrawNotice',
         {
           ...user.toJSON(),
-          withdrawStatus,
-          withdrawAmt,
+          ...info,
         },
       ),
     );

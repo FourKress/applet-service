@@ -26,12 +26,17 @@ export class WithdrawService {
     withdrawAmt: number,
   ): Promise<any> {
     const { openId, bossId, userId } = tokenInfo;
+    const userInfo = await this.usersService.findByBossId(bossId);
+    if (userInfo.balanceAmt < withdrawAmt) {
+      ToolsService.fail('提现失败，提现金额不能超过可用余额');
+      return;
+    }
     const oldWithdrawList = await this.withdrawModel
-      .find({ userId, bossId })
+      .find({ userId, bossId, status: true })
       .where('createdAt')
       .gte(Moment().startOf('day').valueOf());
     if (oldWithdrawList?.length >= 10) {
-      ToolsService.fail('单日提现次数不能超过10次');
+      ToolsService.fail('提现失败，单日提现次数不能超过10次');
       return;
     }
     const amt = oldWithdrawList.reduce(
@@ -39,7 +44,7 @@ export class WithdrawService {
       0,
     );
     if (amt >= 2000) {
-      ToolsService.fail('单日、单次提现金额不能超过2000元');
+      ToolsService.fail('提现失败，单日、单次提现金额不能超过2000元');
       return;
     }
     const withdraw = new this.withdrawModel({
@@ -73,7 +78,7 @@ export class WithdrawService {
 
       return true;
     } else {
-      return ToolsService.fail('微信提现失败');
+      return ToolsService.fail(`微信提现失败！${result?.errMessage}`);
     }
   }
 
