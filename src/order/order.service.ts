@@ -896,8 +896,8 @@ export class OrderService {
         userId,
         matchId,
       })
-      .nin('status', [3, 6, 8, 9])
-      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .nin('status', [8, 9])
+      .populate('user', { nickName: 1, avatarUrl: 1, phoneNum: 1 }, User.name)
       .sort({ createdAt: 'desc' })
       .exec();
   }
