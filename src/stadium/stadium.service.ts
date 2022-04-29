@@ -146,9 +146,7 @@ export class StadiumService {
       );
       wxGroup = wxGroupFromDB ? wxGroupFromDB?.toJSON() : {};
       if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
-        ToolsService.fail(
-          '求队机器人还未加入到关联的微信群，无法提供自动分享功能，请检查后再试！',
-        );
+        ToolsService.fail('机器人还未加入关联微信群，请检查后再试！');
         return;
       } else {
         if (wxGroup?.stadiumId && wxGroup?.bossId) {
