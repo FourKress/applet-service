@@ -29,18 +29,23 @@ export class UserRMatchService {
             relation.matchId,
           );
           const isMonthlyCardPay = orderList.some((d) => d.payMethod === 2);
-          const user: any = orderList[0]?.user;
-          user.isMonthlyCardPay = false;
+          const orderUser: any = orderList[0]?.user;
+          const user: any = orderUser ? orderUser?.toJSON() : {};
           const count = relation.count < 0 ? 0 : relation.count;
-          const userList = Array.from(new Array(count).keys()).map((item) => {
-            if (item === 0 && isMonthlyCardPay) {
-              return {
-                ...user.toJSON(),
-                isMonthlyCard: true,
-              };
-            }
-            return user;
-          });
+          const userList = Array.from(new Array(count).keys()).map(
+            (item, index) => {
+              const order: any = orderList[index];
+              const orderId = order?._id;
+              if (item === 0 && isMonthlyCardPay) {
+                return {
+                  ...user,
+                  isMonthlyCardPay: true,
+                  orderId,
+                };
+              }
+              return { ...user, isMonthlyCardPay: false, orderId };
+            },
+          );
           return userList;
         }),
       );
