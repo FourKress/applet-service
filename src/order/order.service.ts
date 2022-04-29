@@ -370,7 +370,10 @@ export class OrderService {
     const userByStadiumList = await Promise.all(
       relationList.map(async (user: any) => {
         const order = orderList.find((d: any) => d.id == user.orderId);
-        user.stadiumTempCount = this.getCurrentMonthOrder(orderList).length;
+        user.stadiumTempCount = this.getCurrentMonthOrder(
+          orderList,
+          user.id,
+        ).length;
         user.orderStatus = utils.StatusMap[order?.status];
         return user;
       }),
@@ -902,9 +905,10 @@ export class OrderService {
       .exec();
   }
 
-  getCurrentMonthOrder(orderList) {
+  getCurrentMonthOrder(orderList, userId) {
     return orderList.filter(
       (d) =>
+        userId === d.userId &&
         [2, 7].includes(d.status) &&
         d.createdAt >= Moment().startOf('month').valueOf() &&
         d.createdAt <= Moment().endOf('month').valueOf(),
