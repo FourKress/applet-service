@@ -356,19 +356,23 @@ export class OrderService {
   async findUserByStadiumOrder(params: any) {
     const { matchId, stadiumId } = params;
     const relationList = await this.userRMatchService.findAllByMatchId(matchId);
+    const orderListFromDB = await this.orderModel
+      .find({
+        stadiumId,
+      })
+      .in(
+        'userId',
+        relationList.map((d) => d.id),
+      )
+      .nin('status', [3, 6, 8, 9])
+      .exec();
+    const orderList = orderListFromDB.map((d: any) => d.toJSON());
     const userByStadiumList = await Promise.all(
-      relationList.map(async (item: any) => {
-        const order = item.toJSON();
-        const orderList = await this.orderModel
-          .find({
-            userId: order.id,
-            matchId,
-            stadiumId,
-          })
-          .in('status', [2, 7]);
-        order.stadiumTempCount = orderList.length + 1;
-        order.orderStatus = utils.StatusMap[orderList[0]?.status];
-        return order;
+      relationList.map(async (user: any) => {
+        const order = orderList.find((d: any) => d.id == user.orderId);
+        user.stadiumTempCount = this.getCurrentMonthOrder(orderList).length;
+        user.orderStatus = utils.StatusMap[order?.status];
+        return user;
       }),
     );
     return userByStadiumList;
@@ -892,7 +896,18 @@ export class OrderService {
         userId,
         matchId,
       })
+      .nin('status', [3, 6, 8, 9])
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .sort({ createdAt: 'desc' })
       .exec();
+  }
+
+  getCurrentMonthOrder(orderList) {
+    return orderList.filter(
+      (d) =>
+        [2, 7].includes(d.status) &&
+        d.createdAt >= Moment().startOf('month').valueOf() &&
+        d.createdAt <= Moment().endOf('month').valueOf(),
+    );
   }
 }
