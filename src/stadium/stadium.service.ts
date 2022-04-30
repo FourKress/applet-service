@@ -140,7 +140,10 @@ export class StadiumService {
     }
 
     let wxGroup: any = {};
-    if (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) {
+    if (
+      (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) ||
+      (!stadiumInfo?.wxGroupId && stadiumInfo?.wxGroup)
+    ) {
       const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
         stadiumInfo.wxGroup,
       );
