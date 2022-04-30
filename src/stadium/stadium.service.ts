@@ -281,7 +281,7 @@ export class StadiumService {
     const { filename } = files[0];
     return {
       path: `/${openId}/${filename}`,
-      fileId: filename.replace(/.png/g, ''),
+      fileId: filename.replace(/.(png|jpeg)/g, ''),
     };
   }
 
