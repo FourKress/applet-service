@@ -140,7 +140,10 @@ export class StadiumService {
     }
 
     let wxGroup: any = {};
-    if (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) {
+    if (
+      (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) ||
+      (!stadiumInfo?.wxGroupId && stadiumInfo?.wxGroup)
+    ) {
       const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
         stadiumInfo.wxGroup,
       );
@@ -276,7 +279,7 @@ export class StadiumService {
     const { filename } = files[0];
     return {
       path: `/${openId}/${filename}`,
-      fileId: filename.replace(/.png/g, ''),
+      fileId: filename.replace(/.(png|jpeg)/g, ''),
     };
   }
 

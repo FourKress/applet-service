@@ -42,7 +42,9 @@ const fs = require('fs');
         filename: (req, file, cb) => {
           return cb(
             null,
-            `${Moment().valueOf()}.${file.mimetype.replace(/[\s\S]+\//, '')}`,
+            `${Moment().valueOf()}.${file.mimetype
+              .replace(/[\s\S]+\//, '')
+              .toLowerCase()}`,
           );
         },
       }),
