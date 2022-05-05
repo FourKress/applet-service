@@ -14,4 +14,5 @@ export default registerAs('auth', () => ({
   wxSerialNo: process.env.WX_SERIAL_NO,
   wxPayDescription: process.env.WX_PAY_DESCRIPTION,
   wxApiV3Key: process.env.WX_APIV3_KEY,
+  wxApiV2Key: process.env.WX_APIV2_KEY,
 }));

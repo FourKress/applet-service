@@ -4,6 +4,7 @@ import { MonthlyCardService } from './monthly-card.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MonthlyCard, MonthlyCardSchema } from './schemas/monthlyCard.schema';
 import { StadiumModule } from '../stadium/stadium.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { StadiumModule } from '../stadium/stadium.module';
       { name: MonthlyCard.name, schema: MonthlyCardSchema },
     ]),
     StadiumModule,
+    UsersModule,
   ],
   controllers: [MonthlyCardController],
   providers: [MonthlyCardService],

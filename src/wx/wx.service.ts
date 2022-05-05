@@ -11,8 +11,33 @@ import { StadiumService } from '../stadium/stadium.service';
 import { UnitEnum } from '../common/enum/space.enum';
 import { wxBizDataCrypto } from './wxBizDataCrypto';
 import currency from 'currency.js';
+import { generate } from './payUtils';
+import * as https from 'https';
+
+const crypto = require('crypto');
+const xml2js = require('xml2js');
+const fs = require('fs');
+const path = require('path');
 
 const Moment = require('moment');
+
+const errorMap = {
+  PAYEE_ACCOUNT_ABNORMAL: '用户账户收款异常',
+  PAYER_ACCOUNT_ABNORMAL: '商户账户付款受限',
+  EXCEED_PAYEE_ACCOUNT_LIMIT: '用户账户收款受限',
+  RECEIVED_MONEY_LIMIT: '已达到今日提现额度上限，请明日再试',
+  SEND_MONEY_LIMIT: '已达到今日商户付款额度上限，请明日再试',
+  SENDNUM_LIMIT: '已达到今日提现次数上限，请明日再试',
+  V2_ACCOUNT_SIMPLE_BAN: '无法给未实名用户付款',
+  MONEY_LIMIT: '已经达到今日商户付款额度上限或已达到提现额度上限',
+  FREQ_LIMIT: '超过频率限制，请稍后再试。',
+  SYSTEMERROR: '微信内部接口调用发生错误',
+  SEND_FAILED: '付款错误',
+  OPENID_ERROR: 'Openid错误',
+  PARAM_ERROR: '参数错误',
+  AMOUNT_LIMIT: '金额超限',
+  NO_AUTH: '没有该接口权限',
+};
 
 @Injectable()
 export class WxService {
@@ -30,6 +55,7 @@ export class WxService {
     this.mchId = this.configService.get<string>('auth.wxMchId');
     this.wxSerialNo = this.configService.get<string>('auth.wxSerialNo');
     this.wxApiV3Key = this.configService.get<string>('auth.wxApiV3Key');
+    this.wxApiV2Key = this.configService.get<string>('auth.wxApiV2Key');
     this.serverAddress = this.configService.get<string>('auth.audience');
     this.wxPayDescription = this.configService.get<string>(
       'auth.wxPayDescription',
@@ -49,6 +75,7 @@ export class WxService {
   private readonly mchId: string;
   private readonly wxSerialNo: string;
   private readonly wxApiV3Key: string;
+  private readonly wxApiV2Key: string;
   private readonly wxPayDescription: string;
   private readonly serverAddress: string;
 
@@ -420,6 +447,143 @@ export class WxService {
         {
           ...stadium.toJSON(),
           user,
+        },
+      ),
+    );
+  }
+
+  async handleWithdraw(params): Promise<any> {
+    const { withdrawAmt, openId, withdrawId, bossId } = params;
+
+    const signObj = {
+      mch_appid: this.appId,
+      mchid: this.mchId,
+      nonce_str: generate(),
+      partner_trade_no: withdrawId,
+      openid: openId,
+      check_name: 'NO_CHECK',
+      amount: parseFloat((withdrawAmt * Y2FUnit).toFixed(2)),
+      desc: '场主提现',
+      spbill_create_ip: '150.158.22.228',
+      sign: '',
+    };
+    signObj.sign = this.getSignParam(signObj);
+    const formData = this.getXmlParam(signObj);
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: true,
+      key: fs.readFileSync(
+        path.resolve(__dirname, '../../apiclient_key.pem'),
+        'utf-8',
+      ),
+      cert: fs.readFileSync(
+        path.resolve(__dirname, '../../apiclient_cert.pem'),
+        'utf-8',
+      ),
+      passphrase: this.mchId,
+    });
+    const url =
+      'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
+    const wxResult = await lastValueFrom(
+      this.httpService.request({
+        url,
+        method: 'POST',
+        timeout: 15000,
+        headers: {
+          'content-type': 'application/json;charset=utf-8',
+        },
+        data: formData,
+        httpsAgent,
+      }),
+    );
+
+    let responseData = {};
+    xml2js.parseString(wxResult.data, (error, result) => {
+      const reData = result.xml;
+      console.log(reData, error);
+      const return_code = reData.return_code[0];
+      const return_msg = reData.return_msg[0];
+
+      if (return_code === 'SUCCESS') {
+        const result_code = reData.result_code[0];
+
+        if (result_code === 'SUCCESS') {
+          responseData = {
+            status: true,
+            return_code,
+            return_msg,
+            result_code,
+            wxWithdrawAt: reData.payment_time[0],
+            wxWithdrawId: reData.payment_no[0],
+          };
+          this.withdrawNotice({
+            bossId,
+            withdrawAmt,
+            withdrawStatus: true,
+          });
+        } else {
+          const errCodeDes = reData.err_code_des.join();
+          responseData = {
+            status: false,
+            err_code: reData.err_code.join(),
+            err_code_des: errCodeDes,
+            errMessage: errorMap[reData.err_code[0]],
+            return_code,
+            return_msg,
+            result_code,
+          };
+          this.withdrawNotice({
+            bossId,
+            withdrawAmt,
+            withdrawStatus: false,
+            errCodeDes,
+          });
+        }
+      } else {
+        responseData = {
+          status: false,
+          return_code,
+          return_msg,
+        };
+      }
+    });
+    return responseData;
+  }
+
+  getSignParam(obj) {
+    const keys = Object.keys(obj).sort();
+    const _arr = [];
+    keys.forEach((key) => {
+      if (obj[key]) {
+        _arr.push(`${key}=${obj[key]}`);
+      }
+    });
+    const signValue = crypto
+      .createHash('md5')
+      .update(`${_arr.join('&')}&key=${this.wxApiV2Key}`)
+      .digest('hex');
+
+    return signValue;
+  }
+
+  // 请求时的xml参数
+  getXmlParam(obj) {
+    let _xml = '<xml>';
+    for (const key in obj) {
+      _xml += `<${key}>${obj[key]}</${key}>`;
+    }
+    _xml = _xml + '</xml>';
+    return _xml;
+  }
+
+  async withdrawNotice(withdrawInfo): Promise<any> {
+    const { bossId, ...info } = withdrawInfo;
+    const user: any = await this.usersService.findByBossId(bossId);
+    await lastValueFrom(
+      this.httpService.post(
+        'http://150.158.22.228:4927/wechaty/withdrawNotice',
+        {
+          ...user.toJSON(),
+          ...info,
         },
       ),
     );
