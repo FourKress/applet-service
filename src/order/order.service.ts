@@ -15,6 +15,7 @@ import { UsersService } from '../users/users.service';
 import { ToolsService } from '../common/utils/tools-service';
 import { User } from '../users/schemas/user.schema';
 import { WxService } from '../wx/wx.service';
+import { RefundRuleService } from '../refundRule/refundRule.service';
 
 import * as currency from 'currency.js';
 const Moment = require('moment');
@@ -37,6 +38,7 @@ export class OrderService {
     private readonly userRMatchService: UserRMatchService,
     private readonly userService: UsersService,
     private readonly wxService: WxService,
+    private readonly refundRuleService: RefundRuleService,
   ) {}
 
   async findAll(): Promise<Order[]> {
@@ -633,31 +635,57 @@ export class OrderService {
         if (diffTime <= 2) {
           ToolsService.fail('距开场小于两分钟，无法退款！');
           return;
-        } else if (2 < diffTime && diffTime < 60) {
-          // 触发退款,金额0元
-          refundAmount = 0;
-        } else if (60 * 2 <= diffTime && diffTime < 60 * 4) {
-          if (newMonthlyCard) {
-            refundAmount = currency(
-              payAmount - stadium.monthlyCardPrice,
-            ).multiply(0.5).value;
+        } else {
+          const rulesFromDB = await this.refundRuleService.checkByStadium(
+            order.stadiumId,
+          );
+          if (!rulesFromDB || !rulesFromDB?.rules?.length) {
+            refundAmount = 0;
           } else {
-            refundAmount = currency(payAmount).multiply(0.5).value;
-          }
-        } else if (60 * 4 <= diffTime && diffTime < 60 * 8) {
-          if (newMonthlyCard) {
-            refundAmount = currency(
-              payAmount - stadium.monthlyCardPrice,
-            ).multiply(0.8).value;
-          } else {
-            refundAmount = currency(payAmount).multiply(0.8).value;
-          }
-        } else if (diffTime >= 60 * 8) {
-          refundAmount = payAmount;
-          if (newMonthlyCard) {
-            refundAmount = currency(payAmount).subtract(
-              stadium.monthlyCardPrice,
-            ).value;
+            const rules = rulesFromDB.rules.sort(
+              (a, b) => a.refundTime - b.refundTime,
+            );
+            for (let i = rules.length - 1; i >= 0; i--) {
+              const { refundRatio, refundTime } = rules[i];
+              if (i === 0) {
+                if (diffTime < refundTime * 60) {
+                  refundAmount = 0;
+                  break;
+                }
+              } else if (i === rules.length - 1) {
+                if (diffTime >= refundTime * 60) {
+                  refundAmount = payAmount;
+                  if (newMonthlyCard) {
+                    refundAmount = currency(payAmount).subtract(
+                      stadium.monthlyCardPrice,
+                    ).value;
+                  }
+                  break;
+                }
+              } else if (
+                diffTime < refundTime * 60 &&
+                diffTime >= rules[i - 1].refundTime * 60
+              ) {
+                refundAmount = this.getRefundAmount(
+                  newMonthlyCard,
+                  payAmount,
+                  stadium.monthlyCardPrice,
+                  rules[i - 1].refundRatio,
+                );
+                break;
+              } else if (
+                diffTime >= refundTime * 60 &&
+                diffTime < rules[i + 1].refundTime * 60
+              ) {
+                refundAmount = this.getRefundAmount(
+                  newMonthlyCard,
+                  payAmount,
+                  stadium.monthlyCardPrice,
+                  refundRatio,
+                );
+                break;
+              }
+            }
           }
         }
       }
@@ -675,6 +703,18 @@ export class OrderService {
       refundId,
       payAmount,
     };
+  }
+
+  getRefundAmount(newMonthlyCard, payAmount, monthlyCardPrice, refundRatio) {
+    let refundAmount = 0;
+    if (newMonthlyCard) {
+      refundAmount = currency(payAmount - monthlyCardPrice).multiply(
+        refundRatio,
+      ).value;
+    } else {
+      refundAmount = currency(payAmount).multiply(refundRatio).value;
+    }
+    return refundAmount;
   }
 
   async handleSystemRefund(orderId) {

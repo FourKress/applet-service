@@ -10,6 +10,7 @@ import { UserRMatchModule } from '../userRMatch/userRMatch.module';
 import { Order, OrderSchema } from './schemas/order.schema';
 import { UsersModule } from '../users/users.module';
 import { WxModule } from '../wx/wx.module';
+import { RefundRuleModule } from '../refundRule/refundRule.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WxModule } from '../wx/wx.module';
     UserRMatchModule,
     UsersModule,
     WxModule,
+    RefundRuleModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

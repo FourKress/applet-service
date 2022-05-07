@@ -14,8 +14,11 @@ export class RefundRuleService {
 
   async createRules(createRules: CreateRefundRuleDto): Promise<RefundRule> {
     const { stadiumId } = createRules;
-    const check = this.refundRuleModel.find({ stadiumId, validFlag: true });
-    if (check) {
+    const check = await this.refundRuleModel.find({
+      stadiumId,
+      validFlag: true,
+    });
+    if (check?.length) {
       ToolsService.fail('操作失败，已有规则在使用中。');
     }
     const rules = new this.refundRuleModel(createRules);

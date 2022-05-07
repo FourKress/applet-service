@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Get,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { RefundRuleService } from './refundRule.service';
 import { RefundRule } from './schemas/space.schema';
 import { CreateRefundRuleDto } from './dto/create-refundRule.dto';
-import { query } from 'express';
 
 @Controller('refundRule')
 export class RefundRuleController {
