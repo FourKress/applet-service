@@ -647,35 +647,10 @@ export class OrderService {
             );
             for (let i = rules.length - 1; i >= 0; i--) {
               const { refundRatio, refundTime } = rules[i];
-              if (i === 0) {
-                if (diffTime < refundTime * 60) {
-                  refundAmount = 0;
-                  break;
-                }
-              } else if (i === rules.length - 1) {
-                if (diffTime >= refundTime * 60) {
-                  refundAmount = payAmount;
-                  if (newMonthlyCard) {
-                    refundAmount = currency(payAmount).subtract(
-                      stadium.monthlyCardPrice,
-                    ).value;
-                  }
-                  break;
-                }
-              } else if (
-                diffTime < refundTime * 60 &&
-                diffTime >= rules[i - 1].refundTime * 60
-              ) {
-                refundAmount = this.getRefundAmount(
-                  newMonthlyCard,
-                  payAmount,
-                  stadium.monthlyCardPrice,
-                  rules[i - 1].refundRatio,
-                );
-                break;
-              } else if (
-                diffTime >= refundTime * 60 &&
-                diffTime < rules[i + 1].refundTime * 60
+              if (
+                (i === 0 && diffTime < refundTime * 60) ||
+                (diffTime < refundTime * 60 &&
+                  diffTime >= rules[i - 1].refundTime * 60)
               ) {
                 refundAmount = this.getRefundAmount(
                   newMonthlyCard,
@@ -683,6 +658,17 @@ export class OrderService {
                   stadium.monthlyCardPrice,
                   refundRatio,
                 );
+                break;
+              } else if (
+                i === rules.length - 1 &&
+                diffTime >= refundTime * 60
+              ) {
+                refundAmount = payAmount;
+                if (newMonthlyCard) {
+                  refundAmount = currency(payAmount).subtract(
+                    stadium.monthlyCardPrice,
+                  ).value;
+                }
                 break;
               }
             }
