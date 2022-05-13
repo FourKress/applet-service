@@ -4,6 +4,7 @@ import { RefundRuleDocument, RefundRule } from './schemas/space.schema';
 import { Model } from 'mongoose';
 import { CreateRefundRuleDto } from './dto/create-refundRule.dto';
 import { ToolsService } from '../common/utils/tools-service';
+import { IRule } from './interfaces/rule.interface';
 
 @Injectable()
 export class RefundRuleService {
@@ -45,5 +46,22 @@ export class RefundRuleService {
         validFlag: true,
       })
       .exec();
+  }
+
+  async getDefault(): Promise<IRule[]> {
+    return [
+      {
+        refundTime: 2,
+        refundRatio: 0,
+      },
+      {
+        refundTime: 4,
+        refundRatio: 0.5,
+      },
+      {
+        refundTime: 8,
+        refundRatio: 0.8,
+      },
+    ];
   }
 }
