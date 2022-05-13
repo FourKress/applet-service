@@ -1,7 +1,15 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Get,
+} from '@nestjs/common';
 import { RefundRuleService } from './refundRule.service';
 import { RefundRule } from './schemas/space.schema';
 import { CreateRefundRuleDto } from './dto/create-refundRule.dto';
+import { IRule } from './interfaces/rule.interface';
 
 @Controller('refundRule')
 export class RefundRuleController {
@@ -31,5 +39,10 @@ export class RefundRuleController {
   @HttpCode(HttpStatus.OK)
   async checkByStadium(@Body('stadiumId') stadiumId): Promise<RefundRule> {
     return await this.refundRuleService.checkByStadium(stadiumId);
+  }
+
+  @Get('default')
+  async getDefault(): Promise<IRule[]> {
+    return await this.refundRuleService.getDefault();
   }
 }
