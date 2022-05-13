@@ -36,4 +36,10 @@ export class WithdrawController {
   async getAdminRecordsList(@Body() params): Promise<any[]> {
     return await this.withdrawService.getAdminRecordsList(params);
   }
+
+  @Get('config')
+  async getWithdrawConfig(@Request() req): Promise<boolean> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.withdrawService.getWithdrawConfig(tokenInfo.bossId);
+  }
 }

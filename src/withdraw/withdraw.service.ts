@@ -124,4 +124,9 @@ export class WithdrawService {
       .populate('userId', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
   }
+
+  async getWithdrawConfig(bossId): Promise<boolean> {
+    if (process.env.NODE_ENV !== 'prod') return true;
+    return !['623014323423f91f1465239d'].includes(bossId);
+  }
 }
