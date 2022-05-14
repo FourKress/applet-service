@@ -13,6 +13,7 @@ import { WxGroupService } from '../wxGroup/wxGroup.service';
 import { UsersService } from '../users/users.service';
 import { OrderService } from '../order/order.service';
 import { SpaceService } from '../space/space.service';
+import { RefundRuleService } from '../refundRule/refundRule.service';
 
 const Moment = require('moment');
 
@@ -30,6 +31,7 @@ export class StadiumService {
     @Inject(forwardRef(() => OrderService))
     private readonly orderService: OrderService,
     private readonly spaceService: SpaceService,
+    private readonly refundRuleService: RefundRuleService,
   ) {}
 
   async findAll(): Promise<Stadium[]> {
@@ -105,6 +107,11 @@ export class StadiumService {
       return;
     }
     const newStadium = new this.stadiumModel(addStadium);
+    const rules = await this.refundRuleService.getDefault();
+    await this.refundRuleService.createRules({
+      stadiumId: newStadium._id,
+      rules,
+    });
     return await newStadium.save();
   }
 
@@ -359,6 +366,7 @@ export class StadiumService {
       .exec();
     await this.spaceService.deleteByStadiumId(stadiumId);
     await this.matchService.deleteByStadiumId(stadiumId);
+    await this.refundRuleService.closeRulesByStadium(stadiumId);
     return true;
   }
 

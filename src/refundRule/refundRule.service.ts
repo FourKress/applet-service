@@ -39,6 +39,19 @@ export class RefundRuleService {
       .exec();
   }
 
+  async closeRulesByStadium(stadiumId): Promise<any> {
+    return await this.refundRuleModel
+      .updateOne(
+        {
+          stadiumId,
+        },
+        {
+          validFlag: false,
+        },
+      )
+      .exec();
+  }
+
   async checkByStadium(stadiumId): Promise<RefundRule> {
     return await this.refundRuleModel
       .findOne({

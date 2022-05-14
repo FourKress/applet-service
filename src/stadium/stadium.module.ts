@@ -10,6 +10,7 @@ import { WxGroupModule } from '../wxGroup/wxGroup.module';
 import { UsersModule } from '../users/users.module';
 import { OrderModule } from '../order/order.module';
 import { SpaceModule } from '../space/space.module';
+import { RefundRuleModule } from '../refundRule/refundRule.module';
 
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -27,6 +28,7 @@ const fs = require('fs');
     UsersModule,
     SpaceModule,
     forwardRef(() => OrderModule),
+    RefundRuleModule,
     MulterModule.register({
       storage: diskStorage({
         destination: (req, file, done) => {
