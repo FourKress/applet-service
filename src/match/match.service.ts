@@ -471,4 +471,24 @@ export class MatchService {
       )
       .exec();
   }
+
+  async deleteMatch(matchId): Promise<any> {
+    const matchList = await this.matchModel.find({ parentId: matchId });
+    const matchIds = [matchId, ...matchList.map((d) => String(d._id))];
+    const checkOrders = await this.orderService.findOrderByMatchIds(matchIds);
+    const ids = matchIds.filter(
+      (d) => !checkOrders.some((o) => o.matchId === d),
+    );
+    await this.matchModel.updateMany(
+      { parentId: matchId, _id: { $in: ids } },
+      {
+        validFlag: false,
+        status: false,
+      },
+    );
+    await this.matchModel.findByIdAndUpdate(matchId, {
+      validFlag: false,
+      status: false,
+    });
+  }
 }
