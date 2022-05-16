@@ -111,4 +111,11 @@ export class MatchController {
   async getToDayRevenue(@Query('runDate') runDate: string): Promise<any[]> {
     return await this.matchService.getToDayRevenue(runDate);
   }
+
+  @Get('delete')
+  async deleteMatch(
+    @Query('matchId', new ValidationIDPipe()) matchId: string,
+  ): Promise<any[]> {
+    return await this.matchService.deleteMatch(matchId);
+  }
 }
