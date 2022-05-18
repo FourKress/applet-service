@@ -62,6 +62,8 @@ export class UserRMatchService {
       .find({
         userId,
       })
+      .where('count')
+      .gt(0)
       .exec();
   }
 
