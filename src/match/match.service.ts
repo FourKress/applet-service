@@ -473,19 +473,32 @@ export class MatchService {
   }
 
   async deleteMatch(matchId): Promise<any> {
-    const matchList = await this.matchModel.find({ parentId: matchId });
-    const matchIds = [matchId, ...matchList.map((d) => String(d._id))];
-    const checkOrders = await this.orderService.findOrderByMatchIds(matchIds);
-    const ids = matchIds.filter(
-      (d) => !checkOrders.some((o) => o.matchId === d),
-    );
-    await this.matchModel.updateMany(
-      { parentId: matchId, _id: { $in: ids } },
-      {
-        validFlag: false,
-        status: false,
-      },
-    );
+    const match = await this.matchModel.findById(matchId);
+    if (match?.repeatModel === 1) {
+      const checkOrder = await this.orderService.findOrderByMatchIds([matchId]);
+      if (checkOrder?.length) {
+        ToolsService.fail('场次删除失败，有订单正在使用中');
+        return;
+      }
+    } else {
+      const matchList = await this.matchModel.find({ parentId: matchId });
+      const matchIds = [...matchList.map((d) => String(d._id))];
+      const checkOrders = await this.orderService.findOrderByMatchIds(matchIds);
+      const ids = matchIds.filter(
+        (d) => !checkOrders.some((o) => o.matchId === d),
+      );
+      if (!ids?.length) {
+        ToolsService.fail('场次删除失败，有订单正在使用中');
+        return;
+      }
+      await this.matchModel.updateMany(
+        { parentId: matchId, _id: { $in: ids } },
+        {
+          validFlag: false,
+          status: false,
+        },
+      );
+    }
     await this.matchModel.findByIdAndUpdate(matchId, {
       validFlag: false,
       status: false,
