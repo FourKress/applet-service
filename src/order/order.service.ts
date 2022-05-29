@@ -719,7 +719,18 @@ export class OrderService {
 
   async handleMatchRestore(orderId) {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
-    const { matchId, personCount, userId } = order;
+    const { matchId, personCount, userId, refundAmount, payAmount } = order;
+    const userInfo = await this.userService.findByBossId(order?.bossId);
+    if (payAmount > 0 && refundAmount === 0) {
+      const addBalanceAmt = payAmount - 0;
+      const balanceAmt = userInfo.balanceAmt + addBalanceAmt;
+      await this.userService.setBossBalanceAmt({
+        bossId: order?.bossId,
+        balanceAmt,
+        withdrawAt: Moment.now(),
+      });
+    }
+
     const match: any = await this.matchService.findById(matchId);
     const userRMatch = await this.userRMatchService.onlyRelationByUserId(
       matchId,
