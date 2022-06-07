@@ -51,6 +51,10 @@ export class Stadium implements StadiumInterface {
   botStatus: boolean;
   @Prop({ default: false })
   isDelete: boolean;
+  @Prop({ default: false })
+  noticeStatus: boolean;
+  @Prop({ default: '' })
+  noticeContent: string;
   @Prop()
   createdAt: number;
   @Prop()

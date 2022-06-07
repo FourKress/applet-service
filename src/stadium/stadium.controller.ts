@@ -89,7 +89,6 @@ export class StadiumController {
     return await this.stadiumService.findByName(params.stadiumName);
   }
 
-  @NoAuth()
   @Post('remove')
   @HttpCode(HttpStatus.OK)
   async remove(@Body() params: any): Promise<boolean> {
@@ -100,5 +99,11 @@ export class StadiumController {
   @HttpCode(HttpStatus.OK)
   changeBotStatus(@Body() params): any {
     return this.stadiumService.changeBotStatus(params);
+  }
+
+  @Post('modifyNotice')
+  @HttpCode(HttpStatus.OK)
+  modifyNotice(@Body() params): Promise<Stadium> {
+    return this.stadiumService.modifyNotice(params);
   }
 }
