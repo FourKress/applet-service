@@ -393,4 +393,9 @@ export class StadiumService {
     }
     await this.stadiumModel.findByIdAndUpdate(stadiumId, stadium);
   }
+
+  async modifyNotice(params): Promise<Stadium> {
+    const { stadiumId, ...data } = params;
+    return await this.stadiumModel.findByIdAndUpdate(stadiumId, data).exec();
+  }
 }
