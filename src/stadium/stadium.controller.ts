@@ -106,4 +106,11 @@ export class StadiumController {
   modifyNotice(@Body() params): Promise<Stadium> {
     return this.stadiumService.modifyNotice(params);
   }
+
+  @Get('getNoticeInfo')
+  getNoticeInfo(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Stadium> {
+    return this.stadiumService.getNoticeInfo(stadiumId);
+  }
 }
