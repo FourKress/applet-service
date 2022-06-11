@@ -229,18 +229,12 @@ export class WxService {
     const {
       out_trade_no,
       transaction_id,
-      amount: { payer_total },
-      promotion_detail = [],
+      amount: { total },
     } = resource;
-    const promotionAmt = promotion_detail.reduce(
-      (sum, curr) => currency(sum).add(curr?.amount || 0).value,
-      0,
-    );
     const orderFromDB: any = await this.orderService.getOrderById(out_trade_no);
     const order = orderFromDB.toJSON();
     if (
-      order.payAmount ===
-        parseFloat(((payer_total + promotionAmt) / Y2FUnit).toFixed(2)) &&
+      order.payAmount === parseFloat((total / Y2FUnit).toFixed(2)) &&
       order.status === 5
     ) {
       await this.orderService.modifyOrder({
