@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Manager, ManagerDocument } from './schemas/manager.schema';
-import { ToolsService } from '../common/utils/tools-service';
+import Moment from 'moment';
 
 @Injectable()
 export class ManagerService {
@@ -14,14 +14,25 @@ export class ManagerService {
   ) {}
 
   async authManager(params, userId): Promise<any> {
-    const { stadiumId, bossId } = params;
+    const { stadiumId, bossId, expiredTime } = params;
+
+    if (Moment().diff(expiredTime) > 0) {
+      return {
+        error: true,
+        msg: '管理员邀请已失效，请重新邀请！',
+      };
+    }
+
     const checkByDB = await this.managerModel.findOne({
       stadiumId,
       userId,
       validFlag: true,
     });
     if (checkByDB) {
-      ToolsService.fail('您已是该球场的管理员，请不要重复接受邀请');
+      return {
+        error: true,
+        msg: '您已是该球场的管理员，请不要重复接受邀请！',
+      };
     }
     const manager = new this.managerModel({
       stadiumId,

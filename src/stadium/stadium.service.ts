@@ -426,7 +426,7 @@ export class StadiumService {
       };
     }
     const { stadiumId, expiredTime } = managerInviteInfo;
-    if (Moment().diff(expiredTime, 'minutes') > 2) {
+    if (Moment().diff(expiredTime) > 0) {
       return {
         error: true,
         msg: '管理员邀请已失效，请重新邀请！',
