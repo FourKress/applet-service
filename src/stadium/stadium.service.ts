@@ -417,14 +417,28 @@ export class StadiumService {
     return inviteId;
   }
 
-  async getManagerInvite(inviteId, userId): Promise<any> {
+  async getManagerInvite(inviteId): Promise<any> {
     const managerInviteInfo = this.managerInvite.get(inviteId);
-    const { stadiumId, boosId, expiredTime } = managerInviteInfo;
+    if (!managerInviteInfo) {
+      return {
+        error: true,
+        msg: '未找到管理员邀请信息，请检查后重试！',
+      };
+    }
+    const { stadiumId, expiredTime } = managerInviteInfo;
     if (Moment().diff(expiredTime, 'minutes') > 2) {
-      ToolsService.fail('管理员邀请已失效，请重新邀请！');
-      return false;
+      return {
+        error: true,
+        msg: '管理员邀请已失效，请重新邀请！',
+      };
     }
     const stadium = await this.stadiumModel.findById(stadiumId).exec();
+    if (!stadium?.name) {
+      return {
+        error: true,
+        msg: '未找到对应球场，请重新邀请！',
+      };
+    }
     return {
       ...managerInviteInfo,
       stadiumName: stadium.name,
