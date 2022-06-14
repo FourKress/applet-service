@@ -424,5 +424,10 @@ export class StadiumService {
       ToolsService.fail('管理员邀请已失效，请重新邀请！');
       return false;
     }
+    const stadium = await this.stadiumModel.findById(stadiumId).exec();
+    return {
+      ...managerInviteInfo,
+      stadiumName: stadium.name,
+    };
   }
 }
