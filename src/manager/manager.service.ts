@@ -27,6 +27,7 @@ export class ManagerService {
       stadiumId,
       bossId,
       userId,
+      validFlag: true,
     });
     return await manager.save();
   }
