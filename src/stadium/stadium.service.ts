@@ -407,12 +407,12 @@ export class StadiumService {
     return await this.stadiumModel.findById(stadiumId).exec();
   }
 
-  async addManagerInvite(stadiumId, boosId): Promise<string> {
+  async addManagerInvite(stadiumId, bossId): Promise<string> {
     const inviteId = Types.ObjectId().toHexString();
     await this.managerInvite.set(inviteId, {
       expiredTime: Moment().add(2, 'minutes').valueOf(),
       stadiumId,
-      boosId,
+      bossId,
     });
     return inviteId;
   }
