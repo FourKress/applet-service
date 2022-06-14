@@ -124,12 +124,11 @@ export class StadiumController {
     return this.stadiumService.addManagerInvite(stadiumId, tokenInfo.bossId);
   }
 
+  @NoAuth()
   @Get('getManagerInvite')
   getManagerInvite(
-    @Request() req,
     @Query('inviteId', new ValidationIDPipe()) inviteId: string,
   ): Promise<Stadium> {
-    const tokenInfo: UserEntity = req.user;
-    return this.stadiumService.getManagerInvite(inviteId, tokenInfo.userId);
+    return this.stadiumService.getManagerInvite(inviteId);
   }
 }
