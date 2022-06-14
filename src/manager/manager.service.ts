@@ -32,6 +32,7 @@ export class ManagerService {
     if (checkByDB) {
       return {
         error: true,
+        isAuth: true,
         msg: '您已是该球场的管理员，请不要重复接受邀请！',
       };
     }
