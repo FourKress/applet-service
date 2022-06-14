@@ -14,6 +14,10 @@ export class ManagerService {
   ) {}
 
   async authManager(params, userId): Promise<any> {
+    console.log('@@@');
+    console.log(JSON.stringify(params), userId);
+    console.log('@@@');
+
     const { stadiumId, boosId } = params;
     const checkByDB = await this.managerModel.findOne({
       stadiumId,
@@ -21,7 +25,7 @@ export class ManagerService {
       validFlag: true,
     });
     if (checkByDB) {
-      ToolsService.fail('您已是该球场的管理员，无法重复接受邀请');
+      ToolsService.fail('您已是该球场的管理员，请不要重复接受邀请');
     }
     const manager = new this.managerModel(params);
     return await manager.save();
