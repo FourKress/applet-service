@@ -419,14 +419,8 @@ export class StadiumService {
 
   async getManagerInvite(inviteId): Promise<any> {
     const managerInviteInfo = this.managerInvite.get(inviteId);
-    if (!managerInviteInfo) {
-      return {
-        error: true,
-        msg: '未找到管理员邀请信息，请检查后重试！',
-      };
-    }
-    const { stadiumId, expiredTime } = managerInviteInfo;
-    if (Moment().diff(expiredTime) > 0) {
+    const { stadiumId, expiredTime } = managerInviteInfo || {};
+    if (!managerInviteInfo || Moment().diff(expiredTime) > 0) {
       return {
         error: true,
         msg: '管理员邀请已失效，请重新邀请！',
