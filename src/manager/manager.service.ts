@@ -2,7 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Manager, ManagerDocument } from './schemas/manager.schema';
-import Moment from 'moment';
+
+const Moment = require('moment');
 
 @Injectable()
 export class ManagerService {
