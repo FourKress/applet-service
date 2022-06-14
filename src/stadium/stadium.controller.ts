@@ -113,4 +113,23 @@ export class StadiumController {
   ): Promise<Stadium> {
     return this.stadiumService.getNoticeInfo(stadiumId);
   }
+
+  @Post('addManagerInvite')
+  @HttpCode(HttpStatus.OK)
+  addManagerInvite(
+    @Request() req,
+    @Body('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<string> {
+    const tokenInfo: UserEntity = req.user;
+    return this.stadiumService.addManagerInvite(stadiumId, tokenInfo.bossId);
+  }
+
+  @Get('getManagerInvite')
+  getManagerInvite(
+    @Request() req,
+    @Query('inviteId', new ValidationIDPipe()) inviteId: string,
+  ): Promise<Stadium> {
+    const tokenInfo: UserEntity = req.user;
+    return this.stadiumService.getManagerInvite(inviteId, tokenInfo.userId);
+  }
 }

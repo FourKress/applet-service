@@ -20,6 +20,7 @@ import { UserRMatchModule } from './userRMatch/userRMatch.module';
 import { WxGroupModule } from './wxGroup/wxGroup.module';
 import { WithdrawModule } from './withdraw/withdraw.module';
 import { RefundRuleModule } from './refundRule/refundRule.module';
+import { ManagerModule } from './manager/manager.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { RefundRuleModule } from './refundRule/refundRule.module';
     WxGroupModule,
     WithdrawModule,
     RefundRuleModule,
+    ManagerModule,
   ],
 })
 export class AppModule {}

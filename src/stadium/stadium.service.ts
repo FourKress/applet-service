@@ -19,6 +19,8 @@ const Moment = require('moment');
 
 @Injectable()
 export class StadiumService {
+  private managerInvite: Map<any, any>;
+
   constructor(
     @InjectModel(Stadium.name)
     private readonly stadiumModel: Model<StadiumDocument>,
@@ -32,7 +34,9 @@ export class StadiumService {
     private readonly orderService: OrderService,
     private readonly spaceService: SpaceService,
     private readonly refundRuleService: RefundRuleService,
-  ) {}
+  ) {
+    this.managerInvite = new Map();
+  }
 
   async findAll(): Promise<Stadium[]> {
     return this.stadiumModel
@@ -401,5 +405,24 @@ export class StadiumService {
 
   async getNoticeInfo(stadiumId): Promise<Stadium> {
     return await this.stadiumModel.findById(stadiumId).exec();
+  }
+
+  async addManagerInvite(stadiumId, boosId): Promise<string> {
+    const inviteId = Types.ObjectId().toHexString();
+    await this.managerInvite.set(inviteId, {
+      expiredTime: Moment().add(2, 'minutes').valueOf(),
+      stadiumId,
+      boosId,
+    });
+    return inviteId;
+  }
+
+  async getManagerInvite(inviteId, userId): Promise<any> {
+    const managerInviteInfo = this.managerInvite.get(inviteId);
+    const { stadiumId, boosId, expiredTime } = managerInviteInfo;
+    if (Moment().diff(expiredTime, 'minutes') > 2) {
+      ToolsService.fail('管理员邀请已失效，请重新邀请！');
+      return false;
+    }
   }
 }
