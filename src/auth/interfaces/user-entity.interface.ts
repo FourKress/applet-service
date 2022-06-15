@@ -8,4 +8,6 @@ export interface UserEntity {
   openId: string;
   // 场主Id
   bossId: string;
+  // 管理员的授权场主ID集合
+  authIds: string[];
 }

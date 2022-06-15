@@ -64,7 +64,9 @@ export class StadiumController {
   @Get('stadiumList')
   async stadiumList(@Request() req): Promise<Stadium[]> {
     const tokenInfo: UserEntity = req.user;
-    return await this.stadiumService.findByBossId(tokenInfo.bossId);
+    return await this.stadiumService.findByBossId(
+      [tokenInfo.bossId] || tokenInfo.authIds,
+    );
   }
 
   @NoAuth()
