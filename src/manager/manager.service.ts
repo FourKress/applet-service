@@ -36,7 +36,7 @@ export class ManagerService {
     }
     const checkByDB = await this.managerModel.findOne({
       stadiumId,
-      userId,
+      user: userId,
       validFlag: true,
     });
     if (checkByDB) {
