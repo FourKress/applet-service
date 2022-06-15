@@ -19,9 +19,8 @@ export class ManagerService {
 
   async authManager(params, userId): Promise<any> {
     const { stadiumId, bossId, expiredTime, inviteId, inviteUserId } = params;
-
+    this.stadiumService.deleteInvite(inviteId);
     if (Moment().diff(expiredTime) > 0) {
-      this.stadiumService.deleteInvite(inviteId);
       return {
         error: true,
         msg: '管理员邀请已失效，请重新邀请！',
@@ -29,7 +28,6 @@ export class ManagerService {
     }
 
     if (inviteUserId === userId) {
-      this.stadiumService.deleteInvite(inviteId);
       return {
         error: true,
         isAuth: true,
@@ -42,7 +40,6 @@ export class ManagerService {
       validFlag: true,
     });
     if (checkByDB) {
-      this.stadiumService.deleteInvite(inviteId);
       return {
         error: true,
         isAuth: true,
