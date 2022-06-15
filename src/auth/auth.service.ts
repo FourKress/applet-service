@@ -7,6 +7,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { ToolsService } from '../common/utils/tools-service';
+import { ManagerService } from '../manager/manager.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JWTService,
     private readonly usersService: UsersService,
+    private readonly managerService: ManagerService,
   ) {}
 
   async login(user: CreateUserDto): Promise<AuthInterface> {
@@ -29,10 +31,15 @@ export class AuthService {
       });
     }
     const userInfo = userFromDb.toJSON();
+    const managerList = await this.managerService.getManagerByUserId(
+      userInfo.id,
+    );
+    const authIds = (managerList ?? []).map((d) => d.bossId);
     const token = await this.jwtService.createToken({
       userId: userInfo.id,
       openId: userInfo.openId,
       bossId: userInfo.bossId,
+      authIds,
     });
     return {
       token,
@@ -50,6 +57,7 @@ export class AuthService {
       userId: userInfo.id,
       openId: userInfo.openId,
       bossId: userInfo.bossId,
+      authIds: [],
     });
     return {
       token,

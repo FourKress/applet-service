@@ -83,11 +83,14 @@ export class StadiumService {
     return await this.stadiumModel.findById(id).exec();
   }
 
-  async findByBossId(bossId: string): Promise<Stadium[]> {
-    if (!bossId) {
+  async findByBossId(bossIds: string[]): Promise<Stadium[]> {
+    if (!bossIds?.length) {
       ToolsService.fail('bossId不能为空！');
     }
-    return await this.stadiumModel.find({ bossId, isDelete: false }).exec();
+    return await this.stadiumModel
+      .find({ isDelete: false })
+      .in('bossId', bossIds)
+      .exec();
   }
 
   async checkName2Id(name: string): Promise<string> {

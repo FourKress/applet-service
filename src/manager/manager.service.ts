@@ -70,4 +70,13 @@ export class ManagerService {
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
   }
+
+  async getManagerByUserId(userId: string): Promise<Manager[]> {
+    return await this.managerModel
+      .find({
+        user: userId,
+        validFlag: true,
+      })
+      .exec();
+  }
 }
