@@ -1,6 +1,6 @@
 export interface ManagerInterfaces {
   id: string;
   stadiumId: string;
-  userId: string;
+  user: string;
   bossId: string;
 }

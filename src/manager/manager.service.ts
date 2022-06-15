@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Manager, ManagerDocument } from './schemas/manager.schema';
+import { StadiumService } from '../stadium/stadium.service';
+import { User } from '../users/schemas/user.schema';
 
 const Moment = require('moment');
 
@@ -12,24 +14,35 @@ export class ManagerService {
   constructor(
     @InjectModel(Manager.name)
     private readonly managerModel: Model<ManagerDocument>,
+    private readonly stadiumService: StadiumService,
   ) {}
 
   async authManager(params, userId): Promise<any> {
-    const { stadiumId, bossId, expiredTime } = params;
+    const { stadiumId, bossId, expiredTime, inviteId, inviteUserId } = params;
 
     if (Moment().diff(expiredTime) > 0) {
+      this.stadiumService.deleteInvite(inviteId);
       return {
         error: true,
         msg: '管理员邀请已失效，请重新邀请！',
       };
     }
 
+    if (inviteUserId === userId) {
+      this.stadiumService.deleteInvite(inviteId);
+      return {
+        error: true,
+        isAuth: true,
+        msg: '您不能邀请自己成为管理员，请检查后再试！',
+      };
+    }
     const checkByDB = await this.managerModel.findOne({
       stadiumId,
       userId,
       validFlag: true,
     });
     if (checkByDB) {
+      this.stadiumService.deleteInvite(inviteId);
       return {
         error: true,
         isAuth: true,
@@ -39,7 +52,7 @@ export class ManagerService {
     const manager = new this.managerModel({
       stadiumId,
       bossId,
-      userId,
+      user: userId,
       validFlag: true,
     });
     return await manager.save();
@@ -49,5 +62,15 @@ export class ManagerService {
     await this.managerModel.findByIdAndUpdate(id, {
       validFlag: false,
     });
+  }
+
+  async getManagerList(stadiumId: string): Promise<Manager[]> {
+    return await this.managerModel
+      .find({
+        stadiumId,
+        validFlag: true,
+      })
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
+      .exec();
   }
 }
