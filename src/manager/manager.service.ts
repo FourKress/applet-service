@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Manager, ManagerDocument } from './schemas/manager.schema';
 import { StadiumService } from '../stadium/stadium.service';
+import { User } from '../users/schemas/user.schema';
 
 const Moment = require('moment');
 
@@ -69,6 +70,7 @@ export class ManagerService {
         stadiumId,
         validFlag: true,
       })
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
   }
 }
