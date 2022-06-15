@@ -415,6 +415,7 @@ export class StadiumService {
       stadiumId,
       bossId,
       inviteUserId: userId,
+      inviteId,
     });
     return inviteId;
   }
