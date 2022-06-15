@@ -407,20 +407,31 @@ export class StadiumService {
     return await this.stadiumModel.findById(stadiumId).exec();
   }
 
-  async addManagerInvite(stadiumId, bossId): Promise<string> {
+  async addManagerInvite(stadiumId, tokenInfo): Promise<string> {
+    const { userId, bossId } = tokenInfo;
     const inviteId = Types.ObjectId().toHexString();
     await this.managerInvite.set(inviteId, {
       expiredTime: Moment().add(2, 'minutes').valueOf(),
       stadiumId,
       bossId,
+      inviteUserId: userId,
+      inviteId,
     });
     return inviteId;
+  }
+
+  deleteInvite(inviteId) {
+    this.managerInvite.delete(inviteId);
   }
 
   async getManagerInvite(inviteId): Promise<any> {
     const managerInviteInfo = this.managerInvite.get(inviteId);
     const { stadiumId, expiredTime } = managerInviteInfo || {};
-    if (!managerInviteInfo || Moment().diff(expiredTime) > 0) {
+    const isExpired = Moment().diff(expiredTime) > 0;
+    if (!managerInviteInfo || isExpired) {
+      if (isExpired) {
+        this.deleteInvite(inviteId);
+      }
       return {
         error: true,
         msg: '管理员邀请已失效，请重新邀请！',
@@ -428,6 +439,7 @@ export class StadiumService {
     }
     const stadium = await this.stadiumModel.findById(stadiumId).exec();
     if (!stadium?.name) {
+      this.deleteInvite(inviteId);
       return {
         error: true,
         msg: '未找到对应球场，请重新邀请！',

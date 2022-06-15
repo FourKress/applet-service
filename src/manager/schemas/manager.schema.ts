@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { ManagerInterfaces } from '../interfaces/manager.interfaces';
+import { User } from '../../users/schemas/user.schema';
 
 export type ManagerDocument = Manager & Document;
 
@@ -9,8 +10,8 @@ export type ManagerDocument = Manager & Document;
 export class Manager implements ManagerInterfaces {
   @Prop()
   id: string;
-  @Prop()
-  userId: string;
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  user: string;
   @Prop()
   stadiumId: string;
   @Prop()

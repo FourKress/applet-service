@@ -121,7 +121,7 @@ export class StadiumController {
     @Body('stadiumId', new ValidationIDPipe()) stadiumId: string,
   ): Promise<string> {
     const tokenInfo: UserEntity = req.user;
-    return this.stadiumService.addManagerInvite(stadiumId, tokenInfo.bossId);
+    return this.stadiumService.addManagerInvite(stadiumId, tokenInfo);
   }
 
   @NoAuth()
