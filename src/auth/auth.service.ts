@@ -43,6 +43,7 @@ export class AuthService {
     });
     return {
       token,
+      authIds,
       userInfo: userInfo,
     };
   }
@@ -61,6 +62,7 @@ export class AuthService {
     });
     return {
       token,
+      authIds: [],
       userInfo: userInfo,
     };
   }
