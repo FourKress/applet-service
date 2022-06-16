@@ -126,6 +126,7 @@ export class WithdrawService {
   }
 
   async getWithdrawConfig(bossId): Promise<boolean> {
+    if (!bossId) return false;
     if (process.env.NODE_ENV !== 'prod') return true;
     return !['623014323423f91f1465239d'].includes(bossId);
   }
