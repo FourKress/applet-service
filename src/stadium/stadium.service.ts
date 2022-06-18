@@ -90,6 +90,7 @@ export class StadiumService {
     return await this.stadiumModel
       .find({ isDelete: false })
       .in('bossId', bossIds)
+      .sort('bossId')
       .exec();
   }
 
