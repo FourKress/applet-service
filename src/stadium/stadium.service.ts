@@ -415,7 +415,7 @@ export class StadiumService {
     const { userId, bossId } = tokenInfo;
     const inviteId = Types.ObjectId().toHexString();
     await this.managerInvite.set(inviteId, {
-      expiredTime: Moment().add(2, 'minutes').valueOf(),
+      expiredTime: Moment().add(2, 'hours').valueOf(),
       stadiumId,
       bossId,
       inviteUserId: userId,
