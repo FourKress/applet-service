@@ -119,16 +119,18 @@ export class OrderController {
   @Get('userList')
   async userList(@Request() req, @Query() params: any): Promise<any[]> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.userList(tokenInfo.bossId, params);
+    const bossId = params?.bossId;
+    return await this.orderService.userList(bossId || tokenInfo.bossId, params);
   }
 
   @Post('infoByUserId')
   @HttpCode(HttpStatus.OK)
-  async infoByUserId(
-    @Request() req,
-    @Body('userId', new ValidationIDPipe()) userId: string,
-  ): Promise<any> {
+  async infoByUserId(@Request() req, @Body() params: any): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return await this.orderService.infoByUserId(userId, tokenInfo.bossId);
+    const bossId = params?.bossId;
+    return await this.orderService.infoByUserId(
+      params.userId,
+      bossId || tokenInfo.bossId,
+    );
   }
 }

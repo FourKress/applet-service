@@ -38,24 +38,23 @@ export class MonthlyCardController {
 
   @Post('findAll')
   @HttpCode(HttpStatus.OK)
-  async findAll(
-    @Request() req,
-    @Body('userId', new ValidationIDPipe()) userId: string,
-  ): Promise<MonthlyCard[]> {
+  async findAll(@Request() req, @Body() params): Promise<MonthlyCard[]> {
     const tokenInfo: UserEntity = req.user;
+    const bossId = params.bossId;
     return await this.monthlyCardService.findAllByUserId(
-      userId,
-      tokenInfo.bossId,
+      params.userId,
+      bossId || tokenInfo.bossId,
     );
   }
 
   @Post('getInfoByUserId')
   @HttpCode(HttpStatus.OK)
-  async infoByUserId(
-    @Request() req,
-    @Body('userId', new ValidationIDPipe()) userId: string,
-  ): Promise<any> {
+  async infoByUserId(@Request() req, @Body() params): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return await this.monthlyCardService.infoByUserId(userId, tokenInfo.bossId);
+    const bossId = params.bossId;
+    return await this.monthlyCardService.infoByUserId(
+      params.userId,
+      bossId || tokenInfo.bossId,
+    );
   }
 }
