@@ -930,7 +930,7 @@ export class OrderService {
       .find({
         stadiumId,
       })
-      .nin('status', [0, 5, 1, 7, 4, 9])
+      .in('status', [0, 5, 1, 7, 4, 9])
       .exec();
   }
 
