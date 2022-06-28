@@ -64,11 +64,13 @@ export class WxController {
   }
 
   @Get('applyWechatyBot')
-  async applyWechatyBot(
-    @Request() req,
-    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
-  ): Promise<any> {
+  async applyWechatyBot(@Request() req, @Query() params): Promise<any> {
     const tokenInfo: UserEntity = req.user;
-    return await this.wxService.applyWechatyBot(stadiumId, tokenInfo.bossId);
+    const bossId = params?.bossId;
+    const stadiumId = params?.stadiumId;
+    return await this.wxService.applyWechatyBot(
+      stadiumId,
+      bossId || tokenInfo.bossId,
+    );
   }
 }
