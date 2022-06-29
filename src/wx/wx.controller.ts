@@ -73,4 +73,11 @@ export class WxController {
       bossId || tokenInfo.bossId,
     );
   }
+
+  @NoAuth()
+  @Post('unlimited')
+  @HttpCode(HttpStatus.OK)
+  async getUnlimited(): Promise<any> {
+    return await this.wxService.getUnlimited();
+  }
 }
