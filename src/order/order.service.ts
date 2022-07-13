@@ -721,7 +721,7 @@ export class OrderService {
     const order: any = (await this.orderModel.findById(orderId)).toJSON();
     const { matchId, personCount, userId, refundAmount, payAmount } = order;
     const userInfo = await this.userService.findByBossId(order?.bossId);
-    if (payAmount > 0 && refundAmount === 0) {
+    if (order.wxOrderId && payAmount > 0 && refundAmount === 0) {
       const addBalanceAmt = payAmount - 0;
       const balanceAmt = userInfo.balanceAmt + addBalanceAmt;
       await this.userService.setBossBalanceAmt({

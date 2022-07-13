@@ -91,6 +91,30 @@ export class WxService {
     return res.data;
   }
 
+  async getUnlimited() {
+    const params = `grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+    const accessTokenResult = await lastValueFrom(
+      this.httpService.get(`https://api.weixin.qq.com/cgi-bin/token?${params}`),
+    );
+    const accessToken = accessTokenResult.data?.access_token;
+
+    const unlimited = await lastValueFrom(
+      this.httpService.request({
+        url: `https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${accessToken}`,
+        data: {
+          scene: 'a=1',
+          page: 'pages/load/index',
+          check_path: true,
+          env_version: 'release',
+          width: '1280px',
+        },
+        method: 'POST',
+        responseType: 'arraybuffer',
+      }),
+    );
+    fs.writeFileSync('./qrcode.jpeg', unlimited.data);
+  }
+
   async getPhoneNumber({
     userId,
     code = '',

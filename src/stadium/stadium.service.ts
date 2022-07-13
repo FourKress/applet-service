@@ -438,7 +438,7 @@ export class StadiumService {
       }
       return {
         error: true,
-        msg: '管理员邀请已失效，请重新邀请！',
+        msg: `管理员邀请${isExpired ? '已失效' : '已被使用'}，请重新邀请！`,
       };
     }
     const stadium = await this.stadiumModel.findById(stadiumId).exec();
