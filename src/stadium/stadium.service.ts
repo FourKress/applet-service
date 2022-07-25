@@ -83,13 +83,23 @@ export class StadiumService {
     return await this.stadiumModel.findById(id).exec();
   }
 
-  async findByBossId(bossIds: string[]): Promise<Stadium[]> {
-    if (!bossIds?.length) {
+  async findByBossId(
+    bossId: string,
+    authStadiumIds?: string[],
+  ): Promise<Stadium[]> {
+    if (!bossId && !authStadiumIds?.length) {
       ToolsService.fail('bossId不能为空！');
     }
     return await this.stadiumModel
       .find({ isDelete: false })
-      .in('bossId', bossIds)
+      .or([
+        {
+          bossId: bossId,
+        },
+        {
+          _id: { $in: authStadiumIds },
+        },
+      ])
       .sort('bossId')
       .exec();
   }
