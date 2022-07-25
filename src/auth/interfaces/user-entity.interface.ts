@@ -10,4 +10,6 @@ export interface UserEntity {
   bossId: string;
   // 管理员的授权场主ID集合
   authIds: string[];
+  // 管理员的授权场馆ID集合
+  authStadiumIds: string[];
 }

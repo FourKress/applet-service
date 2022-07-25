@@ -34,16 +34,23 @@ export class AuthService {
     const managerList = await this.managerService.getManagerByUserId(
       userInfo.id,
     );
-    const authIds = (managerList ?? []).map((d) => d.bossId);
+    const authIds = [];
+    const authStadiumIds = [];
+    (managerList ?? []).forEach((d) => {
+      authIds.push(d.bossId);
+      authStadiumIds.push(d.stadiumId);
+    });
     const token = await this.jwtService.createToken({
       userId: userInfo.id,
       openId: userInfo.openId,
       bossId: userInfo.bossId,
       authIds,
+      authStadiumIds,
     });
     return {
       token,
       authIds,
+      authStadiumIds,
       userInfo: userInfo,
     };
   }
@@ -59,10 +66,12 @@ export class AuthService {
       openId: userInfo.openId,
       bossId: userInfo.bossId,
       authIds: [],
+      authStadiumIds: [],
     });
     return {
       token,
       authIds: [],
+      authStadiumIds: [],
       userInfo: userInfo,
     };
   }
