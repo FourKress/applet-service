@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ToolsService } from '../common/utils/tools-service';
 import { Suggestions, SuggestionsDocument } from './schemas/suggestions.schema';
 import { SuggestionsDto } from './dto/suggestions.dto';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class SuggestionsService {
@@ -16,8 +17,11 @@ export class SuggestionsService {
     this.managerInvite = new Map();
   }
 
-  async add(suggestions: SuggestionsDto): Promise<Suggestions> {
-    const newSuggestions = new this.suggestionsModel(suggestions);
+  async add(suggestions: SuggestionsDto, userId): Promise<Suggestions> {
+    const newSuggestions = new this.suggestionsModel({
+      ...suggestions,
+      user: userId,
+    });
     return await newSuggestions.save();
   }
 
@@ -34,6 +38,7 @@ export class SuggestionsService {
         validFlag: true,
         isDelete: false,
       })
+      .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
   }
 

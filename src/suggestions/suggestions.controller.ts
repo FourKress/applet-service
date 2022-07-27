@@ -23,8 +23,12 @@ export class SuggestionsController {
 
   @Post('add')
   @HttpCode(HttpStatus.OK)
-  async add(@Body() suggestions: SuggestionsDto): Promise<Suggestions> {
-    return await this.suggestionsService.add(suggestions);
+  async add(
+    @Body() suggestions: SuggestionsDto,
+    @Request() req,
+  ): Promise<Suggestions> {
+    const tokenInfo: UserEntity = req.user;
+    return await this.suggestionsService.add(suggestions, tokenInfo.userId);
   }
 
   @Get('list')
