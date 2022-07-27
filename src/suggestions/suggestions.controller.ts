@@ -31,7 +31,8 @@ export class SuggestionsController {
     return await this.suggestionsService.add(suggestions, tokenInfo.userId);
   }
 
-  @Get('list')
+  @Post('list')
+  @HttpCode(HttpStatus.OK)
   async findAll(): Promise<Suggestions[]> {
     return await this.suggestionsService.findAll();
   }

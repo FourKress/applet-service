@@ -34,10 +34,7 @@ export class SuggestionsService {
 
   async findAll(): Promise<Suggestions[]> {
     return this.suggestionsModel
-      .find({
-        validFlag: true,
-        isDelete: false,
-      })
+      .find()
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .exec();
   }
