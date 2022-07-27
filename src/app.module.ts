@@ -21,6 +21,7 @@ import { WxGroupModule } from './wxGroup/wxGroup.module';
 import { WithdrawModule } from './withdraw/withdraw.module';
 import { RefundRuleModule } from './refundRule/refundRule.module';
 import { ManagerModule } from './manager/manager.module';
+import { SuggestionsModule } from './suggestions/suggestions.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { ManagerModule } from './manager/manager.module';
     WithdrawModule,
     RefundRuleModule,
     ManagerModule,
+    SuggestionsModule,
   ],
 })
 export class AppModule {}
