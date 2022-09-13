@@ -315,8 +315,7 @@ export class OrderService {
         createdAt,
         `${match.runDate} ${match.startAt}`,
         'seconds',
-      ) -
-      (Moment() - Moment(createdAt));
+      ) - Moment().diff(Moment(createdAt), 'second');
     if (timer <= 0) {
       ToolsService.fail('支付失败，订单已超时！');
       return 0;
