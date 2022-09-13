@@ -287,6 +287,7 @@ export class WxService {
 
   async pay(order): Promise<any> {
     const { openId, orderId, payAmount } = order;
+    const time_expire = await this.orderService.getOrderCountdown(orderId);
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
       notify_url: `${this.serverAddress}/api/wx/payNotice`,
@@ -296,7 +297,7 @@ export class WxService {
       payer: {
         openid: openId,
       },
-      time_expire: Moment().add(1, 'minute').format(),
+      time_expire: Moment().add(time_expire, 'second').format(),
     });
     if (status !== 200) {
       ToolsService.fail('统一下单请求失败');

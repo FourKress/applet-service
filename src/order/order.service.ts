@@ -306,6 +306,24 @@ export class OrderService {
     };
   }
 
+  async getOrderCountdown(orderId) {
+    const order = await this.orderModel.findById(orderId);
+    const { matchId, createdAt } = order;
+    const match = await this.matchService.findById(matchId);
+    const timer =
+      utils.countdown(
+        createdAt,
+        `${match.runDate} ${match.startAt}`,
+        'seconds',
+      ) -
+      (Moment() - Moment(createdAt));
+    if (timer <= 0) {
+      ToolsService.fail('支付失败，订单已超时！');
+      return 0;
+    }
+    return timer;
+  }
+
   async orderPay(id: string, payMethod: string): Promise<Order> {
     if (!payMethod) {
       ToolsService.fail('系统异常，支付失败');
