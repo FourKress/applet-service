@@ -296,7 +296,7 @@ export class WxService {
       payer: {
         openid: openId,
       },
-      time_expire: Moment().add(1, 'hour').format(),
+      time_expire: Moment().add(1, 'minute').format(),
     });
     if (status !== 200) {
       ToolsService.fail('统一下单请求失败');
