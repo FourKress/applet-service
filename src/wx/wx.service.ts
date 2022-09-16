@@ -288,7 +288,10 @@ export class WxService {
   async pay(order): Promise<any> {
     const { openId, orderId, payAmount } = order;
     const countdown = await this.orderService.getOrderCountdown(orderId);
-    const time_expire = Math.min(countdown, 60);
+    if (!countdown) {
+      return;
+    }
+    const time_expire = countdown >= 60 ? 60 : 60;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
       notify_url: `${this.serverAddress}/api/wx/payNotice`,

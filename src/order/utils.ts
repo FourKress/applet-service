@@ -18,7 +18,7 @@ export const StatusMap = {
 export const countdown = (createdAt, startAt, type = 'unix'): number => {
   let awaitTime: number = CONSTANT.orderMinAwaitTime;
   if (
-    Moment(startAt).diff(Moment(createdAt), 'minutes') >=
+    Moment(startAt).diff(Moment(createdAt), 'seconds') >=
     CONSTANT.triggerAwaitThresholdTime
   ) {
     awaitTime = CONSTANT.orderMaxAwaitTime;
@@ -26,7 +26,6 @@ export const countdown = (createdAt, startAt, type = 'unix'): number => {
   const millisecondMap = {
     unix: 60 * 1000,
     seconds: 60,
-    minutes: 1,
   };
   return awaitTime * millisecondMap[type];
 };

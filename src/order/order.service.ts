@@ -636,7 +636,7 @@ export class OrderService {
     const matchDb: any = await this.matchService.findById(matchId);
     const stadium = await this.stadiumService.findById(order.stadiumId);
     const { startAt, runDate } = matchDb.toJSON();
-    const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'minutes');
+    const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'seconds');
     let refundAmount = 0;
 
     if (refundType === 1) {
@@ -649,7 +649,7 @@ export class OrderService {
       if ((payMethod === 2 && payAmount === 0) || status === 6) {
         refundAmount = 0;
       } else {
-        if (diffTime <= 2) {
+        if (diffTime <= 2 * 60) {
           ToolsService.fail('距开场小于两分钟，无法退款！');
           return;
         } else {
@@ -665,9 +665,9 @@ export class OrderService {
             for (let i = rules.length - 1; i >= 0; i--) {
               const { refundRatio, refundTime } = rules[i];
               if (
-                (i === 0 && diffTime < refundTime * 60) ||
-                (diffTime < refundTime * 60 &&
-                  diffTime >= rules[i - 1].refundTime * 60)
+                (i === 0 && diffTime < refundTime * 60 * 60) ||
+                (diffTime < refundTime * 60 * 60 &&
+                  diffTime >= rules[i - 1].refundTime * 60 * 60)
               ) {
                 refundAmount = this.getRefundAmount(
                   newMonthlyCard,
@@ -678,7 +678,7 @@ export class OrderService {
                 break;
               } else if (
                 i === rules.length - 1 &&
-                diffTime >= refundTime * 60
+                diffTime >= refundTime * 60 * 60
               ) {
                 refundAmount = payAmount;
                 if (newMonthlyCard) {
