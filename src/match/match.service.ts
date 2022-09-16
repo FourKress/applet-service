@@ -295,7 +295,7 @@ export class MatchService {
   async cancel(id: string): Promise<any> {
     const match = await this.matchModel.findById(id);
     const { runDate, endAt } = match;
-    if (Moment().diff(Moment(`${runDate} ${endAt}`), 'minutes') >= 0) {
+    if (Moment().diff(Moment(`${runDate} ${endAt}`), 'seconds') >= 0) {
       ToolsService.fail('场次已结束，不能取消');
       return;
     }

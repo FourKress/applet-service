@@ -104,7 +104,7 @@ export class TasksService {
       const nowTime = Moment.now();
       const order = item.toJSON();
       const { status, payAt, id } = order;
-      const timerFlag = Moment(nowTime).diff(Moment(payAt), 'minutes') >= 1;
+      const timerFlag = Moment(nowTime).diff(Moment(payAt), 'seconds') >= 60;
       if (timerFlag) {
         if (status === 5) {
           await this.wxService.getPayInfo(id);
@@ -125,7 +125,7 @@ export class TasksService {
       if (
         !closeFlag &&
         payAt &&
-        Moment(nowTime).diff(Moment(payAt), 'minutes') >= 5
+        Moment(nowTime).diff(Moment(payAt), 'seconds') >= 5 * 60
       ) {
         await this.wxService.close(order.id);
       }
@@ -155,16 +155,16 @@ export class TasksService {
       const failMatch = successPeople < minPeople;
       const nowTime = Moment.now();
       const isStart =
-        Moment(nowTime).diff(Moment(`${runDate} ${startAt}`), 'minutes') >= 0;
+        Moment(nowTime).diff(Moment(`${runDate} ${startAt}`), 'seconds') >= 0;
       const isEnd =
-        Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'minutes') >= 0;
+        Moment(nowTime).diff(Moment(`${runDate} ${endAt}`), 'seconds') >= 0;
       const realSelectPeople = selectPeople - personCount;
 
       if (
         status === 0 &&
         ((isStart && failMatch) ||
-          Moment(nowTime).diff(Moment(createdAt), 'minutes') >=
-            utils.countdown(createdAt, `${runDate} ${startAt}`, 'minutes'))
+          Moment(nowTime).diff(Moment(createdAt), 'seconds') >=
+            utils.countdown(createdAt, `${runDate} ${startAt}`, 'seconds'))
       ) {
         this.logger.log(`${order.id} 未支付 系统自动取消订单`);
         await this.changeOrder({
@@ -234,7 +234,8 @@ export class TasksService {
           });
           await this.userService.setUserTeamUpCount(order.userId);
         } else if (
-          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'minutes') <= 5 &&
+          Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'seconds') <=
+            5 * 60 &&
           !order.isCompensate &&
           order.payAmount !== 0 &&
           chargeModel === 1
