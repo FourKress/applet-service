@@ -109,7 +109,7 @@ export class OrderService {
     return this.orderModel
       .findById(id)
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
-      .populate('stadiumId', { name: 1, _id: 1 }, Stadium.name)
+      .populate('stadiumId', { name: 1, _id: 1, wxGroupId: 1 }, Stadium.name)
       .populate('spaceId', { name: 1, _id: 1, unit: 1 }, Space.name)
       .populate(
         'matchId',
