@@ -19,8 +19,10 @@ export class WxGroupService {
     return await this.wxGroupModel.findOne({ wxGroupName }).exec();
   }
 
-  async findByStadiumId(stadiumId): Promise<WxGroup> {
-    return await this.wxGroupModel.findOne({ stadiumId }).exec();
+  async findByStadiumId(stadiumId, bossId, wxGroupId): Promise<WxGroup> {
+    return await this.wxGroupModel
+      .findOne({ stadiumId, bossId, wxGroupId })
+      .exec();
   }
 
   async findActiveList(): Promise<WxGroup[]> {
@@ -34,6 +36,10 @@ export class WxGroupService {
   async add(params): Promise<WxGroup> {
     const newWxGroup = new this.wxGroupModel(params);
     return await newWxGroup.save();
+  }
+
+  async remove(params): Promise<any> {
+    return await this.wxGroupModel.remove(...params).exec();
   }
 
   async modify(params): Promise<WxGroup> {

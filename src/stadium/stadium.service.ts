@@ -408,6 +408,12 @@ export class StadiumService {
         botStatus: false,
         applyBot: false,
       };
+      const stadiumDB = await this.stadiumModel.findById(stadiumId).exec();
+      await this.wxGroupService.remove({
+        stadiumId,
+        bossId: stadiumDB.bossId,
+        wxGroupId: stadiumDB.wxGroupId,
+      });
     }
     await this.stadiumModel.findByIdAndUpdate(stadiumId, stadium);
   }
