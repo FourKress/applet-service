@@ -445,7 +445,7 @@ export class WxService {
     const wxGroup = await this.wxGroupService.findByStadiumId(
       order.stadiumId.id,
       order.bossId,
-      order.stadiumId.wxOrderId,
+      order.stadiumId.wxGroup,
     );
     if (!wxGroup.wxGroupId) {
       return '';
