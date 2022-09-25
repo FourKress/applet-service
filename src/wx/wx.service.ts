@@ -444,6 +444,8 @@ export class WxService {
   async handleWechatyBotNotice(order, url): Promise<any> {
     const wxGroup = await this.wxGroupService.findByStadiumId(
       order.stadiumId.id,
+      order.bossId,
+      order.stadiumId.wxOrderId,
     );
     if (!wxGroup.wxGroupId) {
       return '';
