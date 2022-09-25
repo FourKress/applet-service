@@ -39,7 +39,7 @@ export class WxGroupService {
   }
 
   async remove(params): Promise<any> {
-    return await this.wxGroupModel.remove(...params).exec();
+    return await this.wxGroupModel.remove(params).exec();
   }
 
   async modify(params): Promise<WxGroup> {
