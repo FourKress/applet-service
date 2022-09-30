@@ -164,16 +164,31 @@ export class StadiumService {
       await this.checkActive(id);
     }
 
+    return await this.stadiumModel
+      .findByIdAndUpdate(id, {
+        ...stadiumInfo,
+        validFlag: true,
+      })
+      .exec();
+  }
+
+  async saveBotInfo(params): Promise<any> {
+    const { id, ...botInfo } = params;
+    if (!id) {
+      ToolsService.fail('id不能为空！');
+    }
+
+    const stadiumFromDB = await this.stadiumModel.findById(id);
     let wxGroup: any = {};
     if (
-      (stadiumInfo?.wxGroup && !stadiumFromDB?.wxGroup) ||
-      (!stadiumInfo?.wxGroupId && stadiumInfo?.wxGroup)
+      (botInfo?.wxGroup && !stadiumFromDB?.wxGroup) ||
+      (!botInfo?.wxGroupId && botInfo?.wxGroup)
     ) {
       const wxGroupFromDB: any = await this.wxGroupService.findByWxGroupName(
-        stadiumInfo.wxGroup,
+        botInfo.wxGroup,
       );
       wxGroup = wxGroupFromDB ? wxGroupFromDB?.toJSON() : {};
-      if (!wxGroupFromDB || stadiumInfo.wxGroup !== wxGroup.wxGroupName) {
+      if (!wxGroupFromDB || botInfo.wxGroup !== wxGroup.wxGroupName) {
         ToolsService.fail('机器人还未加入关联微信群，请检查后再试！');
         return;
       } else {
@@ -181,14 +196,14 @@ export class StadiumService {
           await this.wxGroupService.add({
             wxGroupName: wxGroup.wxGroupName,
             wxGroupId: wxGroup.wxGroupId,
-            bossId: stadiumInfo.bossId,
+            bossId: botInfo.bossId,
             stadiumId: id,
           });
         } else {
           await this.wxGroupService.modify({
             id: wxGroup.id,
-            wxGroupName: stadiumInfo.wxGroup,
-            bossId: stadiumInfo.bossId,
+            wxGroupName: botInfo.wxGroup,
+            bossId: botInfo.bossId,
             stadiumId: id,
           });
         }
@@ -197,9 +212,8 @@ export class StadiumService {
 
     return await this.stadiumModel
       .findByIdAndUpdate(id, {
-        ...stadiumInfo,
-        wxGroupId: stadiumInfo?.wxGroupId || wxGroup?.wxGroupId || '',
-        validFlag: true,
+        ...botInfo,
+        wxGroupId: botInfo?.wxGroupId || wxGroup?.wxGroupId || '',
       })
       .exec();
   }
@@ -469,5 +483,16 @@ export class StadiumService {
       ...managerInviteInfo,
       stadiumName: stadium.name,
     };
+  }
+
+  async getBotInfo(stadiumId): Promise<any> {
+    const {
+      wxGroup,
+      wxGroupId,
+      botStatus,
+      _id,
+    } = await this.stadiumModel.findById(stadiumId).exec();
+
+    return { wxGroup, wxGroupId, botStatus, id: _id };
   }
 }

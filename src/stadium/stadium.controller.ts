@@ -132,4 +132,17 @@ export class StadiumController {
   ): Promise<Stadium> {
     return this.stadiumService.getManagerInvite(inviteId);
   }
+
+  @Get('getBotInfo')
+  getBotInfo(
+    @Query('stadiumId', new ValidationIDPipe()) stadiumId: string,
+  ): Promise<Stadium> {
+    return this.stadiumService.getBotInfo(stadiumId);
+  }
+
+  @Post('saveBotInfo')
+  @HttpCode(HttpStatus.OK)
+  saveBotInfo(@Body() params: any): Promise<string> {
+    return this.stadiumService.saveBotInfo(params);
+  }
 }
