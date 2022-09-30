@@ -486,12 +486,8 @@ export class StadiumService {
   }
 
   async getBotInfo(stadiumId): Promise<any> {
-    const {
-      wxGroup,
-      wxGroupId,
-      botStatus,
-      _id,
-    } = await this.stadiumModel.findById(stadiumId).exec();
+    const stadium = await this.stadiumModel.findById(stadiumId).exec();
+    const { wxGroup, wxGroupId, botStatus, _id } = stadium;
 
     return { wxGroup, wxGroupId, botStatus, id: _id };
   }
