@@ -161,6 +161,7 @@ export class MatchService {
       repeatWeek,
       runDate,
       stadiumId,
+      type,
     } = addMatch;
 
     const valid = await this.stadiumService.checkValidStatus(stadiumId);
@@ -177,6 +178,7 @@ export class MatchService {
         runDate,
         status: true,
         validFlag: true,
+        type,
       })
       .exists('parentId', true);
     console.log(hasMatch);

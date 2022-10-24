@@ -22,4 +22,7 @@ export interface MatchInterface {
   matchTotalAmt: number;
   createdAt: number;
   updatedAt: number;
+
+  type: number;
+  interval: number;
 }

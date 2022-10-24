@@ -70,4 +70,12 @@ export class ModifyMatchDto {
   @IsNotEmpty({ message: 'chargeModel 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'chargeModel 必须是 number 类型' })
   readonly chargeModel: number;
+
+  @IsNotEmpty({ message: 'type 不能为空' })
+  @IsNumber({ allowNaN: false }, { message: 'type 必须是 number 类型' })
+  readonly type: number;
+
+  @IsOptional()
+  @IsNumber({ allowNaN: false }, { message: 'chargeModel 必须是 number 类型' })
+  readonly interval: number;
 }

@@ -61,6 +61,11 @@ export class Match implements MatchInterface {
   createdAt: number;
   @Prop()
   updatedAt: number;
+
+  @Prop()
+  type: number;
+  @Prop()
+  interval: number;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

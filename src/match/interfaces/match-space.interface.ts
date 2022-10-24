@@ -24,4 +24,7 @@ export class MatchSpaceInterface implements MatchInterface {
   readonly matchTotalAmt: number;
   readonly createdAt: number;
   readonly updatedAt: number;
+
+  readonly type: number;
+  readonly interval: number;
 }
