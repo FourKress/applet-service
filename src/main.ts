@@ -13,6 +13,8 @@ import { BadRequestExceptionFilter } from './common/filters/badRequest-exception
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ValidationPipe } from './common/pipe/validation.pipe';
 
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 import * as mongoose from 'mongoose';
 mongoose.set('returnOriginal', false);
 
@@ -38,15 +40,29 @@ async function bootstrap() {
 
   app.enableCors();
   app.enable('trust proxy');
-  app.use(helmet());
-
   app.use(
-    rateLimit({
-      windowMs: 5 * 60 * 1000,
-      max: 300,
-      message: 'Too many requests from this IP, please try again later',
+    helmet({
+      contentSecurityPolicy: false,
     }),
   );
+
+  if (process.env.RUN_TIME === 'dev') {
+    app.use(
+      rateLimit({
+        windowMs: 5 * 60 * 1000,
+        max: 300,
+        message: 'Too many requests from this IP, please try again later',
+      }),
+    );
+  }
+
+  const options = new DocumentBuilder()
+    .setTitle('接口文档')
+    .setDescription('系统接口文档')
+    .setVersion('1.0.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('/swagger', app, document);
 
   const port = configService.get<number>('app.port');
   await app.listen(port);
