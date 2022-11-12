@@ -102,6 +102,24 @@ export class OrderController {
     return await this.orderService.orderRefund(params);
   }
 
+  @Post('applePackageRefund')
+  @HttpCode(HttpStatus.OK)
+  async applePackageRefund(@Body() params: any): Promise<any> {
+    return await this.orderService.applePackageRefund(params);
+  }
+
+  @Post('getPackageRefund')
+  @HttpCode(HttpStatus.OK)
+  async getPackageRefund(@Body() params: any): Promise<any> {
+    return await this.orderService.getPackageRefund(params);
+  }
+
+  @Post('launchPackageRefund')
+  @HttpCode(HttpStatus.OK)
+  async launchPackageRefund(@Body('orderId') orderId: string): Promise<any> {
+    return await this.orderService.launchPackageRefund(orderId);
+  }
+
   @Get('findOrderByMatchId')
   async findOrderByMatchId(
     @Query('matchId', new ValidationIDPipe()) matchId: string,

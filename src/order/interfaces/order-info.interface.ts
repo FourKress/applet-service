@@ -38,4 +38,8 @@ export class OrderInfoInterface implements OrderInterface {
   closeFlag: boolean;
   isCompensate: boolean;
   compensateAmt: number;
+
+  packageInfo: any;
+  packageId: string;
+  packageRefund: boolean;
 }

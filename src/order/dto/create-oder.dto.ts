@@ -18,6 +18,5 @@ export class CreateOderDto {
   payAmount: number;
 
   @IsNotEmpty({ message: 'personCount 不能为空' })
-  @IsNumber({ allowNaN: false }, { message: 'personCount 必须是 number 类型' })
-  personCount: number;
+  personCount: any;
 }

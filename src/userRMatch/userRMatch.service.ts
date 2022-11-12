@@ -27,6 +27,7 @@ export class UserRMatchService {
           const orderList = await this.orderService.findRegistrationFormOrder(
             relation.userId,
             relation.matchId,
+            relation.packageId,
           );
           const isMonthlyCardPay = orderList.some((d) => d.payMethod === 2);
           const orderUser: any = orderList[0]?.user;
@@ -43,7 +44,15 @@ export class UserRMatchService {
                   orderId,
                 };
               }
-              return { ...user, isMonthlyCardPay: false, orderId };
+              const packageInfo = order?.packageInfo
+                ? order?.packageInfo[0]
+                : {};
+              return {
+                ...user,
+                isMonthlyCardPay: false,
+                orderId,
+                ...packageInfo,
+              };
             },
           );
           return userList;
@@ -67,7 +76,7 @@ export class UserRMatchService {
       .exec();
   }
 
-  onlyRelationByUserId(matchId: string, userId: string): any {
+  onlyRelationByUserId(matchId: string, userId: string, packageId?: any): any {
     if (!userId) {
       ToolsService.fail('userId不能为空！');
     }
@@ -75,13 +84,14 @@ export class UserRMatchService {
       .findOne({
         matchId,
         userId,
+        packageId,
       })
       .exec();
     return relation;
   }
 
   async addRelation(addRelation: CreateUserRMatchDto): Promise<UserRMatch> {
-    const { userId, matchId } = addRelation;
+    const { userId, matchId, packageId } = addRelation;
     if (!userId || !matchId) {
       ToolsService.fail('userId、matchId不能为空！');
     }
@@ -89,7 +99,7 @@ export class UserRMatchService {
       userId,
       matchId,
     });
-    if (relation) {
+    if (relation && !packageId) {
       const count = relation.count + addRelation.count;
       return this.userRMatchModel.findByIdAndUpdate(relation._id, {
         ...addRelation,
@@ -110,12 +120,13 @@ export class UserRMatchService {
   }
 
   async changeRCount(params: any): Promise<any> {
-    const { matchId, userId, ...data } = params;
+    const { matchId, userId, packageId, ...data } = params;
     await this.userRMatchModel
       .findOneAndUpdate(
         {
           matchId,
           userId,
+          packageId,
         },
         {
           $set: data,

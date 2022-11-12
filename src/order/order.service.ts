@@ -135,26 +135,36 @@ export class OrderService {
     const stadium = await this.stadiumService.findById(stadiumId);
     const space = await this.spaceService.findById(spaceId);
     const match = await this.matchService.findById(matchId);
-    const isMonthlyCard = await this.monthlyCardService.checkMonthlyCard(
-      {
-        userId,
-        stadiumId,
-        validFlag: true,
-      },
-      match.runDate,
-    );
-    const findMonthlyCard = await this.orderModel
-      .find({
-        matchId,
-        userId,
-        payMethod: 2,
-      })
-      .in('status', [1, 2, 5, 7]);
+    const isMonthlyCard =
+      match.type === 0
+        ? await this.monthlyCardService.checkMonthlyCard(
+            {
+              userId,
+              stadiumId,
+              validFlag: true,
+            },
+            match.runDate,
+          )
+        : false;
+    const findMonthlyCard =
+      match.type === 0
+        ? await this.orderModel
+            .find({
+              matchId,
+              userId,
+              payMethod: 2,
+            })
+            .in('status', [1, 2, 5, 7])
+        : [];
 
     const price = currency(match.price).multiply(match.rebate / 10).value;
 
+    const packageInfo = match.type === 1 ? order?.packageInfo[0] : {};
+    const endAt = match.type === 1 ? packageInfo.endAt : match.endAt;
+    const startAt = match.type === 1 ? packageInfo.startAt : match.startAt;
+
     const countdown =
-      utils.countdown(order.createdAt, `${match.runDate} ${match.startAt}`) -
+      utils.countdown(order.createdAt, `${match.runDate} ${startAt}`) -
       (Moment() - Moment(order.createdAt));
 
     let orderInfo = order.toJSON();
@@ -162,7 +172,7 @@ export class OrderService {
       stadiumName: stadium.name,
       spaceName: space.name,
       unit: UnitEnum.find((d) => d.value === space.unit)?.label,
-      runAt: `${match.startAt}-${match.endAt}`,
+      runAt: `${startAt}-${endAt}`,
       runDate: match.runDate,
       duration: match.duration,
       price,
@@ -178,6 +188,9 @@ export class OrderService {
         ? findMonthlyCard?.length === 0
         : true,
       chargeModel: match.chargeModel,
+
+      matchType: match.type,
+      interval: match.interval,
     });
     return orderInfo;
   }
@@ -213,15 +226,42 @@ export class OrderService {
     const { matchId, spaceId, stadiumId, personCount } = addOrder;
     const match: any = await this.matchService.findById(matchId);
 
-    if (match.selectPeople + personCount > match.totalPeople) {
-      ToolsService.fail('当前场次已没有位置可报名，请选择其它场次进行报名！');
+    let count = personCount;
+    let packageInfo: any = '';
+    let packageId = '';
+    let endAt = match.endAt;
+    let startAt = match.startAt;
+
+    if (match.type === 1) {
+      count = personCount?.length;
+      packageInfo = personCount;
+      packageId = Types.ObjectId().toHexString();
+      endAt = packageInfo[0].endAt;
+      startAt = packageInfo[0].startAt;
     }
-    if (Moment().diff(`${match.runDate} ${match.endAt}`) > 0) {
-      ToolsService.fail('当前场次已结束，请选择其它场次进行报名。');
+
+    if (match.selectPeople + count > match.totalPeople) {
+      ToolsService.fail(
+        `${
+          match.type === 1
+            ? '当前已没有包场时段可选，请选择其它包场！'
+            : '当前场次已没有位置可报名，请选择其它场次进行报名！'
+        }`,
+      );
+    }
+    if (Moment().diff(`${match.runDate} ${endAt}`) > 0) {
+      ToolsService.fail(
+        `${
+          match.type === 1
+            ? '当前已没有包场时段已结束，请选择其它包场！'
+            : '当前场次已结束，请选择其它场次进行报名。'
+        }`,
+      );
     }
 
     if (
-      Moment().diff(`${match.runDate} ${match.startAt}`) > 0 &&
+      match.type === 0 &&
+      Moment().diff(`${match.runDate} ${startAt}`) > 0 &&
       match.selectPeople < match.minPeople
     ) {
       ToolsService.fail(
@@ -234,11 +274,13 @@ export class OrderService {
       spaceId,
       stadiumId,
       matchId,
-      count: personCount,
-      expirationDate: `${match.runDate} ${match.startAt}`,
+      count,
+      expirationDate: `${match.runDate} ${startAt}`,
+      packageInfo,
+      packageId,
     };
     await this.userRMatchService.addRelation(relation);
-    match.selectPeople = match.selectPeople + personCount;
+    match.selectPeople = match.selectPeople + count;
     await this.matchService.modifyMatchSelectPeople(match.toJSON());
     const bossFromDB: any = await this.userService.findByBossId(
       addOrder.bossId,
@@ -246,6 +288,9 @@ export class OrderService {
     const bossInfo = bossFromDB.toJSON();
     const newOrder = new this.orderModel({
       ...addOrder,
+      personCount: count,
+      packageInfo,
+      packageId,
       userId,
       status: 0,
       user: userId,
@@ -393,6 +438,8 @@ export class OrderService {
           user.id,
         ).length;
         user.orderStatus = utils.StatusMap[order?.status];
+        user.packageRefund = order.packageRefund;
+        user.status = order.status;
         return user;
       }),
     );
@@ -472,66 +519,123 @@ export class OrderService {
     const { name, id } = stadium;
     const matchList = (
       await this.matchService.findByStadiumId({ ...params, repeatFlag: false })
-    ).filter(
-      (d) => Moment(Moment.now()).diff(Moment(`${d.runDate} ${d.endAt}`)) >= 0,
+    )
+      .filter(
+        (d) =>
+          Moment(Moment.now()).diff(Moment(`${d.runDate} ${d.startAt}`)) >= 0,
+      )
+      .map((d: any) => d.toJSON());
+
+    const baseList = matchList.filter(
+      (d) =>
+        Moment(Moment.now()).diff(Moment(`${d.runDate} ${d.endAt}`)) >= 0 &&
+        d.type === 0,
     );
-    const matchCoverOrderList = await Promise.all(
-      matchList.map(async (item: any) => {
-        const match = item.toJSON();
-        const { id } = match;
-        const orderList = await this.orderModel
-          .find({ matchId: id })
-          .in('status', [2, 3]);
-        const monthlyCardCount = orderList.filter((item) => {
-          if (item.payMethod === 2) {
-            if (item.status === 2) {
-              return true;
-            } else if (item.payAmount > 0) {
-              return true;
+    const packageList = matchList.filter((d) => d.type === 1);
+
+    let packageMatchCoverOrderList = [];
+    if (packageList?.length) {
+      const basePackage = packageList[0];
+      const packageOrderList = await this.orderModel
+        .find({ matchId: basePackage.id })
+        .in('status', [2]);
+
+      if (packageOrderList.length) {
+        packageOrderList.forEach((o, index) => {
+          if (index === 0) {
+            packageList[0].orderId = o._id;
+          } else {
+            packageList.push({
+              ...basePackage,
+              orderId: o._id,
+            });
+          }
+        });
+
+        packageMatchCoverOrderList = await Promise.all(
+          packageList.map(async (match: any) => {
+            const { orderId } = match;
+            const order = packageOrderList.find((o) => o._id === orderId);
+            const packageInfo = order.packageInfo[0] || {};
+            const { startAt, endAt } = packageInfo;
+            return {
+              ...match,
+              startAt,
+              endAt,
+              sumPayAmount: match.rebatePrice,
+              monthlyCardCount: 0,
+              ordinaryCount: 1,
+              refundAmt: 0,
+            };
+          }),
+        );
+      }
+    }
+
+    let baseMatchCoverOrderList = [];
+    if (baseList?.length) {
+      baseMatchCoverOrderList = await Promise.all(
+        baseList.map(async (match) => {
+          const { id } = match;
+          const orderList = await this.orderModel
+            .find({ matchId: id })
+            .in('status', [2, 3]);
+
+          const monthlyCardCount = orderList.filter((item) => {
+            if (item.payMethod === 2) {
+              if (item.status === 2) {
+                return true;
+              } else if (item.payAmount > 0) {
+                return true;
+              }
+              return false;
             }
             return false;
-          }
-          return false;
-        }).length;
-        let refundAmt = 0;
-        const ordinaryCount = orderList.reduce((sum, curr) => {
-          refundAmt = currency(refundAmt).add(
-            (curr.wxRefundId &&
-            curr.status === 3 &&
-            curr.refundAmount !== curr.payAmount
-              ? curr.payAmount - curr.refundAmount
-              : 0) + (curr.compensateAmt || 0),
-          ).value;
-          if (curr.status === 2) {
-            if (curr.payMethod === 1) {
-              return sum + curr.personCount;
+          }).length;
+          let refundAmt = 0;
+          const ordinaryCount = orderList.reduce((sum, curr) => {
+            refundAmt = currency(refundAmt).add(
+              (curr.wxRefundId &&
+              curr.status === 3 &&
+              curr.refundAmount !== curr.payAmount
+                ? curr.payAmount - curr.refundAmount
+                : 0) + (curr.compensateAmt || 0),
+            ).value;
+            if (curr.status === 2) {
+              if (curr.payMethod === 1) {
+                return sum + curr.personCount;
+              } else {
+                return sum + curr.personCount - 1;
+              }
             } else {
-              return sum + curr.personCount - 1;
+              return sum + 0;
             }
-          } else {
-            return sum + 0;
-          }
-        }, 0);
-        const sumPayAmount = orderList.reduce(
-          (sum, curr) =>
-            currency(sum).add(
-              curr.payAmount -
-                (curr.wxRefundId ? curr.refundAmount : 0) -
-                (curr.compensateAmt || 0),
-            ).value,
-          0,
-        );
-        return {
-          ...match,
-          sumPayAmount,
-          monthlyCardCount,
-          ordinaryCount,
-          refundAmt,
-        };
-      }),
+          }, 0);
+          const sumPayAmount = orderList.reduce(
+            (sum, curr) =>
+              currency(sum).add(
+                curr.payAmount -
+                  (curr.wxRefundId ? curr.refundAmount : 0) -
+                  (curr.compensateAmt || 0),
+              ).value,
+            0,
+          );
+          return {
+            ...match,
+            sumPayAmount,
+            monthlyCardCount,
+            ordinaryCount,
+            refundAmt,
+          };
+        }),
+      );
+    }
+
+    const matchCoverOrderList = packageMatchCoverOrderList.concat(
+      baseMatchCoverOrderList,
     );
     const stadiumSumAmount = matchCoverOrderList.reduce(
-      (sum, curr) => currency(sum).add(curr.sumPayAmount).value,
+      (sum, curr) => currency(sum).add(curr?.sumPayAmount || 0).value,
       0,
     );
     return {
@@ -725,12 +829,107 @@ export class OrderService {
   }
 
   async orderRefund({ orderId, status, refundType = 2 }) {
-    if (refundType === 2) {
+    const order = await this.orderModel.findById(orderId);
+    if (refundType === 2 || order.packageId) {
       await this.handleMatchRestore(orderId);
     }
     return await this.modifyOrder({
       id: orderId,
       status,
+    });
+  }
+
+  async applePackageRefund({ orderId }) {
+    const order = (await this.orderModel.findById(orderId)).toJSON();
+    const { status, matchId, packageRefund } = order;
+
+    if (packageRefund) {
+      ToolsService.fail('该订单已申请退款，请耐心等待审核！');
+      return;
+    }
+
+    const checkStatus = [0, 1, 9];
+    if (!checkStatus.includes(status)) {
+      ToolsService.fail('该订单无法退款，请检查订单状态！');
+      return;
+    }
+
+    const matchDb: any = await this.matchService.findById(matchId);
+    const { runDate } = matchDb.toJSON();
+
+    const packageInfo = order.packageInfo[0];
+    const { startAt } = packageInfo;
+    const diffTime = Moment(`${runDate} ${startAt}`).diff(Moment(), 'seconds');
+    if (diffTime <= 2 * 60) {
+      ToolsService.fail('距开场小于两分钟，无法申请退款！');
+    }
+
+    return await this.modifyOrder({
+      id: orderId,
+      packageRefund: true,
+    });
+  }
+
+  async getPackageRefund({ stadiumId }) {
+    const list = await this.orderModel
+      .find({
+        stadiumId,
+        packageRefund: true,
+        wxRefundId: null,
+        refundId: null,
+      })
+      .populate('matchId', { runDate: 1 }, Match.name)
+      .populate('spaceId', { name: 1, unit: 1 }, Space.name)
+      .populate('user', { nickName: 1, avatarUrl: 1, phoneNum: 1 }, User.name)
+      .exec();
+
+    const packageRefundList = [];
+    list.forEach((d: any) => {
+      const order = d.toJSON();
+      const packageInfo = d.packageInfo[0] || {};
+      const runDate = d.matchId.runDate;
+      const { startAt, endAt } = packageInfo;
+
+      const diffTime = Moment(`${runDate} ${startAt}`).diff(
+        Moment(),
+        'seconds',
+      );
+      if (diffTime <= 2 * 60) {
+        return;
+      }
+
+      packageRefundList.push({
+        ...order,
+        endAt,
+        startAt,
+        space: d.spaceId,
+      });
+    });
+
+    return packageRefundList;
+  }
+
+  async launchPackageRefund(orderId) {
+    const order = (await this.orderModel.findById(orderId)).toJSON();
+    const refundId = order.refundId || Types.ObjectId().toHexString();
+    const refundType = 1;
+    const refundAmount = order.payAmount;
+    await this.orderModel.findByIdAndUpdate(orderId, {
+      refundAmount,
+      refundType,
+      refundId,
+    });
+
+    const refundInfo = {
+      refundAmount: currency(refundAmount, { precision: 2 }).value,
+      refundType,
+      refundId,
+      payAmount: order.payAmount,
+    };
+
+    await this.wxService.refund({
+      orderId,
+      ...refundInfo,
     });
   }
 
@@ -752,9 +951,11 @@ export class OrderService {
     const userRMatch = await this.userRMatchService.onlyRelationByUserId(
       matchId,
       userId,
+      order.packageId,
     );
     const realSelectPeople = match.selectPeople - personCount;
     const selectPeople = realSelectPeople < 0 ? 0 : realSelectPeople;
+
     await this.matchService.changeMatchSelectPeople({
       id: matchId,
       selectPeople,
@@ -763,6 +964,7 @@ export class OrderService {
       matchId,
       userId,
       count: userRMatch.count - personCount,
+      packageId: order.packageId,
     });
   }
 
@@ -792,6 +994,7 @@ export class OrderService {
         .find({
           bossId,
           status: 2,
+          packageId: '',
         })
         .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
         .populate('matchId', { runDate: 1 }, Match.name)
@@ -914,6 +1117,7 @@ export class OrderService {
       .find({
         userId,
         bossId,
+        packageId: '',
       })
       .in('status', [2, 3])
       .populate(
@@ -959,11 +1163,16 @@ export class OrderService {
       .exec();
   }
 
-  async findRegistrationFormOrder(userId, matchId): Promise<Order[]> {
+  async findRegistrationFormOrder(
+    userId,
+    matchId,
+    packageId,
+  ): Promise<Order[]> {
     return await this.orderModel
       .find({
         userId,
         matchId,
+        packageId,
       })
       .nin('status', [8, 9])
       .populate('user', { nickName: 1, avatarUrl: 1, phoneNum: 1 }, User.name)

@@ -55,6 +55,7 @@ export class MatchService {
   }
 
   async findBySpaceId(params: any): Promise<MatchSpaceInterface[]> {
+    const day = Moment().format('YYYY-MM-DD');
     const matchList = (
       await this.matchModel
         .find({
@@ -64,7 +65,9 @@ export class MatchService {
           validFlag: true,
         })
         .exec()
-    ).sort((a: any, b: any) => Moment(a.endAt) - Moment(b.endAt));
+    ).sort((a: any, b: any) =>
+      Moment(`${day} ${a.startAt}`).diff(Moment(`${day} ${b.startAt}`)),
+    );
     const coverMatchList = matchList.map((item: any) => {
       const match = item.toJSON();
       return {
@@ -124,10 +127,15 @@ export class MatchService {
   }
 
   getDoneAndCancelStatus(match) {
-    const { runDate, startAt, endAt, minPeople, selectPeople } = match;
+    const { runDate, startAt, endAt, minPeople, selectPeople, type } = match;
     const isDone = Moment().diff(`${runDate} ${endAt}`) > 0;
-    const isCancel =
+    let isCancel =
       Moment().diff(`${runDate} ${startAt}`) > 0 && selectPeople < minPeople;
+
+    if (type === 1) {
+      isCancel = isDone;
+    }
+
     return {
       isDone,
       isCancel,
@@ -390,7 +398,7 @@ export class MatchService {
       .find({ repeatFlag: false, status: true, validFlag: true })
       .in('_id', matchIds)
       .exec();
-    const orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
+    let orderByMatchList = await this.orderService.relationByUserIdAndMatchId(
       userId,
       matchIds,
     );
@@ -400,20 +408,36 @@ export class MatchService {
         const match = matchList
           .find((d) => d.toJSON().id === r.matchId)
           ?.toJSON();
-        const isEnd =
-          Moment().diff(Moment(`${match.runDate} ${match.endAt}`)) > 0;
-        const isMin = match.selectPeople >= match.minPeople;
-        const isCancel =
-          Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0 &&
-          !isMin;
+
         const validOrder = orderByMatchList.find(
           (o) => o.matchId === r.matchId,
         );
+
+        if (!validOrder) return;
+
+        let packageInfo: any = {};
+        let startAt = match.startAt;
+        let endAt = match.endAt;
+        if (match.type === 1) {
+          packageInfo = validOrder?.packageInfo[0];
+          endAt = packageInfo.endAt;
+          startAt = packageInfo.startAt;
+          orderByMatchList = orderByMatchList.filter(
+            (f) => f._id !== validOrder._id,
+          );
+        }
+
+        const isEnd = Moment().diff(Moment(`${match.runDate} ${endAt}`)) > 0;
+        const isMin = match.selectPeople >= match.minPeople;
+        const isCancel =
+          Moment().diff(Moment(`${match.runDate} ${startAt}`)) > 0 &&
+          (match.type === 1 ? false : !isMin);
+
         if (isEnd || isCancel || !validOrder?.matchId) {
           return;
         }
         let isStart =
-          Moment().diff(Moment(`${match.runDate} ${match.startAt}`)) > 0
+          Moment().diff(Moment(`${match.runDate} ${startAt}`)) > 0
             ? 3
             : isMin
             ? 1
@@ -427,6 +451,8 @@ export class MatchService {
         const { name, stadiumUrls, address } = stadium.toJSON();
         const data = {
           ...match,
+          startAt,
+          endAt,
           stadiumName: name,
           stadiumUrls,
           stadiumAddress: address,

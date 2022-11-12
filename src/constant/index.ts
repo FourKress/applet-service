@@ -1,4 +1,4 @@
-export const orderMaxAwaitTime = 3;
+export const orderMaxAwaitTime = 1;
 
 export const orderMinAwaitTime = 1;
 

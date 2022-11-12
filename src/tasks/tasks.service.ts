@@ -142,12 +142,16 @@ export class TasksService {
         selectPeople,
         minPeople,
         runDate,
-        startAt,
-        endAt,
         chargeModel,
         matchTotalAmt,
         rebatePrice,
+        type,
       } = match;
+
+      const packageInfo = type === 1 ? order?.packageInfo[0] : {};
+      const startAt = type === 1 ? packageInfo.startAt : match.startAt;
+      const endAt = type === 1 ? packageInfo.endAt : match.endAt;
+
       const successPeople = orderList
         .filter((d) => d.matchId === matchId && d.status !== 0)
         .reduce((sum, current) => sum + current.personCount, 0);
@@ -178,35 +182,44 @@ export class TasksService {
         const userRMatch = await this.userRMatchService.onlyRelationByUserId(
           matchId,
           userId,
+          order.packageId,
         );
         console.log(userRMatch.count, personCount);
         await this.changeUserRMatch({
           matchId,
           userId,
           count: userRMatch.count - personCount,
+          packageId: order.packageId,
         });
       }
 
       if (status === 1) {
         if (isStart && !isEnd) {
-          if (selectPeople < minPeople || failMatch) {
-            this.logger.log(`${order.id} 组队失败 触发退款 系统自动取消订单`);
-            const refundInfo: any = await this.orderService.handleSystemRefund(
-              order.id,
-            );
-            if (refundInfo.refundAmount === 0) {
+          if (type === 0) {
+            if (selectPeople < minPeople || failMatch) {
+              this.logger.log(`${order.id} 组队失败 触发退款 系统自动取消订单`);
+              const refundInfo: any =
+                await this.orderService.handleSystemRefund(order.id);
+              if (refundInfo.refundAmount === 0) {
+                await this.changeOrder({
+                  ...order,
+                  status: 3,
+                });
+              } else {
+                await this.wxService.refund({
+                  orderId: order.id,
+                  ...refundInfo,
+                });
+              }
+            } else {
+              this.logger.log(`${order.id} 组队成功 进行中`);
               await this.changeOrder({
                 ...order,
-                status: 3,
-              });
-            } else {
-              await this.wxService.refund({
-                orderId: order.id,
-                ...refundInfo,
+                status: 7,
               });
             }
           } else {
-            this.logger.log(`${order.id} 组队成功 进行中`);
+            this.logger.log(`${order.id} 包场成功 进行中`);
             await this.changeOrder({
               ...order,
               status: 7,
@@ -217,7 +230,9 @@ export class TasksService {
 
       if (status === 7) {
         if (isEnd) {
-          this.logger.log(`${order.id} 组队成功 已结束 订单已完成`);
+          this.logger.log(
+            `${order.id} ${type === 1 ? '包场' : '组队'}成功 已结束 订单已完成`,
+          );
           await this.changeOrder({
             ...order,
             status: 2,
@@ -231,13 +246,18 @@ export class TasksService {
             balanceAmt,
             withdrawAt: Moment.now(),
           });
-          await this.userService.setUserTeamUpCount(order.userId);
+          if (type === 1) {
+            // TODO 统计包场次数
+          } else {
+            await this.userService.setUserTeamUpCount(order.userId);
+          }
         } else if (
           Moment(Moment(`${runDate} ${endAt}`)).diff(nowTime, 'seconds') <=
             5 * 60 &&
           !order.isCompensate &&
           order.payAmount !== 0 &&
-          chargeModel === 1
+          chargeModel === 1 &&
+          type === 0
         ) {
           const unitPrice = currency(matchTotalAmt).divide(selectPeople).value;
           let refundAmt = 0;

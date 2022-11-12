@@ -14,7 +14,6 @@ export class CreateMatchDto {
   readonly spaceId: string;
 
   @IsOptional()
-  @IsNotEmpty({ message: 'duration 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'duration 必须是 number 类型' })
   readonly duration: number;
 
@@ -30,17 +29,14 @@ export class CreateMatchDto {
   @IsString({ message: 'endAt 必须是 string 类型' })
   readonly endAt: string;
 
-  @IsOptional()
   @IsNotEmpty({ message: 'totalPeople 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'totalPeople 必须是 number 类型' })
   readonly totalPeople: number;
 
   @IsOptional()
-  @IsOptional()
   @IsNumber({ allowNaN: false }, { message: 'selectPeople 必须是 number 类型' })
   readonly selectPeople: number;
 
-  @IsOptional()
   @IsNotEmpty({ message: 'minPeople 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'minPeople 必须是 number 类型' })
   readonly minPeople: number;
@@ -62,7 +58,6 @@ export class CreateMatchDto {
   readonly repeatWeek: number[];
 
   @IsOptional()
-  @IsNotEmpty({ message: 'chargeModel 不能为空' })
   @IsNumber({ allowNaN: false }, { message: 'chargeModel 必须是 number 类型' })
   readonly chargeModel: number;
 
@@ -71,6 +66,6 @@ export class CreateMatchDto {
   readonly type: number;
 
   @IsOptional()
-  @IsNumber({ allowNaN: false }, { message: 'type 必须是 number 类型' })
+  @IsNumber({ allowNaN: false }, { message: 'interval 必须是 number 类型' })
   readonly interval: number;
 }

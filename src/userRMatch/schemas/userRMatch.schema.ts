@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { SchemaOptions } from '../../common/schemas/schema-options';
 import { UserRMatchInterface } from '../interfaces/userRMatch.interface';
 
@@ -25,6 +25,11 @@ export class UserRMatch implements UserRMatchInterface {
   createdAt: number;
   @Prop()
   updatedAt: number;
+
+  @Prop({ type: Types.Map })
+  packageInfo: any;
+  @Prop()
+  packageId: string;
 }
 
 export const UserRMatchSchema = SchemaFactory.createForClass(UserRMatch);

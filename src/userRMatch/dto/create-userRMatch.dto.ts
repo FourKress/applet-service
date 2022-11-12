@@ -1,4 +1,4 @@
-import { IsMongoId, IsNumber, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserRMatchDto {
   @IsMongoId({ message: 'userId 不是正确的ID类型' })
@@ -18,4 +18,11 @@ export class CreateUserRMatchDto {
 
   @IsString({ message: 'expirationDate 必须是 string 类型' })
   expirationDate: string;
+
+  @IsOptional()
+  packageInfo: any;
+
+  @IsOptional()
+  @IsString({ message: 'packageId 必须是 string 类型' })
+  packageId: any;
 }

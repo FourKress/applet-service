@@ -65,6 +65,13 @@ export class Order implements OrderInterface {
   isCompensate: boolean;
   @Prop({ default: 0 })
   compensateAmt: number;
+
+  @Prop({ type: Types })
+  packageInfo: any;
+  @Prop()
+  packageId: string;
+  @Prop({ default: false })
+  packageRefund: boolean;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
