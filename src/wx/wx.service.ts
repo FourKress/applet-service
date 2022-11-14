@@ -296,7 +296,7 @@ export class WxService {
     const time_expire = countdown >= 60 ? 60 : 60;
     const { status, ...result } = await this.payment.jsApi({
       out_trade_no: orderId,
-      notify_url: `http://eff0-14-109-211-119.ngrok.io/api/wx/payNotice`,
+      notify_url: `${this.serverAddress}/api/wx/payNotice`,
       amount: {
         total: parseFloat((payAmount * Y2FUnit).toFixed(2)),
       },
@@ -332,7 +332,7 @@ export class WxService {
     const { status, data, headers } = await this.payment.refund({
       out_trade_no: orderId,
       out_refund_no: refundId,
-      notify_url: `http://eff0-14-109-211-119.ngrok.io/api/wx/refundNotice`,
+      notify_url: `${this.serverAddress}/api/wx/refundNotice`,
       amount: {
         refund: parseFloat((refundAmount * Y2FUnit).toFixed(2)),
         total: parseFloat((payAmount * Y2FUnit).toFixed(2)),
