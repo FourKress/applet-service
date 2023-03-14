@@ -705,6 +705,8 @@ export class OrderService {
       refundType,
       refundId,
       payAmount,
+      newMonthlyCard,
+      monthlyCardPrice: stadium.monthlyCardPrice,
     };
   }
 

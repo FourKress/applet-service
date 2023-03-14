@@ -199,6 +199,18 @@ export class TasksService {
                 ...order,
                 status: 3,
               });
+              // 组队失败,月卡金额计入钱包余额
+              if (refundInfo.newMonthlyCard && refundInfo.monthlyCardPrice) {
+                const userInfo = await this.userService.findByBossId(bossId);
+                const balanceAmt = currency(userInfo.balanceAmt).add(
+                  currency(refundInfo.monthlyCardPrice).value,
+                ).value;
+                await this.changeBossUser({
+                  bossId,
+                  balanceAmt,
+                  withdrawAt: Moment.now(),
+                });
+              }
             } else {
               await this.wxService.refund({
                 orderId: order.id,
