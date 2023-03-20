@@ -168,4 +168,8 @@ export class UsersService {
   async changeApplyForBoss(user): Promise<User> {
     return await this.modify(user);
   }
+
+  async getBalance(): Promise<any> {
+    return await this.userModel.find().where('balanceAmt').gt(0).exec();
+  }
 }

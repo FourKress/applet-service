@@ -22,8 +22,8 @@ export class OrderController {
 
   @Post('list')
   @HttpCode(HttpStatus.OK)
-  async findAll(): Promise<Order[]> {
-    return await this.orderService.findAll();
+  async findAll(@Body() params: any): Promise<Order[]> {
+    return await this.orderService.findAll(params);
   }
 
   @Get('listCount')

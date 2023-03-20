@@ -41,9 +41,14 @@ export class OrderService {
     private readonly refundRuleService: RefundRuleService,
   ) {}
 
-  async findAll(): Promise<Order[]> {
-    return await this.orderModel
+  async findAll(params: any = {}): Promise<any> {
+    console.log('params', params);
+    const { pageSize = 999999, current = 0 } = params;
+    const total = await this.orderModel.countDocuments();
+    const result = await this.orderModel
       .find()
+      .skip(current ? (current - 1) * pageSize : 0)
+      .limit(pageSize)
       .sort({ createdAt: 'desc' })
       .populate('user', { nickName: 1, avatarUrl: 1 }, User.name)
       .populate('stadiumId', { name: 1, monthlyCardPrice: 1 }, Stadium.name)
@@ -64,6 +69,13 @@ export class OrderService {
         Match.name,
       )
       .exec();
+
+    return {
+      records: result,
+      total,
+      current,
+      pageSize,
+    };
   }
 
   async findActiveOrder(): Promise<Order[]> {

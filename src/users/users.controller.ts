@@ -88,4 +88,10 @@ export class UsersController {
   async changeApplyForBoss(@Body() params: any): Promise<User> {
     return await this.usersService.changeApplyForBoss(params);
   }
+
+  @Get('getBalance')
+  @HttpCode(HttpStatus.OK)
+  async getBalance(): Promise<User> {
+    return await this.usersService.getBalance();
+  }
 }
